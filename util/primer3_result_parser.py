@@ -106,6 +106,23 @@ def fmt4fasta(primer_pairs_dict, trim_flag = False):
 
 
 
+def tempfmt(primer_pairs_dict):
+	retarray = []
+	start_index = 0
+	for k, v in primer_pairs_dict.items():
+		for idx, each_pair in enumerate(v["Primer3_output"]):
+			tmpstr = ""
+			if each_pair['PRIMER_LEFT_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_LEFT_SEQUENCE'][start_index:]}\t"
+			if each_pair['PRIMER_INTERNAL_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_INTERNAL_SEQUENCE'][start_index:]}\t"
+			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_RIGHT_SEQUENCE'][start_index:]}"
+			retarray.append(tmpstr)
+	return "\n".join(retarray)
+
+
+
 def primer3_result_parser(filename):
 	retarray = []
 	current_SEQUENCE_ID                  = ""
@@ -273,6 +290,8 @@ def main():
 	parser.add_argument("-o",    metavar = "output_file",    type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
 	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	parser.add_argument("--trimmed_fasta", action='store_true', help = "output as trimmed fasta")
+	parser.add_argument("--tempfmt", action='store_true', help = "output as temporaly format")
+
 	args = parser.parse_args()
 	filename = args.primer3_result
 	primers_candidates = primer3_result_parser(filename)
@@ -283,6 +302,8 @@ def main():
 		print(fmt4fasta(primer_pairs_dict), file = output_file)
 	elif args.trimmed_fasta:
 		print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file)
+	elif args.tempfmt:
+		print(tempfmt(primer_pairs_dict), file = output_file)
 	else:
 		print(json.dumps(primer_pairs_dict, indent = 2), file = output_file)
 		
