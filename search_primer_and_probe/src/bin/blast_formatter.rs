@@ -1,7 +1,5 @@
-use lmr_tuple_count::counting_bloomfilter_util::L_LEN;
-use lmr_tuple_count::counting_bloomfilter_util::M_LEN;
-use lmr_tuple_count::counting_bloomfilter_util::R_LEN;
-use lmr_tuple_count::sequence_encoder_util::LmrTuple;
+use search_primer_and_probe::counting_bloomfilter_util::{L_LEN, M_LEN, R_LEN};
+use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
 extern crate getopts;
 use std::{env, process};
 use std::io::{Write, BufWriter};
@@ -73,29 +71,13 @@ fn main(){
     let f: File = File::open(&input_file).unwrap();
     let mut reader = BufReader::new(f);
     let mut buf: [u8; L_LEN + M_LEN + R_LEN] = [0; L_LEN + M_LEN + R_LEN];
-    let mut tmp_seq_as_u128: u128 = 0;
-
-
-    let mut buf_l: [u8; L_LEN] = [0; L_LEN];
-    let mut buf_m: [u8; M_LEN] = [0; M_LEN];
-    let mut buf_r: [u8; R_LEN] = [0; R_LEN];
-
-
-
     loop {
         match reader.read(&mut buf).unwrap() {
             0 => break,
-            n => {
-                //let buf = &buf[..n];
+            _n => {
                 let buf_l = &buf[0..L_LEN];
                 let buf_m = &buf[L_LEN..M_LEN];
                 let buf_r = &buf[(L_LEN + M_LEN)..R_LEN];
-/*             
-                for i in 0..16 {
-                    tmp_seq_as_u128 <<= 8;
-                    tmp_seq_as_u128 += u128::from(buf[i]);
-                }
- */
                 let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
                 writeln!(&mut w1, "{}", blast_formatter(&tmp_lmr_tuple)).unwrap();
                 writeln!(&mut w2, "{:X?}", tmp_lmr_tuple.as_vec()).unwrap();

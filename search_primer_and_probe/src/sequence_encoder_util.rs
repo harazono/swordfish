@@ -1,13 +1,13 @@
 use crate::counting_bloomfilter_util::L_LEN;
 use crate::counting_bloomfilter_util::M_LEN;
 use crate::counting_bloomfilter_util::R_LEN;
-use std::cmp;
-use sha2::Sha256;
-use sha2::Digest;
-use std::hash::Hash;
 use crate::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
+use std::cmp;
+//use sha2::Sha256;
+//use sha2::Digest;
+use std::hash::Hash;
 use sha256::digest;
-use arrayvec::ArrayVec;
+//use arrayvec::ArrayVec;
 //use slice_copy::clone;
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy)]
@@ -134,33 +134,12 @@ impl LmrTuple{
         let mut ret_val: [u32; 8] = [0; 8];
         for i in 0..8{
             for j in 0..4{
-                ret_val[i] += (val[i * 4 + j] as u32);
+                ret_val[i] += val[i * 4 + j] as u32;
                 ret_val[i] <<= 8;
             }
-            ret_val[i] %= (BLOOMFILTER_TABLE_SIZE as u32);
+            ret_val[i] %= BLOOMFILTER_TABLE_SIZE as u32;
         }
         return ret_val;
-
-
-        /*
-         let mut hasher = Sha256::new();
-        Hash::hash_slice([&self.l, &self.m, &self.r], &mut hasher);
-        let mut ret_val: [u32;8] = [0;8];
-        //let mut u8_array: [u8; 16] = [0; 16];
-        //hasher.update(u8_array);
-        let result = hasher.finalize();
-        let sha256_bit_array = result.as_slice();//&[u8;32]
-        for i in 0..8{
-            for j in 0..4{
-                ret_val[i] += (sha256_bit_array[i * 4 + j] as u32);
-                ret_val[i] <<= 8;
-            }
-            ret_val[i] %= (BLOOMFILTER_TABLE_SIZE as u32);
-        }
-
-        return ret_val;
- */
-
     }
     
 
@@ -280,7 +259,7 @@ impl DnaSequence{
         return buf
     }
     //subsequence_as_LmrTupleは、各u64に右詰め
-    pub fn subsequence_as_LmrTuple(&self, ranges: [[usize; 2]; 3]) -> LmrTuple{
+    pub fn subsequence_as_lmrtuple(&self, ranges: [[usize; 2]; 3]) -> LmrTuple{
         let mut buf  : u64   = 0;
         let     l_w_s: usize = ranges[0][0];
         let     l_w_e: usize = ranges[0][1];
@@ -288,16 +267,16 @@ impl DnaSequence{
         let     m_w_e: usize = ranges[1][1];
         let     r_w_s: usize = ranges[2][0];
         let     r_w_e: usize = ranges[2][1];
-        assert!(l_w_s < l_w_e, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} !< {}", l_w_s, l_w_e);
-        assert!(m_w_s < m_w_e, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} !< {}", m_w_s, m_w_e);
-        assert!(r_w_s < r_w_e, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} !< {}", r_w_s, r_w_e);
-        assert!(l_w_e - l_w_s < 33, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} - {} > 32", l_w_e, l_w_s);
-        assert!(m_w_e - m_w_s < 33, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} - {} > 32", m_w_e, m_w_s);
-        assert!(r_w_e - r_w_s < 33, "DnaSequence::subsequence_as_LmrTuple assertion failed: {} - {} > 32", r_w_e, r_w_s);
+        assert!(l_w_s < l_w_e, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} !< {}", l_w_s, l_w_e);
+        assert!(m_w_s < m_w_e, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} !< {}", m_w_s, m_w_e);
+        assert!(r_w_s < r_w_e, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} !< {}", r_w_s, r_w_e);
+        assert!(l_w_e - l_w_s < 33, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} - {} > 32", l_w_e, l_w_s);
+        assert!(m_w_e - m_w_s < 33, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} - {} > 32", m_w_e, m_w_s);
+        assert!(r_w_e - r_w_s < 33, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} - {} > 32", r_w_e, r_w_s);
 
-        let l_len: u8 = (l_w_e - l_w_s).try_into().unwrap();
-        let m_len: u8 = (m_w_e - m_w_s).try_into().unwrap();
-        let r_len: u8 = (r_w_e - r_w_s).try_into().unwrap();
+        //let l_len: u8 = (l_w_e - l_w_s).try_into().unwrap();
+        //let m_len: u8 = (m_w_e - m_w_s).try_into().unwrap();
+        //let r_len: u8 = (r_w_e - r_w_s).try_into().unwrap();
 
         for i in l_w_s..l_w_e{
             buf <<= 2;
@@ -340,12 +319,12 @@ impl DnaSequence{
 
         let upper_mask:u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
         let mut left_bits: u128 = self.sequence[start/32] as u128;
-        left_bits <<= (64 - 2 * (start % 32));
+        left_bits <<= 64 - 2 * (start % 32);
         left_bits &= upper_mask;
-        left_bits >>= (64 - 2 * (start % 32));
+        left_bits >>= 64 - 2 * (start % 32);
         let mut original = u64::try_from(left_bits).unwrap();
         original <<= 2 * (end % 32);
-        original += ((self.sequence[end / 32] >> (64 - 2 * (end % 32))));
+        original += self.sequence[end / 32] >> (64 - 2 * (end % 32));
         let val1  = original;
         let val2  = original << 2;
         let val3  = val1 ^ val2;
@@ -394,13 +373,12 @@ impl DnaSequence{
 
         let upper_mask:u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
         let mut left_bits: u128 = self.sequence[start/32] as u128;
-        left_bits <<= (64 - 2 * (start % 32));
+        left_bits <<= 64 - 2 * (start % 32);
         left_bits &= upper_mask;
-        left_bits >>= (64 - 2 * (start % 32));
+        left_bits >>= 64 - 2 * (start % 32);
         let mut original = u64::try_from(left_bits).unwrap();
         original <<= 2 * (end % 32);
-        original += ((self.sequence[end / 32] >> (64 - 2 * (end % 32))));
-
+        original += self.sequence[end / 32] >> (64 - 2 * (end % 32));
         
         //ここまでで、originalに右詰で対象の領域がコピーされる。
         let val1 = original;
@@ -450,18 +428,17 @@ impl DnaSequence{
         assert!(end - start > 3, "DnaSequence::has_two_base_repeat assertion failed: {} - {} < 4", end, start);
         assert!(end - start < 32, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_two_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
-        let mut original:  u64 = 0;
         let zero_ichi: u64 = 0x5555555555555555 & !63;
 
 
         let upper_mask:u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
         let mut left_bits: u128 = self.sequence[start/32] as u128;
-        left_bits <<= (64 - 2 * (start % 32));
+        left_bits <<= 64 - 2 * (start % 32);
         left_bits &= upper_mask;
-        left_bits >>= (64 - 2 * (start % 32));
+        left_bits >>= 64 - 2 * (start % 32);
         let mut original = u64::try_from(left_bits).unwrap();
         original <<= 2 * (end % 32);
-        original += ((self.sequence[end / 32] >> (64 - 2 * (end % 32))));
+        original += self.sequence[end / 32] >> (64 - 2 * (end % 32));
         
         //ここまでで、originalに右詰で対象の領域がコピーされる。
         let val1 = original;
@@ -471,11 +448,6 @@ impl DnaSequence{
         let val5 = val3 | val4;
         let val6 = !val5;
         let val7 = val6 & zero_ichi;
-        let val8 = val7 << 2;
-        let val9 = val7 << 4;
-        let val10 = val7 << 6;
-        let val11 = val7 << 8;
-        let val12 = val7 << 10;
         let last  = val7 & 
                     val7 << 2 &
                     val7 << 4 &

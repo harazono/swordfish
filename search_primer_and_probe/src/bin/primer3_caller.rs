@@ -1,7 +1,5 @@
-use lmr_tuple_count::counting_bloomfilter_util::L_LEN;
-use lmr_tuple_count::counting_bloomfilter_util::M_LEN;
-use lmr_tuple_count::counting_bloomfilter_util::R_LEN;
-use lmr_tuple_count::sequence_encoder_util::LmrTuple;
+use search_primer_and_probe::counting_bloomfilter_util::{L_LEN, M_LEN, R_LEN};
+use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
 extern crate getopts;
 use std::{env, process};
 use std::fs::File;
@@ -18,7 +16,6 @@ use getopts::Options;
 fn primer3_core_input_sequence(sequences: &Vec<LmrTuple>) -> Vec<String>{
     let mut str_vec: Vec<String> = Vec::new();
     let many_n = "N".to_string().repeat(50);
-
     for each_seq in sequences {
         let (l_vec, m_vec, r_vec) = each_seq.decode();
         let l_str: &str = std::str::from_utf8(&l_vec).unwrap();
@@ -59,11 +56,8 @@ fn execute_primer3(formatted_string: String) -> String{
 
     let output = process.wait_with_output().expect("Failed to wait on child");
     let result = String::from_utf8(output.stdout).unwrap();
-    //println!("{}", result);
     return result;
 }
-
-
 
 fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} FILE ", program);
@@ -74,12 +68,9 @@ fn print_usage(program: &str, opts: &Options) {
 fn main(){
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
-
     let mut opts = Options::new();
     opts.optflag("h", "help", "print this help menu");
     opts.optopt("t", "thread", "number of thread to use for radix sort. default value is 8.", "THREAD");
-
-
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => { m }
         Err(f) => { panic!("{}", f.to_string()) }
@@ -88,53 +79,26 @@ fn main(){
         print_usage(&program, &opts);
         return;
     }
-
     let thread_number: usize = if matches.opt_present("t") {
         matches.opt_str("t").unwrap().parse::<usize>().unwrap()
     }else{
         4
     };
-
     let input_file = if !matches.free.is_empty() {
         matches.free[0].clone()
     } else {
         print_usage(&program, &opts);
         return;
     };
-
-/* 
-    let f: File = File::open(&input_file).unwrap();
-    let mut reader = BufReader::new(f);
-    let mut buf: [u8; 16] = [0; 16];
-    let mut tmp_seq_as_u128: u128 = 0;
-    let mut candidates: Vec<u128> = Vec::new();
-
-    loop {
-        match reader.read(&mut buf).unwrap() {
-            0 => break,
-            n => {
-                let buf = &buf[..n];
-                for i in 0..16 {
-                    tmp_seq_as_u128 <<= 8;
-                    tmp_seq_as_u128 += u128::from(buf[i]);
-                }
-                candidates.push(tmp_seq_as_u128);
-            }
-        }
-    }
- */
-
     let f: File = File::open(&input_file).unwrap();
     let mut reader = BufReader::new(f);
     let mut buf: [u8; L_LEN + M_LEN + R_LEN] = [0; L_LEN + M_LEN + R_LEN];
-    let mut tmp_seq_as_u128: u128 = 0;
     let mut candidates: Vec<LmrTuple> = Vec::new();
 
     loop {
         match reader.read(&mut buf).unwrap() {
             0 => break,
-            n => {
-                //let buf = &buf[..n];
+            _n => {
                 let buf_l = &buf[0..L_LEN];
                 let buf_m = &buf[L_LEN..M_LEN];
                 let buf_r = &buf[(L_LEN + M_LEN)..R_LEN];
@@ -145,10 +109,6 @@ fn main(){
         }
     }
 
-
-
-
- 
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
 
     let mut chunks_of_input: Vec<String> = Vec::new();
@@ -160,19 +120,15 @@ fn main(){
         chunks_of_input[index % thread_number] += "\n";
     }
 
-
     let arc_chunks_of_input: Arc<Vec<String>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
     for i in 0..thread_number{
         let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
         let arc_final_result = Arc::clone(&final_result);
-        //eprintln!("about to spawn thread {}", i);
         children.push(
             thread::spawn(move|| {
-                //eprintln!("thread {}: ready to run primer3", i);
                 let primer3_results: String = execute_primer3((*chunks_of_input[i]).to_string());
-                //eprintln!("thread {}: finish primer3", i);
                 arc_final_result.lock().unwrap().push(primer3_results);
         })
         );
@@ -183,11 +139,4 @@ fn main(){
     for i in final_result.lock().unwrap().iter(){
         println!("{}", i);
     }
-/*
-    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
-    let stdin_txt: String = primer3_fmt_string.join("\n");
-    //println!("{}", stdin_txt);
-    let primer3_results: String = execute_primer3(stdin_txt);
-    print!("{}", primer3_results);
-*/
 }

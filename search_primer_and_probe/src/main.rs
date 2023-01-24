@@ -9,11 +9,9 @@ use std::collections::HashSet;
 use std::thread;
 use std::sync::{Mutex, Arc};
 use std::iter::zip;
-use voracious_radix_sort::{RadixSort};
-use lmr_tuple_count::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
-use lmr_tuple_count::counting_bloomfilter_util::{L_LEN, M_LEN, R_LEN, HASHSET_SIZE};
-use lmr_tuple_count::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_kmer};
-use lmr_tuple_count::sequence_encoder_util::{DnaSequence, LmrTuple};
+use search_primer_and_probe::counting_bloomfilter_util::{BLOOMFILTER_TABLE_SIZE, L_LEN, R_LEN, HASHSET_SIZE};
+use search_primer_and_probe::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_kmer};
+use search_primer_and_probe::sequence_encoder_util::{DnaSequence, LmrTuple};
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
 use std::fs::File;
@@ -91,10 +89,6 @@ fn main() {
         sequences.push(current_sequence);
     }
 
-/*
-ここにマルチスレッド処理を書く
-*/
-
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
@@ -125,11 +119,10 @@ fn main() {
             zip(cbf_oyadama.iter_mut(), cbf).for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u32::MAX));
         }
     });
+
     let h_cbf_h_oyadama: Arc<Mutex<HashSet<LmrTuple>>> = Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
     let cbf_oyadama_ref = &cbf_oyadama;
     let h_cbf_h_oyadama_ref = &h_cbf_h_oyadama;
-
-
     thread::scope(|scope|{
         let mut children_2 = Vec::new();
         for i in 1..threads {
@@ -158,16 +151,10 @@ fn main() {
     });
 
 
-    let mut high_occurence_kmer: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
- /*
-ここまで
-*/
-
+    let high_occurence_kmer: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
     let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
     let mut previous_kmer: LmrTuple = LmrTuple::new(0, 0, 0);
     let mut cnt = 0;
-    let mut buf_array: [u8; 16] = [0; 16];
-    let mut buf_num: LmrTuple = LmrTuple::new(0, 0, 0);
 
     if matches.opt_present("r") {
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
