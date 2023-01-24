@@ -9,7 +9,7 @@ use std::collections::HashSet;
 use std::thread;
 use std::sync::{Mutex, Arc};
 use std::iter::zip;
-use search_primer_and_probe::counting_bloomfilter_util::{BLOOMFILTER_TABLE_SIZE, L_LEN, R_LEN, HASHSET_SIZE};
+use search_primer_and_probe::counting_bloomfilter_util::{BLOOMFILTER_TABLE_SIZE, L_LEN, M_LEN, R_LEN, HASHSET_SIZE};
 use search_primer_and_probe::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_kmer};
 use search_primer_and_probe::sequence_encoder_util::{DnaSequence, LmrTuple};
 use bio::io::fasta::Reader as faReader;
@@ -32,7 +32,7 @@ fn main() {
     let mut opts = Options::new();
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
-    opts.optopt("a", "threshold", "threshold for hyper log counter. default value is 8.", "THRESHOLD");
+    opts.optopt("a", "threshold", "threshold of the occurence of each lmr tuple. default value is 1000.", "THRESHOLD");
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of k-mer");
     opts.optflag("h", "help", "print this help menu");
@@ -62,7 +62,7 @@ fn main() {
     let threshold:u32 = if matches.opt_present("a") {
         matches.opt_str("a").unwrap().parse::<u32>().unwrap()
     }else{
-        8
+        1000
     };
 
     let output_file = if matches.opt_present("o") {
@@ -138,7 +138,6 @@ fn main() {
                         }
                         eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
                         let h_cbf_h: HashSet<LmrTuple> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
-                        //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(h_cbf_h);
                         eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
                     }
@@ -187,7 +186,7 @@ fn main() {
         }
     }
     eprintln!("finish writing to output file: {:?}", &output_file);
-    eprint!("L: {}\tR: {}\tthreshold:{}({}x63)\tcardinarity: {}\t", L_LEN, R_LEN, threshold, threshold / 63, cnt);
+    eprint!("L:{}\tM:{}\tR:{}\tthreshold:{}\tcardinarity: {}\t", L_LEN, M_LEN, R_LEN, threshold, cnt);
     eprintln!("threads: {}\tinput file {:?}", threads, &input_file);
 
 }
