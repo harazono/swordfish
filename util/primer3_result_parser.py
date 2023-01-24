@@ -108,16 +108,45 @@ def fmt4fasta(primer_pairs_dict, trim_flag = False):
 
 def tempfmt(primer_pairs_dict):
 	retarray = []
+	for k, v in primer_pairs_dict.items():
+		for idx, each_pair in enumerate(v["Primer3_output"]):
+			tmpstr = ""
+			if each_pair['PRIMER_LEFT_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_LEFT_SEQUENCE']}\t"
+			if each_pair['PRIMER_INTERNAL_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_INTERNAL_SEQUENCE']}\t"
+			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
+				tmpstr += f"{each_pair['PRIMER_RIGHT_SEQUENCE']}"
+			retarray.append(tmpstr)
+	return "\n".join(retarray)
+
+
+def tsvfmt(primer_pairs_dict):
+	header = "\t".join(["PRIMER_LEFT_SEQUENCE", "PRIMER_INTERNAL_SEQUENCE", "PRIMER_RIGHT_SEQUENCE", "PRIMER_LEFT_TM", "PRIMER_INTERNAL_TM", "PRIMER_RIGHT_TM", "PRIMER_LEFT_GC_PERCENT", "PRIMER_RIGHT_GC_PERCENT", "PRIMER_INTERNAL_GC_PERCENT"])
+	retarray = [header]
 	start_index = 0
 	for k, v in primer_pairs_dict.items():
 		for idx, each_pair in enumerate(v["Primer3_output"]):
 			tmpstr = ""
 			if each_pair['PRIMER_LEFT_SEQUENCE'] is not None:
 				tmpstr += f"{each_pair['PRIMER_LEFT_SEQUENCE'][start_index:]}\t"
+			else:
+				tmpstr += "\t"
 			if each_pair['PRIMER_INTERNAL_SEQUENCE'] is not None:
 				tmpstr += f"{each_pair['PRIMER_INTERNAL_SEQUENCE'][start_index:]}\t"
+			else:
+				tmpstr += "\t"
 			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
-				tmpstr += f"{each_pair['PRIMER_RIGHT_SEQUENCE'][start_index:]}"
+				tmpstr += f"{each_pair['PRIMER_RIGHT_SEQUENCE'][start_index:]}\t"
+			else:
+				tmpstr += "\t"
+			tmpstr += each_pair['PRIMER_LEFT_TM'] + "\t"
+			tmpstr += each_pair['PRIMER_INTERNAL_TM'] + "\t"
+			tmpstr += each_pair['PRIMER_RIGHT_TM'] + "\t"
+			tmpstr += each_pair['PRIMER_LEFT_GC_PERCENT'] + "\t"
+			tmpstr += each_pair['PRIMER_RIGHT_GC_PERCENT'] + "\t"
+			tmpstr += each_pair['PRIMER_INTERNAL_GC_PERCENT']
+
 			retarray.append(tmpstr)
 	return "\n".join(retarray)
 
@@ -289,7 +318,8 @@ def main():
 	parser.add_argument("primer3_result", metavar = "primer3_result", type = str, help = "primer3 results file name")
 	parser.add_argument("-o",    metavar = "output_file",    type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
 	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
-	parser.add_argument("--trimmed_fasta", action='store_true', help = "output as trimmed fasta")
+	parser.add_argument("--trimmed_fasta", action='store_true', help = "output only 19 bases ([-19:]) as fasta")
+	parser.add_argument("--tsv", action='store_true', help = "output as TSV file")
 	parser.add_argument("--tempfmt", action='store_true', help = "output as temporaly format")
 
 	args = parser.parse_args()
@@ -304,6 +334,9 @@ def main():
 		print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file)
 	elif args.tempfmt:
 		print(tempfmt(primer_pairs_dict), file = output_file)
+	elif args.tsv:
+		print(tsvfmt(primer_pairs_dict), file = output_file)
+
 	else:
 		print(json.dumps(primer_pairs_dict, indent = 2), file = output_file)
 		
