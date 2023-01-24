@@ -985,40 +985,71 @@ mod tests{
     }
 /*
 
-has_one_base_repeat_or_simple_repeat test
+has_repeat test
 */
     #[test]
     #[named]
-    fn has_one_base_repeat_or_simple_repeat_1(){
+    fn has_repeat_1(){
         let source: String = "CTTGTATACAGGGGATTTC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_one_base_repeat_or_simple_repeat(0, 19) == true, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 19) == (true, 10), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_one_base_repeat_or_simple_repeat_2(){
+    fn has_repeat_2(){
         let source: String = "CATCACCAATTATTGGTCCTAATGTA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_one_base_repeat_or_simple_repeat(0, 26) == false, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 26) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_one_base_repeat_or_simple_repeat_3(){
+    fn has_repeat_3(){
         let source: String = "ATCCTCAGCTGCTTGTATA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_one_base_repeat_or_simple_repeat(0, 19) == false, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 19) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_one_base_repeat_or_simple_repeat_4(){
+    fn has_repeat_4(){
         for string in ["ATCCTCAGCTGCTTGTATA"]{
             let source: String = string.to_string();
             let v: Vec<u8> = source.into_bytes();
             let obj = DnaSequence::new(&v);
-            assert!(obj.has_one_base_repeat_or_simple_repeat(0, 19) == false, "{} failed", function_name!());
+            assert!(obj.has_repeat(0, 19) == (false, 0), "{} failed", function_name!());
+        }
+    }
+
+    #[test]
+    #[named]
+    fn has_repeat_5(){
+        for string in ["AAAAAAAGCTGCTTGTATA"]{
+            let source: String = string.to_string();
+            let v: Vec<u8> = source.into_bytes();
+            let obj = DnaSequence::new(&v);
+            assert!(obj.has_repeat(0, 19) == (true, 0), "{} failed", function_name!());
+        }
+    }
+    #[test]
+    #[named]
+    fn has_repeat_7(){
+        for string in ["CAAAAAAAGCTGCTTGTAT"]{
+            let source: String = string.to_string();
+            let v: Vec<u8> = source.into_bytes();
+            let obj = DnaSequence::new(&v);
+            assert!(obj.has_repeat(0, 19) == (true, 1), "{} failed", function_name!());
+        }
+    }
+    #[test]
+    #[named]
+    fn has_repeat_8(){
+        for string in ["TCCCCCGTGTGTGTGTGTGCTGCTT"]{
+            let source: String = string.to_string();
+            let v: Vec<u8> = source.into_bytes();
+            let obj = DnaSequence::new(&v);
+            assert!(obj.has_repeat(0, 25) == (true, 6), "{} failed", function_name!());
         }
     }
 
@@ -1131,46 +1162,5 @@ has_one_base_repeat_or_simple_repeat test
         let ret2 = obj2.subsequence_as_u128(vec![[0, 47]]);
         assert!(ret1 == ret2, "{} failed", function_name!());
     }
-/*
-    #[test]
-    #[named]
-    fn subsequence_as_u128_test_4(){
-        let source: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v1: Vec<u8> = source.into_bytes();
-        let obj1 = DnaSequence::new(&v1);
-        let ret1 = obj1.subsequence_as_u128(vec![[0, 64]]);
-        let subseq: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v2: Vec<u8> = subseq.into_bytes();
-        let obj2 = DnaSequence::new(&v2);
-        let ret2 = obj2.subsequence_as_u128(vec![[0, 64]]);
-        assert!(ret1 == ret2, "{} failed", function_name!());
-    }
-    #[test]
-    #[named]
-    fn subsequence_as_u128_test_5(){
-        let source: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v1: Vec<u8> = source.into_bytes();
-        let obj1 = DnaSequence::new(&v1);
-        let ret1 = obj1.subsequence_as_u128(vec![[0, 64]]);
-        let subseq: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v2: Vec<u8> = subseq.into_bytes();
-        let obj2 = DnaSequence::new(&v2);
-        let ret2 = obj2.subsequence_as_u128(vec![[0, 64]]);
-        assert!(ret1 == ret2, "{} failed", function_name!());
-    }
-    #[test]
-    #[named]
-    fn subsequence_as_u128_test_6(){
-        let source: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v1: Vec<u8> = source.into_bytes();
-        let obj1 = DnaSequence::new(&v1);
-        let ret1 = obj1.subsequence_as_u128(vec![[0, 64]]);
-        let subseq: String = "GAATCCTCAGCTGCTTGTATACAGGGGATTTCTTCTTCATCACCAATTATTGGTCCTAATGTAT".to_string();
-        let v2: Vec<u8> = subseq.into_bytes();
-        let obj2 = DnaSequence::new(&v2);
-        let ret2 = obj2.subsequence_as_u128(vec![[0, 64]]);
-        assert!(ret1 == ret2, "{} failed", function_name!());
-    }
- */
 }
 
