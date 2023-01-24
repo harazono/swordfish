@@ -4,22 +4,11 @@ pub const R_LEN: usize = 31;
 pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 const CHUNK_SIZE: usize = 141;
-const DUPPLICATION: u32 = 1;
+const DUPPLICATION: u32 = 500;
 use crate::sequence_encoder_util::{DnaSequence, LmrTuple};
-//use std::fs::File;
-//use sha2::Sha256;
-//use sha2::Digest;
 
 use std::time::{Instant};
-//use std::cmp;
 use std::collections::HashSet;
-
-//use bio::io::fastq::Reader as fqReader;
-//use bio::io::fastq::Record as fqRecord;
-//use bio::io::fasta::Reader as faReader;
-//use bio::io::fasta::Record as faRecord;
-//use bio::io::fastq::FastqRead;
-//use bio::io::fasta::FastaRead;
 
 
 //全てのL, M, Rと、hash値を出力する
@@ -61,8 +50,6 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
             'each_m_window: loop{
                 m_window_end = m_window_start + M_LEN;
                 if m_window_end >= current_sequence.len() + 1{
-                    let end = start_time.elapsed();
-                    eprintln!("1st loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
                     break 'each_m_window;
                 }
                 if m_window_end - l_window_start >= CHUNK_SIZE - R_LEN{

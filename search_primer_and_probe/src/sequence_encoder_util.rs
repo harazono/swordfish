@@ -3,12 +3,8 @@ use crate::counting_bloomfilter_util::M_LEN;
 use crate::counting_bloomfilter_util::R_LEN;
 use crate::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
 use std::cmp;
-//use sha2::Sha256;
-//use sha2::Digest;
 use std::hash::Hash;
 use sha256::digest;
-//use arrayvec::ArrayVec;
-//use slice_copy::clone;
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy)]
 pub struct LmrTuple{
@@ -274,10 +270,6 @@ impl DnaSequence{
         assert!(m_w_e - m_w_s < 33, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} - {} > 32", m_w_e, m_w_s);
         assert!(r_w_e - r_w_s < 33, "DnaSequence::subsequence_as_lmrtuple assertion failed: {} - {} > 32", r_w_e, r_w_s);
 
-        //let l_len: u8 = (l_w_e - l_w_s).try_into().unwrap();
-        //let m_len: u8 = (m_w_e - m_w_s).try_into().unwrap();
-        //let r_len: u8 = (r_w_e - r_w_s).try_into().unwrap();
-
         for i in l_w_s..l_w_e{
             buf <<= 2;
             buf += ((self.sequence[i / 32] >> (62 - 2 * (i % 32))) & 3) as u64;
@@ -471,14 +463,6 @@ impl DnaSequence{
             println!("val5:  {:064b}", val5);
             println!("val6:  {:064b}", val6);
             println!("val7:  {:064b}", val7);
-/* 
-            println!("val8:  {:064b}", val8);
-            println!("val9:  {:064b}", val9);
-            println!("val10: {:064b}", val10);
-            println!("val11: {:064b}", val11);
-
- */
-            //println!("val12: {:064b}", val12);
             println!("last:  {:064b}", last);
             println!("leading0: {}", leading0);
         }

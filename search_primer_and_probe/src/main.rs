@@ -171,12 +171,6 @@ fn main() {
         for each_kmer in &high_occurence_kmer{
             if previous_kmer != *each_kmer{
                 cnt += 1;
-/*                 buf_num = *each_kmer;
-                for i in 0..16{
-                    buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
-                    buf_num >>= 8;
-                }
- */
                 w.write(&each_kmer.as_vec()).unwrap();
             }
             previous_kmer = *each_kmer;
