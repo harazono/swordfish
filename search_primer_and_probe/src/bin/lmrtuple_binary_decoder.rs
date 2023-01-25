@@ -56,6 +56,6 @@ fn main() {
     let mut w = BufWriter::new(File::create(&output_file).unwrap());
 
     for each_lmr in &lmr_set{
-        w.write(&each_lmr.lmr()).unwrap();
+        w.write(&each_lmr.decode_as_single_vec()).unwrap();
     }
 }
