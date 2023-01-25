@@ -58,11 +58,11 @@ impl LmrTuple{
     pub fn id(&self) -> Vec<u8>{
         return format!("{:X}{:X}{:X}", self.l, self.m, self.r).into_bytes();
     }
-    pub fn lmr(&self) -> [u8; 24]{//逆だったかもしれねぇ
+    pub fn lmr(&self) -> [u8; 24]{
         let mut retval: [u8;24] = [0; 24];
-        let l_u8s: [u8;8] = [self.l as u8, (self.l >> 8) as u8, (self.l >> 16) as u8, (self.l >> 24) as u8, (self.l >> 32) as u8, (self.l >> 40) as u8, (self.l >> 48) as u8, (self.l >> 56) as u8];
-        let m_u8s: [u8;8] = [self.m as u8, (self.m >> 8) as u8, (self.m >> 16) as u8, (self.m >> 24) as u8, (self.m >> 32) as u8, (self.m >> 40) as u8, (self.m >> 48) as u8, (self.m >> 56) as u8];
-        let r_u8s: [u8;8] = [self.r as u8, (self.r >> 8) as u8, (self.r >> 16) as u8, (self.r >> 24) as u8, (self.r >> 32) as u8, (self.r >> 40) as u8, (self.r >> 48) as u8, (self.r >> 56) as u8];
+        let l_u8s: [u8;8] = [(self.l >> 56) as u8, (self.l >> 48) as u8, (self.l >> 40) as u8, (self.l >> 32) as u8, (self.l >> 24) as u8, (self.l >> 16) as u8, (self.l >> 8) as u8, self.l as u8];
+        let m_u8s: [u8;8] = [(self.m >> 56) as u8, (self.m >> 48) as u8, (self.m >> 40) as u8, (self.m >> 32) as u8, (self.m >> 24) as u8, (self.m >> 16) as u8, (self.m >> 8) as u8, self.m as u8];
+        let r_u8s: [u8;8] = [(self.r >> 56) as u8, (self.r >> 48) as u8, (self.r >> 40) as u8, (self.r >> 32) as u8, (self.r >> 24) as u8, (self.r >> 16) as u8, (self.r >> 8) as u8, self.r as u8];
         retval[0..8].copy_from_slice(&l_u8s);
         retval[8..16].copy_from_slice(&m_u8s);
         retval[16..24].copy_from_slice(&r_u8s);
@@ -1058,10 +1058,6 @@ has_repeat test
         assert!(obj.decode(0, 120) == v, "{} failed", function_name!());
     }
 
-
-
-
-
 /*
 *
 *Subsequence Test
@@ -1143,5 +1139,29 @@ has_repeat test
         let ret2 = obj2.subsequence_as_u128(vec![[0, 47]]);
         assert!(ret1 == ret2, "{} failed", function_name!());
     }
+
+
+
+    /*
+    *
+    *LmrTuple Test
+    *
+    */
+    #[test]
+    #[named]
+    fn decode_lmrtuple_test_120N(){
+        let source: String = "GAACGACTGTTTTTACTATAAATCCTTCCTTCCTAGCCTATCATTTCTGGAGTCCTTGGTGAACTGTAGGAAGCTCTGAACACACACGTTCCCTTGGATTCGTACCTATGAATACTCCGT".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        let lmr_tuple: crate::sequence_encoder_util::LmrTuple = obj.subsequence_as_lmrtuple([[0, 32], [32, 64], [64, 96]]);
+        let decode_as_single_vec_result = lmr_tuple.decode_as_single_vec();
+        assert!(decode_as_single_vec_result == v[0..96], "{} failed\n{:?}\n{:?}", function_name!(), decode_as_single_vec_result, v);
+        let lmr:[u8;24] = lmr_tuple.lmr();
+        //assert!(false, "{} failed\n{:?}\n{:?}", function_name!(), String::from_utf8(decode_as_single_vec_result).unwrap(), lmr.as_ref().iter().map(|x| format!("{:08b}", x)).collect::<Vec<_>>());
+
+    }
+
+
+
 }
 
