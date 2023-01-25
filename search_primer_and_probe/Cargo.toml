@@ -20,6 +20,7 @@ getopts = "0.2.21"
 function_name = "0.3.0"
 sha256 = "1.1.1"
 arrayvec = "0.7.2"
+clap = { version = "4.1.4", features = ["derive"] }
 
 [profile.dev]
 opt-level = 0
