@@ -290,7 +290,7 @@ impl DnaSequence{
     pub fn has_one_base_repeat(&self, start: usize, end: usize) -> (bool, usize) {
         assert!(start < end, "DnaSequence::has_one_base_repeat assertion failed: {} !< {}", start, end);
         assert!(end - start > 3, "DnaSequence::has_one_base_repeat assertion failed: {} - {} < 4", end, start);
-        assert!(end - start < 32, "DnaSequence::has_one_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
+        assert!(end - start <= 32, "DnaSequence::has_one_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_one_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. start: {}, end: {}, self.lngth: {}", start, end, self.length);
         let zero_ichi: u64  = 0x5555555555555554;
 
@@ -343,7 +343,7 @@ impl DnaSequence{
     pub fn has_three_base_repeat(&self, start: usize, end: usize) -> (bool, usize) {
         assert!(start < end, "DnaSequence::has_three_base_repeat assertion failed: {} !< {}", start, end);
         assert!(end - start > 3, "DnaSequence::has_three_base_repeat assertion failed: {} - {} < 4", end, start);
-        assert!(end - start < 32, "DnaSequence::has_three_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
+        assert!(end - start <= 32, "DnaSequence::has_three_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_three_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let zero_ichi: u64  = 0x5555555555555555 & !63;
 
@@ -403,7 +403,7 @@ impl DnaSequence{
     pub fn has_two_base_repeat(&self, start: usize, end: usize) -> (bool, usize) {
         assert!(start < end, "DnaSequence::has_two_base_repeat assertion failed: {} !< {}", start, end);
         assert!(end - start > 3, "DnaSequence::has_two_base_repeat assertion failed: {} - {} < 4", end, start);
-        assert!(end - start < 32, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
+        assert!(end - start <= 32, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_two_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let zero_ichi: u64 = 0x5555_5555_5555_5555 & !63;
         let upper_mask:u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
