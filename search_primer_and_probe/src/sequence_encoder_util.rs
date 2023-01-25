@@ -58,6 +58,16 @@ impl LmrTuple{
     pub fn id(&self) -> Vec<u8>{
         return format!("{:X}{:X}{:X}", self.l, self.m, self.r).into_bytes();
     }
+    pub fn lmr(&self) -> [u8; 24]{
+        let mut retval: [u8;24] = [0; 24];
+        let l_u8s: [u8;8] = [(self.l >> 56) as u8, (self.l >> 48) as u8, (self.l >> 40) as u8, (self.l >> 32) as u8, (self.l >> 24) as u8, (self.l >> 16) as u8, (self.l >> 8) as u8, self.l as u8];
+        let m_u8s: [u8;8] = [(self.m >> 56) as u8, (self.m >> 48) as u8, (self.m >> 40) as u8, (self.m >> 32) as u8, (self.m >> 24) as u8, (self.m >> 16) as u8, (self.m >> 8) as u8, self.m as u8];
+        let r_u8s: [u8;8] = [(self.r >> 56) as u8, (self.r >> 48) as u8, (self.r >> 40) as u8, (self.r >> 32) as u8, (self.r >> 24) as u8, (self.r >> 16) as u8, (self.r >> 8) as u8, self.r as u8];
+        retval[0..8].copy_from_slice(&l_u8s);
+        retval[8..16].copy_from_slice(&m_u8s);
+        retval[16..24].copy_from_slice(&r_u8s);
+        return retval;
+    }
 
 
     pub fn decode_single_window(source: &u64, len: usize) -> Vec<u8>{

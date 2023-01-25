@@ -170,7 +170,7 @@ fn main() {
             if previous_kmer != *each_kmer{
                 cnt += 1;
                 //writeln!(&mut w, "{:?}", &each_kmer.decode_as_single_vec()).unwrap();
-                w.write(&each_kmer.decode_as_triple_vec().0).unwrap();
+                w.write(&each_kmer.lmr()).unwrap();
                 w.write(b"\n").unwrap();
             }
             previous_kmer = *each_kmer;
