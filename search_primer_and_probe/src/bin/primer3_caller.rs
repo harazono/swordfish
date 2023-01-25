@@ -104,7 +104,7 @@ fn main(){
             _n => {
                 let buf_l = &buf[0..L_LEN];
                 let buf_m = &buf[L_LEN..M_LEN];
-                let buf_r = &buf[(L_LEN + M_LEN)..R_LEN];
+                let buf_r = &buf[(L_LEN + M_LEN)..(L_LEN + M_LEN + R_LEN)];
 
                 let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
                 candidates.push(tmp_lmr_tuple);

@@ -78,7 +78,7 @@ fn main(){
             _n => {
                 let buf_l = &buf[0..L_LEN];
                 let buf_m = &buf[L_LEN..M_LEN];
-                let buf_r = &buf[(L_LEN + M_LEN)..R_LEN];
+                let buf_r = &buf[(L_LEN + M_LEN)..(L_LEN + M_LEN + R_LEN)];
                 let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
                 writeln!(&mut w1, "{}", blast_formatter(&tmp_lmr_tuple)).unwrap();
                 writeln!(&mut w2, "{:?}", tmp_lmr_tuple.id()).unwrap();
