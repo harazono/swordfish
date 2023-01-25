@@ -27,7 +27,7 @@ fn main() {
     let mut lmr_set: HashSet<LmrTuple> = HashSet::with_capacity(HASHSET_SIZE);
 
 
-    let files = matches.opt_strs("f");
+    let files = matches.opt_strs("i");
     for file in files {
         let f: File = File::open(&file).unwrap();
         let mut reader = BufReader::new(f);
