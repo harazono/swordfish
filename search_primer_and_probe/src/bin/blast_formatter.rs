@@ -16,12 +16,13 @@ fn print_usage(program: &str, opts: &Options) {
 }
 
 fn blast_formatter(sequence: &LmrTuple) -> String{
-    let (l_vec, m_vec, r_vec) = sequence.decode();
-    let name = sequence.as_vec();
+    let (l_vec, m_vec, r_vec) = sequence.decode_as_triple_vec();
+    let name = sequence.id();
+    let n_str: &str = std::str::from_utf8(&name).unwrap();
     let l_str: &str = std::str::from_utf8(&l_vec).unwrap();
     let m_str: &str = std::str::from_utf8(&m_vec).unwrap();
     let r_str: &str = std::str::from_utf8(&r_vec).unwrap();
-    let fasta_fmt = format!(">{:X?}-L\n{}>{:X?}-M\n{}\n>{:X?}-R\n{}\n", name, l_str, name, m_str, name, r_str);
+    let fasta_fmt = format!(">{}-L\n{}>{}-M\n{}\n>{}-R\n{}\n", n_str, l_str, n_str, m_str, n_str, r_str);
     return fasta_fmt;
 }
 
@@ -80,7 +81,7 @@ fn main(){
                 let buf_r = &buf[(L_LEN + M_LEN)..R_LEN];
                 let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
                 writeln!(&mut w1, "{}", blast_formatter(&tmp_lmr_tuple)).unwrap();
-                writeln!(&mut w2, "{:X?}", tmp_lmr_tuple.as_vec()).unwrap();
+                writeln!(&mut w2, "{:?}", tmp_lmr_tuple.id()).unwrap();
             }
         }
     }

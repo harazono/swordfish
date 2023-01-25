@@ -56,62 +56,81 @@ impl LmrTuple{
             LmrTuple {l, m, r}
         }
     }
+    pub fn id(&self) -> Vec<u8>{
+        return format!("{:X}{:X}{:X}", self.l, self.m, self.r).into_bytes();
+    }
 
-    pub fn decode(&self) -> ([u8; L_LEN], [u8; M_LEN], [u8; R_LEN]){
-        let mut result_l: [u8; L_LEN] = [0; L_LEN];
-        let mut result_m: [u8; M_LEN] = [0; M_LEN];
-        let mut result_r: [u8; R_LEN] = [0; R_LEN];
+/*
+    pub fn decode(&self) -> (Vec<u8>, Vec<u8>, Vec<u8>){
+        let mut result_l: Vec<u8> = Vec::new();
+        let mut result_m: Vec<u8> = Vec::new();
+        let mut result_r: Vec<u8> = Vec::new();
         let mut base;
         for i in 0..L_LEN{
             base = self.l >> 2 * (L_LEN - 1 - i) & 3;//i=0のとき（意味のあるsliceのうち）最上位bitがresult_l[0]に来る。文字列の先頭がresult_l[0]にちゃんと入ってる。
             match base{
-                0 => {result_l[i] = b'A';}
-                1 => {result_l[i] = b'C';}
-                2 => {result_l[i] = b'G';}
-                3 => {result_l[i] = b'T';}
+                0 => {result_l.push(b'A');}
+                1 => {result_l.push(b'C');}
+                2 => {result_l.push(b'G');}
+                3 => {result_l.push(b'T');}
                 _ => {panic!("Never reached!!!base: {}", base);}
             }
         }
         for i in 0..M_LEN{
             base = self.m >> 2 * (M_LEN - 1 - i) & 3;
             match base{
-                0 => {result_m[i] = b'A';}
-                1 => {result_m[i] = b'C';}
-                2 => {result_m[i] = b'G';}
-                3 => {result_m[i] = b'T';}
+                0 => {result_m.push(b'A');}
+                1 => {result_m.push(b'C');}
+                2 => {result_m.push(b'G');}
+                3 => {result_m.push(b'T');}
                 _ => {panic!("Never reached!!!base: {}", base);}
             }
         }
         for i in 0..R_LEN{
             base = self.r >> 2 * (R_LEN - 1 - i) & 3;
             match base{
-                0 => {result_r[i] = b'A';}
-                1 => {result_r[i] = b'C';}
-                2 => {result_r[i] = b'G';}
-                3 => {result_r[i] = b'T';}
+                0 => {result_r.push(b'A');}
+                1 => {result_r.push(b'C');}
+                2 => {result_r.push(b'G');}
+                3 => {result_r.push(b'T');}
                 _ => {panic!("Never reached!!!base: {}", base);}
             }
         }
         return (result_l, result_m, result_r);
     }
-
-    pub fn as_vec(&self) -> Vec<u8>{
-        let l_base = &self.l.to_be_bytes();
-        let m_base = &self.m.to_be_bytes();
-        let r_base = &self.r.to_be_bytes();
-        let mut v: Vec<u8> = Vec::new();
-        for i in 0..8{
-            v.push(l_base[i]);
+*/
+    pub fn decode_single_window(source: &u64, len: usize) -> Vec<u8>{
+        let mut result: Vec<u8> = Vec::new();
+        let mut base;
+        for i in 0..len{
+            base = source >> 2 * (len - 1 - i) & 3;//i=0のとき（意味のあるsliceのうち）最上位bitがresult_l[0]に来る。文字列の先頭がresult_l[0]にちゃんと入ってる。
+            match base{
+                0 => {result.push(b'A');}
+                1 => {result.push(b'C');}
+                2 => {result.push(b'G');}
+                3 => {result.push(b'T');}
+                _ => {panic!("Never reached!!!base: {}", base);}
+            }
         }
-        for i in 0..8{
-            v.push(m_base[i]);
-        }
-        for i in 0..8{
-            v.push(r_base[i]);
-        }
-
-        return v;
+        return result;
     }
+
+    pub fn decode_as_single_vec(&self) -> Vec<u8>{
+        let mut l_vec = LmrTuple::decode_single_window(&self.l, L_LEN);
+        let mut m_vec = LmrTuple::decode_single_window(&self.m, M_LEN);
+        let mut r_vec = LmrTuple::decode_single_window(&self.r, R_LEN);
+        l_vec.append(&mut m_vec);
+        l_vec.append(&mut r_vec);
+        return l_vec
+    }
+
+    pub fn decode_as_triple_vec(&self) -> (Vec<u8>, Vec<u8>, Vec<u8>){
+        let l_vec = LmrTuple::decode_single_window(&self.l, L_LEN);
+        let m_vec = LmrTuple::decode_single_window(&self.m, M_LEN);
+        let r_vec = LmrTuple::decode_single_window(&self.r, R_LEN);
+        return (l_vec, m_vec, r_vec)
+    }
+
 
     pub fn hash(&self) -> [u32; 8]{
         let l_base = &self.l.to_be_bytes();

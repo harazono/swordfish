@@ -17,12 +17,15 @@ fn primer3_core_input_sequence(sequences: &Vec<LmrTuple>) -> Vec<String>{
     let mut str_vec: Vec<String> = Vec::new();
     let many_n = "N".to_string().repeat(50);
     for each_seq in sequences {
-        let (l_vec, m_vec, r_vec) = each_seq.decode();
+        let (l_vec, m_vec, r_vec) = each_seq.decode_as_triple_vec();
+        let name = each_seq.id();
+        let n_str: &str = std::str::from_utf8(&name).unwrap();
         let l_str: &str = std::str::from_utf8(&l_vec).unwrap();
         let m_str: &str = std::str::from_utf8(&m_vec).unwrap();
         let r_str: &str = std::str::from_utf8(&r_vec).unwrap();
+    
         let sequence_with_internal_n = format!("{}{}{}{}{}", l_str, many_n, m_str, many_n, r_str);
-        let primer3_fmt_str = format!("SEQUENCE_ID={:X?}
+        let primer3_fmt_str = format!("SEQUENCE_ID={}
 SEQUENCE_TEMPLATE={}
 PRIMER_TASK=pick_pcr_primers
 PRIMER_OPT_SIZE=27
@@ -33,7 +36,7 @@ P3_FILE_FLAG=0
 PRIMER_EXPLAIN_FLAG=1
 PRIMER_OPT_TM=65.0
 PRIMER_MAX_TM=70.0
-=", each_seq.as_vec(), sequence_with_internal_n);
+=", n_str, sequence_with_internal_n);
         str_vec.push(primer3_fmt_str);
     }
     return str_vec;
