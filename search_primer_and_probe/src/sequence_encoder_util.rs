@@ -13,7 +13,6 @@ pub struct LmrTuple{
     r: u64,
 }
 impl LmrTuple{
-
      pub fn new_from_bytes(l_u8: &[u8], m_u8: &[u8], r_u8: &[u8]) -> Self{
         let mut l_u64: u64 = 0;
         let mut m_u64: u64 = 0;
@@ -60,45 +59,7 @@ impl LmrTuple{
         return format!("{:X}{:X}{:X}", self.l, self.m, self.r).into_bytes();
     }
 
-/*
-    pub fn decode(&self) -> (Vec<u8>, Vec<u8>, Vec<u8>){
-        let mut result_l: Vec<u8> = Vec::new();
-        let mut result_m: Vec<u8> = Vec::new();
-        let mut result_r: Vec<u8> = Vec::new();
-        let mut base;
-        for i in 0..L_LEN{
-            base = self.l >> 2 * (L_LEN - 1 - i) & 3;//i=0のとき（意味のあるsliceのうち）最上位bitがresult_l[0]に来る。文字列の先頭がresult_l[0]にちゃんと入ってる。
-            match base{
-                0 => {result_l.push(b'A');}
-                1 => {result_l.push(b'C');}
-                2 => {result_l.push(b'G');}
-                3 => {result_l.push(b'T');}
-                _ => {panic!("Never reached!!!base: {}", base);}
-            }
-        }
-        for i in 0..M_LEN{
-            base = self.m >> 2 * (M_LEN - 1 - i) & 3;
-            match base{
-                0 => {result_m.push(b'A');}
-                1 => {result_m.push(b'C');}
-                2 => {result_m.push(b'G');}
-                3 => {result_m.push(b'T');}
-                _ => {panic!("Never reached!!!base: {}", base);}
-            }
-        }
-        for i in 0..R_LEN{
-            base = self.r >> 2 * (R_LEN - 1 - i) & 3;
-            match base{
-                0 => {result_r.push(b'A');}
-                1 => {result_r.push(b'C');}
-                2 => {result_r.push(b'G');}
-                3 => {result_r.push(b'T');}
-                _ => {panic!("Never reached!!!base: {}", base);}
-            }
-        }
-        return (result_l, result_m, result_r);
-    }
-*/
+
     pub fn decode_single_window(source: &u64, len: usize) -> Vec<u8>{
         let mut result: Vec<u8> = Vec::new();
         let mut base;
@@ -131,7 +92,6 @@ impl LmrTuple{
         return (l_vec, m_vec, r_vec)
     }
 
-
     pub fn hash(&self) -> [u32; 8]{
         let l_base = &self.l.to_be_bytes();
         let m_base = &self.m.to_be_bytes();
@@ -156,10 +116,6 @@ impl LmrTuple{
         }
         return ret_val;
     }
-    
-
-
-
 }
 
 
@@ -439,9 +395,7 @@ impl DnaSequence{
         assert!(end - start > 3, "DnaSequence::has_two_base_repeat assertion failed: {} - {} < 4", end, start);
         assert!(end - start < 32, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_two_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
-        let zero_ichi: u64 = 0x5555555555555555 & !63;
-
-
+        let zero_ichi: u64 = 0x5555_5555_5555_5555 & !63;
         let upper_mask:u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
         let mut left_bits: u128 = self.sequence[start/32] as u128;
         left_bits <<= 64 - 2 * (start % 32);
@@ -450,7 +404,6 @@ impl DnaSequence{
         let mut original = u64::try_from(left_bits).unwrap();
         original <<= 2 * (end % 32);
         original += self.sequence[end / 32] >> (64 - 2 * (end % 32));
-        
         //ここまでで、originalに右詰で対象の領域がコピーされる。
         let val1 = original;
         let val2 = original << 4;
@@ -468,7 +421,6 @@ impl DnaSequence{
                     val7 << 12 &
                     val7 << 14 ;
         let leading0 = (last << (2 * (32 + start - end))).leading_zeros() / 2;
-
         #[cfg(test)]{
             println!("has_two_base_repeat");
             println!("{}", std::str::from_utf8(&self.decode(start, end)).unwrap());

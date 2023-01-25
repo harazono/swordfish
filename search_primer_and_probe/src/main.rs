@@ -18,7 +18,6 @@ use std::fs::File;
 use crate::bio::io::fasta::FastaRead;
 
 
-
 fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} FILE [options]", program);
     print!("{}", opts.usage(&brief));
@@ -170,7 +169,7 @@ fn main() {
         for each_kmer in &high_occurence_kmer{
             if previous_kmer != *each_kmer{
                 cnt += 1;
-                w.write(&each_kmer.decode_as_single_vec()).unwrap();
+                w.write_all(&each_kmer.decode_as_single_vec()).unwrap();
             }
             previous_kmer = *each_kmer;
         }
@@ -180,7 +179,9 @@ fn main() {
         for each_kmer in &high_occurence_kmer{
             if previous_kmer != *each_kmer{
                 cnt += 1;
-                writeln!(&mut w, "{:?}", String::from_utf8(each_kmer.decode_as_single_vec()).unwrap()).unwrap();//as_vecがおかしい。
+                w.write(&each_kmer.decode_as_single_vec()).unwrap();
+                w.write(b"\n").unwrap();
+                //writeln!(&mut w, "{:?}", String::from_utf8(each_kmer.decode_as_single_vec()).unwrap()).unwrap();//as_vecがおかしい。
             }
             previous_kmer = *each_kmer;
         }
