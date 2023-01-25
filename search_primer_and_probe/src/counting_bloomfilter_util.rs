@@ -1,6 +1,6 @@
-pub const L_LEN: usize = 31;
-pub const M_LEN: usize = 31;
-pub const R_LEN: usize = 31;
+pub const L_LEN: usize = 32;
+pub const M_LEN: usize = 32;
+pub const R_LEN: usize = 32;
 pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 const CHUNK_SIZE: usize = 141;
