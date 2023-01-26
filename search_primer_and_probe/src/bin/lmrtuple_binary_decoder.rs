@@ -43,9 +43,9 @@ fn main() {
                     let mut m: u64 = 0;
                     let mut r: u64 = 0;
                     for i in 0..8{
-                        l <<= 4;
-                        m <<= 4;
-                        r <<= 4;
+                        l <<= 8;
+                        m <<= 8;
+                        r <<= 8;
                         l += buf_l[7 - i] as u64;
                         m += buf_m[7 - i] as u64;
                         r += buf_r[7 - i] as u64;
