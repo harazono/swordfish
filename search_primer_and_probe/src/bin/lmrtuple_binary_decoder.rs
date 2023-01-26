@@ -39,7 +39,18 @@ fn main() {
                     let buf_l = &buf[0..8];
                     let buf_m = &buf[8..16];
                     let buf_r = &buf[16..24];
-                    let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
+                    let mut l: u64 = 0;
+                    let mut m: u64 = 0;
+                    let mut r: u64 = 0;
+                    for i in 0..8{
+                        l <<= 2;
+                        m <<= 2;
+                        r <<= 2;
+                        l += buf_l[7 - i] as u64;
+                        m += buf_m[7 - i] as u64;
+                        r += buf_r[7 - i] as u64;
+                    }
+                    let tmp_lmr_tuple = LmrTuple::new(l, m, r);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
             }

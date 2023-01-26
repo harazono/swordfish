@@ -76,11 +76,22 @@ fn main(){
         match reader.read(&mut buf).unwrap() {
             0 => break,
             _n => {
-                let buf_l = &buf[0..L_LEN];
-                let buf_m = &buf[L_LEN..M_LEN];
-                let buf_r = &buf[(L_LEN + M_LEN)..(L_LEN + M_LEN + R_LEN)];
-                let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
-                writeln!(&mut w1, "{}", blast_formatter(&tmp_lmr_tuple)).unwrap();
+                let buf_l = &buf[0..8];
+                let buf_m = &buf[8..16];
+                let buf_r = &buf[16..24];
+                let mut l: u64 = 0;
+                let mut m: u64 = 0;
+                let mut r: u64 = 0;
+                for i in 0..8{
+                    l <<= 2;
+                    m <<= 2;
+                    r <<= 2;
+                    l += buf_l[7 - i] as u64;
+                    m += buf_m[7 - i] as u64;
+                    r += buf_r[7 - i] as u64;
+                }
+                let tmp_lmr_tuple = LmrTuple::new(l, m, r);
+            writeln!(&mut w1, "{}", blast_formatter(&tmp_lmr_tuple)).unwrap();
                 writeln!(&mut w2, "{:?}", tmp_lmr_tuple.id()).unwrap();
             }
         }

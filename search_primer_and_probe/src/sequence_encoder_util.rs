@@ -13,10 +13,12 @@ pub struct LmrTuple{
     r: u64,
 }
 impl LmrTuple{
-     pub fn new_from_bytes(l_u8: &[u8], m_u8: &[u8], r_u8: &[u8]) -> Self{
+/* 
+    pub fn new_from_bytes(l_u8: &[u8], m_u8: &[u8], r_u8: &[u8]) -> Self{
         let mut l_u64: u64 = 0;
         let mut m_u64: u64 = 0;
         let mut r_u64: u64 = 0;
+
         for i in 0..L_LEN{
             match l_u8[i]{
                 //l_u8[0] がどんどん上位bitにいく
@@ -50,6 +52,7 @@ impl LmrTuple{
         return LmrTuple {l: l_u64, m: m_u64, r: r_u64}
     }
 
+ */    
     pub fn new(l: u64, m: u64, r: u64) -> Self{
         {
             LmrTuple {l, m, r}
