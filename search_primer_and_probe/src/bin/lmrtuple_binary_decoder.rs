@@ -42,14 +42,18 @@ fn main() {
                     let mut l: u64 = 0;
                     let mut m: u64 = 0;
                     let mut r: u64 = 0;
-                    for i in 0..8{
-                        l <<= 8;
-                        m <<= 8;
-                        r <<= 8;
+                    for i in 0..7{
                         l += buf_l[7 - i] as u64;
                         m += buf_m[7 - i] as u64;
                         r += buf_r[7 - i] as u64;
+                        l <<= 8;
+                        m <<= 8;
+                        r <<= 8;
                     }
+                    l += buf_l[0] as u64;
+                    m += buf_m[0] as u64;
+                    r += buf_r[0] as u64;
+
                     let tmp_lmr_tuple = LmrTuple::new(l, m, r);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
