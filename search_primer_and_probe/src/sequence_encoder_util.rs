@@ -8,9 +8,9 @@ use sha256::digest;
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy, Ord, PartialOrd)]
 pub struct LmrTuple{
-    l: u64,
-    m: u64,
-    r: u64,
+    pub l: u64,
+    pub m: u64,
+    pub r: u64,
 }
 impl LmrTuple{
     pub fn new(l: u64, m: u64, r: u64) -> Self{

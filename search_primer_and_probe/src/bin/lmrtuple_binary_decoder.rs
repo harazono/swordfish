@@ -57,12 +57,14 @@ fn main() {
                     r += buf_r[0] as u64;
 */
                     let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
+                    eprintln!("{:?}", u64s);
                     let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
             }
         }
     }
+    eprintln!("");
     let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
     lmr_vec.sort();
 
@@ -76,8 +78,9 @@ fn main() {
     let mut w = BufWriter::new(File::create(&output_file).unwrap());
 
     for each_lmr in &lmr_vec{
-        w.write(&each_lmr.lmr()).unwrap();
-        //w.write(b"\n").unwrap();
+        w.write(&each_lmr.decode_as_single_vec()).unwrap();
+        w.write(b"\n").unwrap();
+        eprintln!("{},{},{}", each_lmr.l, each_lmr.m, each_lmr.r);
 
     }
 }
