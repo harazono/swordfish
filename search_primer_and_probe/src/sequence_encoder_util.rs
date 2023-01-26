@@ -74,7 +74,7 @@ impl LmrTuple{
         let mut result: Vec<u8> = Vec::new();
         let mut base;
         for i in 0..len{
-            base = source >> 2 * (len - 1 - i) & 3;//i=0のとき（意味のあるsliceのうち）最上位bitがresult_l[0]に来る。文字列の先頭がresult_l[0]にちゃんと入ってる。
+            base = source >> (2 * (len - 1 - i)) & 3;//i=0のとき（意味のあるsliceのうち）最上位bitがresult_l[0]に来る。文字列の先頭がresult_l[0]にちゃんと入ってる。
             match base{
                 0 => {result.push(b'A');}
                 1 => {result.push(b'C');}
