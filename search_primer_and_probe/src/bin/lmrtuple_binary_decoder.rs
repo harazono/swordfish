@@ -31,7 +31,7 @@ fn main() {
     for file in files {
         let f: File = File::open(&file).unwrap();
         let mut reader = BufReader::new(f);
-        let mut buf: [u8; L_LEN + M_LEN + R_LEN] = [0; L_LEN + M_LEN + R_LEN];
+        let mut buf: [u8; 24] = [0; 24];
         loop {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
@@ -42,7 +42,7 @@ fn main() {
                     let mut l: u64 = 0;
                     let mut m: u64 = 0;
                     let mut r: u64 = 0;
-                    for i in 0..8{
+                    for i in 0..4{
                         l <<= 2;
                         m <<= 2;
                         r <<= 2;
@@ -60,7 +60,7 @@ fn main() {
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     }else{
-        "lmrtuple_binary_merge_out.bin".to_string()
+        "lmrtuple_binary_decoder_out.bin".to_string()
     };
 
     let mut w = BufWriter::new(File::create(&output_file).unwrap());

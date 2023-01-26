@@ -42,7 +42,7 @@ fn main() {
                     let mut l: u64 = 0;
                     let mut m: u64 = 0;
                     let mut r: u64 = 0;
-                    for i in 0..8{
+                    for i in 0..4{
                         l <<= 2;
                         m <<= 2;
                         r <<= 2;
