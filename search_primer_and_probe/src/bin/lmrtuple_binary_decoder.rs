@@ -1,4 +1,4 @@
-use search_primer_and_probe::counting_bloomfilter_util::{L_LEN, M_LEN, R_LEN, HASHSET_SIZE};
+use search_primer_and_probe::counting_bloomfilter_util::{HASHSET_SIZE};
 use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
 use getopts::Options;
 use std::env;
@@ -36,6 +36,7 @@ fn main() {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
+                    eprintln!("{:?}", &buf);
                     let buf_l = &buf[0..8];
                     let buf_m = &buf[8..16];
                     let buf_r = &buf[16..24];

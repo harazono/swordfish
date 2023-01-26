@@ -13,46 +13,6 @@ pub struct LmrTuple{
     r: u64,
 }
 impl LmrTuple{
-/* 
-    pub fn new_from_bytes(l_u8: &[u8], m_u8: &[u8], r_u8: &[u8]) -> Self{
-        let mut l_u64: u64 = 0;
-        let mut m_u64: u64 = 0;
-        let mut r_u64: u64 = 0;
-
-        for i in 0..L_LEN{
-            match l_u8[i]{
-                //l_u8[0] がどんどん上位bitにいく
-                b'A' => {l_u64 += 0;l_u64 <<= 2;}
-                b'C' => {l_u64 += 1;l_u64 <<= 2;}
-                b'G' => {l_u64 += 2;l_u64 <<= 2;}
-                b'T' => {l_u64 += 3;l_u64 <<= 2;}
-                _ => {panic!("Never reached!!!base: {}", l_u8[i]);}
-            }
-        }
-        for i in 0..M_LEN{
-            match m_u8[i]{
-                //m_u8[0] がどんどん上位bitにいく
-                b'A' => {m_u64 += 0;m_u64 <<= 2;}
-                b'C' => {m_u64 += 1;m_u64 <<= 2;}
-                b'G' => {m_u64 += 2;m_u64 <<= 2;}
-                b'T' => {m_u64 += 3;m_u64 <<= 2;}
-                _ => {panic!("Never reached!!!base: {}", m_u8[i]);}
-            }
-        }
-        for i in 0..R_LEN{
-            match r_u8[i]{
-                //r_u8[0] がどんどん上位bitにいく
-                b'A' => {r_u64 += 0;r_u64 <<= 2;}
-                b'C' => {r_u64 += 1;r_u64 <<= 2;}
-                b'G' => {r_u64 += 2;r_u64 <<= 2;}
-                b'T' => {r_u64 += 3;r_u64 <<= 2;}
-                _ => {panic!("Never reached!!!base: {}", r_u8[i]);}
-            }
-        }
-        return LmrTuple {l: l_u64, m: m_u64, r: r_u64}
-    }
-
- */    
     pub fn new(l: u64, m: u64, r: u64) -> Self{
         {
             LmrTuple {l, m, r}
