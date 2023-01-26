@@ -32,8 +32,17 @@ fn main() {
     for file in files {
         let f: File = File::open(&file).unwrap();
         let mut reader = BufReader::new(f);
-        let mut buf: [u8; 24] = [0; 24];
-        loop {
+        let mut buffer = [0u8; 24];
+
+        while let Ok(bytes_read) = reader.read_exact(&mut buffer) {
+            if bytes_read == () {
+                break;
+            }
+            let u64s: [u64; 3] = unsafe {mem::transmute(buffer)};
+            let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
+            lmr_set.insert(tmp_lmr_tuple);
+        }
+        /*         loop {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
@@ -52,12 +61,10 @@ fn main() {
                         r_u64 += r_buf[6 - i] as u64;
                     }
 
-                    //let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
-                    let tmp_lmr_tuple = LmrTuple::new(l_u64, m_u64, r_u64);
-                    lmr_set.insert(tmp_lmr_tuple);
                 }
             }
         }
+ */
     }
     let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
     lmr_vec.sort();
