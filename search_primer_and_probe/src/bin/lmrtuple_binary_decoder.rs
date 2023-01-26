@@ -36,7 +36,7 @@ fn main() {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
-                    eprintln!("{:?}", &buf);
+                    eprintln!("{:?}", buf.as_ref().iter().map(|x| format!("{:08b}", x)).collect::<Vec<_>>());
                     let buf_l = &buf[0..8];
                     let buf_m = &buf[8..16];
                     let buf_r = &buf[16..24];
