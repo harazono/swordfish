@@ -6,7 +6,7 @@ use std::cmp;
 use std::hash::Hash;
 use sha256::digest;
 
-#[derive(Eq, Hash, PartialEq, Clone, Copy)]
+#[derive(Eq, Hash, PartialEq, Clone, Copy, Ord, PartialOrd)]
 pub struct LmrTuple{
     l: u64,
     m: u64,

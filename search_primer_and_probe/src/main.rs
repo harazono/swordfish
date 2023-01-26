@@ -149,46 +149,29 @@ fn main() {
     });
 
 
-    let high_occurence_kmer: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+    let mut high_occurence_kmer: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());//sort|uniqしてない。setにつっこむか？
+    high_occurence_kmer.sort();
     let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
-    let mut previous_kmer: LmrTuple = LmrTuple::new(0, 0, 0);
-    let mut cnt = 0;
 
     if matches.opt_present("r") {
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
-            }
-            previous_kmer = *each_kmer;
-        }
-        writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &input_file).unwrap();
+        writeln!(&mut w, "lmr tuple count: {}\tthreshold: {}\tinput file {:?}", high_occurence_kmer.len(), threshold, &input_file).unwrap();
     }
     if !matches.opt_present("r") && matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
-                //writeln!(&mut w, "{:?}", &each_kmer.decode_as_single_vec()).unwrap();
-                w.write(&each_kmer.lmr()).unwrap();
-                //w.write(b"\n").unwrap();
-            }
-            previous_kmer = *each_kmer;
+        for each_tuple in &high_occurence_kmer{
+            w.write(&each_tuple.lmr()).unwrap();
         }
     }
     if !matches.opt_present("r") && !matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
-                w.write(&each_kmer.decode_as_single_vec()).unwrap();
-                w.write(b"\n").unwrap();
-            }
-            previous_kmer = *each_kmer;
+        for each_tuple in &high_occurence_kmer{
+            w.write(&each_tuple.decode_as_single_vec()).unwrap();
+            w.write(b"\n").unwrap();
         }
     }
     eprintln!("finish writing to output file: {:?}", &output_file);
-    eprint!("L:{}\tM:{}\tR:{}\tthreshold:{}\tcardinarity: {}\t", L_LEN, M_LEN, R_LEN, threshold, cnt);
+    eprint!("L:{}\tM:{}\tR:{}\tthreshold:{}\tcardinarity: {}\t", L_LEN, M_LEN, R_LEN, threshold, high_occurence_kmer.len());
     eprintln!("threads: {}\tinput file {:?}", threads, &input_file);
 
 }
