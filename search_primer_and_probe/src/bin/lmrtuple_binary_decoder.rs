@@ -36,6 +36,7 @@ fn main() {
 
         while let Ok(bytes_read) = reader.read_exact(&mut buffer) {
             if bytes_read == () {
+                eprintln!("reach to the end of the file");
                 break;
             }
             let u64s: [u64; 3] = unsafe {mem::transmute(buffer)};
