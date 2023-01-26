@@ -37,34 +37,28 @@ fn main() {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
-/* 
-                    let buf_l = &buf[0..8];
-                    let buf_m = &buf[8..16];
-                    let buf_r = &buf[16..24];
-                    let mut l: u64 = 0;
-                    let mut m: u64 = 0;
-                    let mut r: u64 = 0;
+                    let l_buf = &buf[0..8];
+                    let m_buf = &buf[8..16];
+                    let r_buf = &buf[16..24];
+                    let mut l_u64: u64 = l_buf[7] as u64;
+                    let mut m_u64: u64 = m_buf[7] as u64;
+                    let mut r_u64: u64 = r_buf[7] as u64;
                     for i in 0..7{
-                        l += buf_l[7 - i] as u64;
-                        m += buf_m[7 - i] as u64;
-                        r += buf_r[7 - i] as u64;
-                        l <<= 8;
-                        m <<= 8;
-                        r <<= 8;
+                        l_u64 <<= 8;
+                        m_u64 <<= 8;
+                        r_u64 <<= 8;
+                        l_u64 += l_buf[6 - i] as u64;
+                        m_u64 += m_buf[6 - i] as u64;
+                        r_u64 += r_buf[6 - i] as u64;
                     }
-                    l += buf_l[0] as u64;
-                    m += buf_m[0] as u64;
-                    r += buf_r[0] as u64;
-*/
-                    let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
-                    eprintln!("{:?}", u64s);
-                    let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
+
+                    //let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
+                    let tmp_lmr_tuple = LmrTuple::new(l_u64, m_u64, r_u64);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
             }
         }
     }
-    eprintln!("");
     let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
     lmr_vec.sort();
 
@@ -80,7 +74,5 @@ fn main() {
     for each_lmr in &lmr_vec{
         w.write(&each_lmr.decode_as_single_vec()).unwrap();
         w.write(b"\n").unwrap();
-        eprintln!("{},{},{}", each_lmr.l, each_lmr.m, each_lmr.r);
-
     }
 }
