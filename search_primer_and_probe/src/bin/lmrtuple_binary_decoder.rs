@@ -37,7 +37,6 @@ fn main() {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
-                    eprintln!("{:?}", buf.as_ref().iter().map(|x| format!("{:08b}", x)).collect::<Vec<_>>());//bufは意図通り読めてる
 /* 
                     let buf_l = &buf[0..8];
                     let buf_m = &buf[8..16];
@@ -57,7 +56,14 @@ fn main() {
                     m += buf_m[0] as u64;
                     r += buf_r[0] as u64;
 */
+
+
+
                     let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
+                    for i in u64s.iter(){
+                        eprint!("{:08b}", i);
+                    }
+                    eprintln!();
                     let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
