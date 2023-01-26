@@ -60,10 +60,9 @@ fn main() {
 
 
                     let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
-                    for i in u64s.iter(){
-                        eprint!("{:08b}", i);
-                    }
-                    eprintln!();
+                    let binary_string = u64s.iter().map(|i| format!("{:08b}", i)).collect::<String>();
+                    println!("{}", binary_string);
+                    
                     let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
