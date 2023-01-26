@@ -31,14 +31,14 @@ fn main() {
     for file in files {
         let f: File = File::open(&file).unwrap();
         let mut reader = BufReader::new(f);
-        let mut buf: [u8; L_LEN + M_LEN + R_LEN] = [0; L_LEN + M_LEN + R_LEN];
+        let mut buf: [u8; 24] = [0; 24];
         loop {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
-                    let buf_l = &buf[0..L_LEN];
-                    let buf_m = &buf[L_LEN..(L_LEN + M_LEN)];
-                    let buf_r = &buf[(L_LEN + M_LEN)..(L_LEN + M_LEN + R_LEN)];
+                    let buf_l = &buf[0..8];
+                    let buf_m = &buf[8..16];
+                    let buf_r = &buf[16..24];
                     let tmp_lmr_tuple = LmrTuple::new_from_bytes(buf_l, buf_m, buf_r);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
