@@ -67,5 +67,7 @@ fn main() {
 
     for each_lmr in &lmr_set{
         w.write(&each_lmr.decode_as_single_vec()).unwrap();
+        w.write(b"\n").unwrap();
+
     }
 }
