@@ -5,6 +5,7 @@ use std::env;
 use std::fs::File;
 use std::io::{Write, BufWriter, Read, BufReader};
 use std::collections::HashSet;
+use std::mem;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -36,7 +37,8 @@ fn main() {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
                 _n => {
-                    eprintln!("{:?}", buf.as_ref().iter().map(|x| format!("{:08b}", x)).collect::<Vec<_>>());
+                    eprintln!("{:?}", buf.as_ref().iter().map(|x| format!("{:08b}", x)).collect::<Vec<_>>());//bufは意図通り読めてる
+/* 
                     let buf_l = &buf[0..8];
                     let buf_m = &buf[8..16];
                     let buf_r = &buf[16..24];
@@ -54,8 +56,9 @@ fn main() {
                     l += buf_l[0] as u64;
                     m += buf_m[0] as u64;
                     r += buf_r[0] as u64;
-
-                    let tmp_lmr_tuple = LmrTuple::new(l, m, r);
+*/
+                    let u64s: [u64; 3] = unsafe {mem::transmute(buf)};
+                    let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
                     lmr_set.insert(tmp_lmr_tuple);
                 }
             }
