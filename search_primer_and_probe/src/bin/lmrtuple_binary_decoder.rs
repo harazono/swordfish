@@ -34,15 +34,18 @@ fn main() {
         let mut reader = BufReader::new(f);
         let mut buffer = [0u8; 24];
 
-        while let Ok(bytes_read) = reader.read_exact(&mut buffer) {
-            if bytes_read == () {
-                eprintln!("reach to the end of the file");
+        loop {
+            let bytes_read = reader.by_ref().take(24).read(&mut buffer).unwrap();
+            if bytes_read == 0 {
                 break;
             }
             let u64s: [u64; 3] = unsafe {mem::transmute(buffer)};
             let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
             lmr_set.insert(tmp_lmr_tuple);
         }
+
+
+
         /*         loop {
             match reader.read(&mut buf).unwrap() {
                 0 => break,
