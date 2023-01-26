@@ -56,6 +56,9 @@ fn main() {
             }
         }
     }
+    let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
+    lmr_vec.sort();
+
 
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
@@ -65,7 +68,7 @@ fn main() {
 
     let mut w = BufWriter::new(File::create(&output_file).unwrap());
 
-    for each_lmr in &lmr_set{
+    for each_lmr in &lmr_vec{
         w.write(&each_lmr.decode_as_single_vec()).unwrap();
         w.write(b"\n").unwrap();
 
