@@ -1,4 +1,3 @@
-use search_primer_and_probe::counting_bloomfilter_util::{HASHSET_SIZE};
 use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
 use getopts::Options;
 use std::env;
@@ -24,38 +23,36 @@ fn main() {
         return;
     }
 
-    let mut lmr_set: HashSet<LmrTuple> = HashSet::with_capacity(HASHSET_SIZE);
-
-
+    let mut lmr_set: HashSet<LmrTuple> = HashSet::with_capacity(10000);
     let files = matches.opt_strs("i");
     for file in files {
         let f: File = File::open(&file).unwrap();
         let mut reader = BufReader::new(f);
-        let mut buf: [u8; 24] = [0; 24];
+        let mut buffer = [0u8; 24];
+
         loop {
-            match reader.read(&mut buf).unwrap() {
-                0 => break,
-                _n => {
-                    let buf_l = &buf[0..8];
-                    let buf_m = &buf[8..16];
-                    let buf_r = &buf[16..24];
-                    let mut l: u64 = 0;
-                    let mut m: u64 = 0;
-                    let mut r: u64 = 0;
-                    for i in 0..4{
-                        l <<= 2;
-                        m <<= 2;
-                        r <<= 2;
-                        l += buf_l[7 - i] as u64;
-                        m += buf_m[7 - i] as u64;
-                        r += buf_r[7 - i] as u64;
-                    }
-                    let tmp_lmr_tuple = LmrTuple::new(l, m, r);
-                    lmr_set.insert(tmp_lmr_tuple);
-                }
+            let result = reader.by_ref().take(24).read_exact(&mut buffer);
+            match result {
+                Ok(_val) => {},
+                Err(_err) => break,
             }
+            let mut l: u64 = buffer[0] as u64;
+            let mut m: u64 = buffer[8] as u64;
+            let mut r: u64 = buffer[16] as u64;
+            for i in 1..8{
+                l <<= 8;
+                m <<= 8;
+                r <<= 8;
+                l += buffer[i + 0] as u64;
+                m += buffer[i + 8] as u64;
+                r += buffer[i + 16] as u64;
+            }
+            let tmp_lmr_tuple = LmrTuple::new(l, m, r);
+            lmr_set.insert(tmp_lmr_tuple);
         }
     }
+    let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
+    lmr_vec.sort();
 
 
     let output_file = if matches.opt_present("o") {
@@ -66,7 +63,7 @@ fn main() {
 
     let mut w = BufWriter::new(File::create(&output_file).unwrap());
 
-    for each_lmr in &lmr_set{
+    for each_lmr in &lmr_vec{
         w.write(&each_lmr.lmr()).unwrap();
     }
 }
