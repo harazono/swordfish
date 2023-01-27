@@ -25,8 +25,8 @@ fn main() {
         return;
     }
 
-    let mut lmr_set: HashSet<LmrTuple> = HashSet::with_capacity(HASHSET_SIZE);
-
+    let mut lmr_set: HashSet<LmrTuple> = HashSet::with_capacity(10000);
+    //let mut lmr_vec: Vec<LmrTuple> = Vec::with_capacity(10000);
 
     let files = matches.opt_strs("i");
     for file in files {
@@ -35,41 +35,46 @@ fn main() {
         let mut buffer = [0u8; 24];
 
         loop {
-            let bytes_read = reader.by_ref().take(24).read(&mut buffer).unwrap();
+            let result = reader.by_ref().take(24).read_exact(&mut buffer);
+            match result {
+                Ok(val) => {},
+                Err(err) => break,
+            }
+            /*
             if bytes_read == 0 {
                 break;
             }
-            let u64s: [u64; 3] = unsafe {mem::transmute(buffer)};
-            let tmp_lmr_tuple = LmrTuple::new(u64s[0], u64s[1], u64s[2]);
-            lmr_set.insert(tmp_lmr_tuple);
-        }
-
-
-
-        /*         loop {
-            match reader.read(&mut buf).unwrap() {
-                0 => break,
-                _n => {
-                    let l_buf = &buf[0..8];
-                    let m_buf = &buf[8..16];
-                    let r_buf = &buf[16..24];
-                    let mut l_u64: u64 = l_buf[7] as u64;
-                    let mut m_u64: u64 = m_buf[7] as u64;
-                    let mut r_u64: u64 = r_buf[7] as u64;
-                    for i in 0..7{
-                        l_u64 <<= 8;
-                        m_u64 <<= 8;
-                        r_u64 <<= 8;
-                        l_u64 += l_buf[6 - i] as u64;
-                        m_u64 += m_buf[6 - i] as u64;
-                        r_u64 += r_buf[6 - i] as u64;
-                    }
-
-                }
+            if bytes_read != 24 {
+                eprintln!("never reached!");
             }
+            */
+            let mut l: u64 = buffer[0] as u64;
+            let mut m: u64 = buffer[8] as u64;
+            let mut r: u64 = buffer[16] as u64;
+            for i in 1..8{
+                l <<= 8;
+                m <<= 8;
+                r <<= 8;
+                l += buffer[i + 0] as u64;
+                m += buffer[i + 8] as u64;
+                r += buffer[i + 16] as u64;
+            }
+            //let u64s: [u64; 3] = unsafe {mem::transmute(buffer)};
+            let tmp_lmr_tuple = LmrTuple::new(l, m, r);
+            // /*
+            eprint!("{:?} ", String::from_utf8(tmp_lmr_tuple.decode_as_single_vec()).unwrap());
+            eprint!("{:08b} ", buffer[0]);
+            eprint!("{:064b} ", l);
+            eprint!("{:064b} ", m);
+            eprint!("{:064b} ", r);
+            eprintln!();
+            // */
+            lmr_set.insert(tmp_lmr_tuple);
+            //lmr_vec.push(tmp_lmr_tuple);
         }
- */
     }
+    //Vecに突っ込むと4こ要素が増える謎
+
     let mut lmr_vec: Vec<LmrTuple> = lmr_set.into_iter().collect();
     lmr_vec.sort();
 
