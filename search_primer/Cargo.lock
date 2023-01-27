@@ -446,23 +446,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
-name = "kmer_count"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bio",
- "bit_reverse",
- "flate2",
- "function_name",
- "fxhash",
- "getopts",
- "rand",
- "rdxsort",
- "sha2",
- "voracious_radix_sort",
-]
-
-[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -822,6 +805,23 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
+name = "search_primer"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bio",
+ "bit_reverse",
+ "flate2",
+ "function_name",
+ "fxhash",
+ "getopts",
+ "rand",
+ "rdxsort",
+ "sha2",
+ "voracious_radix_sort",
+]
 
 [[package]]
 name = "semver"

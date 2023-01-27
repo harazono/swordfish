@@ -10,11 +10,11 @@ use std::thread;
 use std::sync::{Mutex, Arc};
 use std::iter::zip;
 use voracious_radix_sort::{RadixSort};
-use kmer_count::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
-use kmer_count::counting_bloomfilter_util::{L_LEN, R_LEN, HASHSET_SIZE};
-use kmer_count::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_kmer};
-use kmer_count::sequence_encoder_util::{decode_u128_2_dna_seq};
-use kmer_count::sequence_encoder_util::DnaSequence;
+use search_primer::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
+use search_primer::counting_bloomfilter_util::{L_LEN, R_LEN, HASHSET_SIZE};
+use search_primer::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_lr_tuple};
+use search_primer::sequence_encoder_util::{decode_u128_2_dna_seq};
+use search_primer::sequence_encoder_util::DnaSequence;
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
 use std::fs::File;
@@ -92,46 +92,6 @@ fn main() {
         sequences.push(current_sequence);
     }
 
-
-
-
-
-/*
-
-    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
-
-    let mut chunks_of_input: Vec<String> = Vec::new();
-    for _i in 0..thread_number{
-        chunks_of_input.push(String::new());
-    }
-    for (index, string) in primer3_fmt_string.iter().enumerate(){
-        chunks_of_input[index % thread_number] += string;
-        chunks_of_input[index % thread_number] += "\n";
-    }
-
-    let arc_chunks_of_input: Arc<Vec<String>> = Arc::new(chunks_of_input);
-    let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-    let mut children = Vec::new();
-    for i in 0..thread_number{
-        let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
-        let arc_final_result = Arc::clone(&final_result);
-        //eprintln!("about to spawn thread {}", i);
-        children.push(
-            thread::spawn(move|| {
-                //eprintln!("thread {}: ready to run primer3", i);
-                let primer3_results: String = execute_primer3((*chunks_of_input[i]).to_string());
-                //eprintln!("thread {}: finish primer3", i);
-                arc_final_result.lock().unwrap().push(primer3_results);
-        })
-        );
-    }
-    for child in children{
-        let _ = child.join();
-    }
-
-
-*/
-
 /*
 ここにマルチスレッド処理を書く
 */
@@ -184,11 +144,11 @@ fn main() {
                         }else{
                             end_idx = sequences_ref.len() - 1;
                         }
-                        eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
-                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
+                        eprintln!("thread [{}]: start calling number_of_high_occurence_lr_tuple", i);
+                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_lr_tuple(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
                         //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
-                        eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
+                        eprintln!("thread [{}]: finish calling number_of_high_occurence_lr_tuple", i);
                     }
                 )
             )
@@ -199,60 +159,50 @@ fn main() {
     });
 
 
-    let mut high_occurence_kmer: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+    let mut high_occurence_lr_tuple: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+    high_occurence_lr_tuple.sort();
  /*
 ここまで
 */
-
-/* 
-    //sortする
-    eprintln!("start voracious_mt_sort({})", threads);
-    high_occurence_kmer.voracious_mt_sort(threads);
-    eprintln!("finish voracious_mt_sort({})", threads);
-    eprintln!("start  writing to output file: {:?}", &output_file);
- */
-    //let mut w = File::create(&output_file).unwrap();
     let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
-    //let mut w_kensho = BufWriter::new(fs::File::create("./kensho_out").unwrap());
-
-    let mut previous_kmer: u128 = 0;
+    let mut previous_lr_tuple: u128 = 0;
     let mut cnt = 0;
     let mut buf_array: [u8; 16] = [0; 16];
     let mut buf_num: u128;
 
     if matches.opt_present("r") {
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
+        for each_lr_tuple in &high_occurence_lr_tuple{
+            if previous_lr_tuple != *each_lr_tuple{
                 cnt += 1;
             }
-            previous_kmer = *each_kmer;
+            previous_lr_tuple = *each_lr_tuple;
         }
         writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &input_file).unwrap();
     }
     if !matches.opt_present("r") && matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
+        for each_lr_tuple in &high_occurence_lr_tuple{
+            if previous_lr_tuple != *each_lr_tuple{
                 cnt += 1;
-                buf_num = *each_kmer;
+                buf_num = *each_lr_tuple;
                 for i in 0..16{
                     buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
                     buf_num >>= 8;
                 }
                 w.write(&buf_array).unwrap();
             }
-            previous_kmer = *each_kmer;
+            previous_lr_tuple = *each_lr_tuple;
         }
     }
     if !matches.opt_present("r") && !matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
+        for each_lr_tuple in &high_occurence_lr_tuple{
+            if previous_lr_tuple != *each_lr_tuple{
                 cnt += 1;
-                writeln!(&mut w, "{:?}", String::from_utf8(decode_u128_2_dna_seq(&each_kmer, 54)).unwrap()).unwrap();
+                writeln!(&mut w, "{:?}", String::from_utf8(decode_u128_2_dna_seq(&each_lr_tuple, 54)).unwrap()).unwrap();
             }
-            previous_kmer = *each_kmer;
+            previous_lr_tuple = *each_lr_tuple;
         }
     }
 

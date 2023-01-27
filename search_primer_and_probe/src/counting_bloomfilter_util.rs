@@ -112,7 +112,7 @@ fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &
     return retval;
 }
 
-pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize) -> HashSet<LmrTuple>{
+pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize) -> HashSet<LmrTuple>{
     let mut ret_table: HashSet<LmrTuple> = HashSet::with_capacity(HASHSET_SIZE);
     let mut l_window_start: usize;
     let mut l_window_end:   usize;

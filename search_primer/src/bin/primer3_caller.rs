@@ -1,4 +1,4 @@
-extern crate kmer_count;
+extern crate search_primer;
 extern crate getopts;
 use std::{env, process};
 use std::fs::File;
@@ -9,7 +9,7 @@ use std::thread;
 use std::sync::Arc;
 use std::sync::Mutex;
 use getopts::Options;
-use kmer_count::sequence_encoder_util::{decode_u128_l, decode_u128_r};
+use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
 
 
@@ -130,19 +130,15 @@ fn main(){
         chunks_of_input[index % thread_number] += "\n";
     }
 
-
     let arc_chunks_of_input: Arc<Vec<String>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
     for i in 0..thread_number{
         let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
         let arc_final_result = Arc::clone(&final_result);
-        //eprintln!("about to spawn thread {}", i);
         children.push(
             thread::spawn(move|| {
-                //eprintln!("thread {}: ready to run primer3", i);
                 let primer3_results: String = execute_primer3((*chunks_of_input[i]).to_string());
-                //eprintln!("thread {}: finish primer3", i);
                 arc_final_result.lock().unwrap().push(primer3_results);
         })
         );
@@ -153,11 +149,4 @@ fn main(){
     for i in final_result.lock().unwrap().iter(){
         println!("{}", i);
     }
-/*
-    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
-    let stdin_txt: String = primer3_fmt_string.join("\n");
-    //println!("{}", stdin_txt);
-    let primer3_results: String = execute_primer3(stdin_txt);
-    print!("{}", primer3_results);
-*/
 }

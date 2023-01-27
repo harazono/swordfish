@@ -1,7 +1,5 @@
-use search_primer_and_probe::counting_bloomfilter_util::{L_LEN, M_LEN, R_LEN};
-use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
-use sha2::digest::core_api::Buffer;
 extern crate getopts;
+use search_primer_and_probe::sequence_encoder_util::LmrTuple;
 use std::{env, process};
 use std::fs::File;
 use std::io::{Read, BufReader};

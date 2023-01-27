@@ -10,7 +10,7 @@ use std::thread;
 use std::sync::{Mutex, Arc};
 use std::iter::zip;
 use search_primer_and_probe::counting_bloomfilter_util::{BLOOMFILTER_TABLE_SIZE, L_LEN, M_LEN, R_LEN, HASHSET_SIZE};
-use search_primer_and_probe::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_kmer};
+use search_primer_and_probe::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_lmr_tuple};
 use search_primer_and_probe::sequence_encoder_util::{DnaSequence, LmrTuple};
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
@@ -135,10 +135,10 @@ fn main() {
                         }else{
                             end_idx = sequences_ref.len() - 1;
                         }
-                        eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
-                        let h_cbf_h: HashSet<LmrTuple> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
+                        eprintln!("thread [{}]: start calling number_of_high_occurence_lmr_tuple", i);
+                        let h_cbf_h: HashSet<LmrTuple> = number_of_high_occurence_lmr_tuple(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(h_cbf_h);
-                        eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
+                        eprintln!("thread [{}]: finish calling number_of_high_occurence_lmr_tuple", i);
                     }
                 )
             )
@@ -149,29 +149,29 @@ fn main() {
     });
 
 
-    let mut high_occurence_kmer: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());//sort|uniqしてない。setにつっこむか？
-    high_occurence_kmer.sort();
+    let mut high_occurence_lmr_tuple: Vec<LmrTuple> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());//sort|uniqしてない。setにつっこむか？
+    high_occurence_lmr_tuple.sort();
     let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
 
     if matches.opt_present("r") {
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        writeln!(&mut w, "lmr tuple count: {}\tthreshold: {}\tinput file {:?}", high_occurence_kmer.len(), threshold, &input_file).unwrap();
+        writeln!(&mut w, "lmr tuple count: {}\tthreshold: {}\tinput file {:?}", high_occurence_lmr_tuple.len(), threshold, &input_file).unwrap();
     }
     if !matches.opt_present("r") && matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_tuple in &high_occurence_kmer{
+        for each_tuple in &high_occurence_lmr_tuple{
             w.write(&each_tuple.lmr()).unwrap();
         }
     }
     if !matches.opt_present("r") && !matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_tuple in &high_occurence_kmer{
+        for each_tuple in &high_occurence_lmr_tuple{
             w.write(&each_tuple.decode_as_single_vec()).unwrap();
             w.write(b"\n").unwrap();
         }
     }
     eprintln!("finish writing to output file: {:?}", &output_file);
-    eprint!("L:{}\tM:{}\tR:{}\tthreshold:{}\tcardinarity: {}\t", L_LEN, M_LEN, R_LEN, threshold, high_occurence_kmer.len());
+    eprint!("L:{}\tM:{}\tR:{}\tthreshold:{}\tcardinarity: {}\t", L_LEN, M_LEN, R_LEN, threshold, high_occurence_lmr_tuple.len());
     eprintln!("threads: {}\tinput file {:?}", threads, &input_file);
 
 }
