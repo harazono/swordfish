@@ -1,4 +1,4 @@
-pub(crate) use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
+use search_primer_and_probe::sequence_encoder_util::{LmrTuple};
 use getopts::Options;
 use std::env;
 use std::fs::File;
