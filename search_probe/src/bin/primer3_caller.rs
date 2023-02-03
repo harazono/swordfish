@@ -1,4 +1,4 @@
-extern crate kmer_count;
+extern crate search_probe;
 extern crate getopts;
 use std::{env, process};
 use std::fs::File;
@@ -9,7 +9,7 @@ use std::thread;
 use std::sync::Arc;
 use std::sync::Mutex;
 use getopts::Options;
-use kmer_count::sequence_encoder_util::{decode_u128_probe};
+use search_probe::sequence_encoder_util::{decode_u128_probe};
 
 
 

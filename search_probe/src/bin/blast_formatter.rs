@@ -1,4 +1,4 @@
-extern crate kmer_count;
+extern crate search_probe;
 extern crate getopts;
 use std::{env, process};
 use std::io::{Write, BufWriter};
@@ -6,7 +6,7 @@ use std::io::{Read,  BufReader};
 use std::fs;
 use std::fs::File;
 use getopts::Options;
-use kmer_count::sequence_encoder_util::{decode_u128_probe};
+use search_probe::sequence_encoder_util::{decode_u128_probe};
 
 
 fn print_usage(program: &str, opts: &Options) {
