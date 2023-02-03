@@ -118,7 +118,6 @@ fn main() {
     let primer_r_struct = DnaSequence::new(&primer_r);
     let primer = ((primer_l_struct.subsequence_as_u128(vec![[0, 20]]), 20), (primer_r_struct.subsequence_as_u128(vec![[0, 18]]), 18));//primer: ([u128, usize], [u128, usize])
     //println!("{:#042b}", primer_l_struct.subsequence_as_u128(vec![[0, 20]]));
-    println!("{:#038b}", primer_r_struct.subsequence_as_u128(vec![[0, 18]]));
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
