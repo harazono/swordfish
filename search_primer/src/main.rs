@@ -146,7 +146,6 @@ fn main() {
                         }
                         eprintln!("thread [{}]: start calling number_of_high_occurence_lr_tuple", i);
                         let h_cbf_h: HashSet<u128> = number_of_high_occurence_lr_tuple(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
-                        //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                         eprintln!("thread [{}]: finish calling number_of_high_occurence_lr_tuple", i);
                     }
@@ -205,8 +204,6 @@ fn main() {
             previous_lr_tuple = *each_lr_tuple;
         }
     }
-
-
 
     eprintln!("finish writing to output file: {:?}", &output_file);
     eprint!("L: {}\tR: {}\tthreshold:{}({}x63)\tcardinarity: {}\t", L_LEN, R_LEN, threshold, threshold / 63, cnt);

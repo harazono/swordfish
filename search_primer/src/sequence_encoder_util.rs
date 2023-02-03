@@ -163,7 +163,6 @@ impl DnaSequence{
             let start: usize = each_range[0];
             let end:   usize = each_range[1];
             assert!(start < end, "DnaSequence::subsequence_as_u128 assertion failed: {} !< {}", start, end);
-            //assert!(start >= 0, "DnaSequence::subsequence_as_u128 assertion failed: {} >= 0", start);
             assert!(end <= self.length, "DnaSequence::subsequence_as_u128 assertion failed: {} < {}", end, self.length);
             for i in start..end{
                 buf <<= 2;

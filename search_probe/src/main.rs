@@ -4,20 +4,21 @@ extern crate getopts;
 use getopts::Options;
 use std::{env, process};
 use std::fs;
+use std::thread;
+use std::fs::File;
+use std::iter::zip;
 use std::io::{BufWriter, Write};
 use std::collections::HashSet;
-use std::thread;
+use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
-use std::iter::zip;
 use voracious_radix_sort::{RadixSort};
 use kmer_count::find_taqman_probe::BLOOMFILTER_TABLE_SIZE;
 use kmer_count::find_taqman_probe::{PROBE_LEN, HASHSET_SIZE};
-use kmer_count::find_taqman_probe::{build_counting_bloom_filter, number_of_high_occurence_kmer};
+use kmer_count::find_taqman_probe::{build_counting_bloom_filter, number_of_high_occurence_kmer, aggregate_length_between_primer};
 use kmer_count::sequence_encoder_util::{decode_u128_2_dna_seq};
 use kmer_count::sequence_encoder_util::DnaSequence;
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
-use std::fs::File;
 use crate::bio::io::fasta::FastaRead;
 
 
@@ -36,6 +37,9 @@ fn main() {
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("a", "threshold", "threshold for hyper log counter. default value is 8.", "THRESHOLD");
+    opts.optopt("l", "left_primer", "left primer string", "LEFT PRIMER");
+    opts.optopt("r", "right_primer", "right primer string. note that primer3 outputs a reverse complement sequence of right primer", "RIGHT PRIMER");
+    opts.optopt("c", "count", "count number of possible primer products", "PRODUCT SIZE");
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of k-mer");
     opts.optflag("h", "help", "print this help menu");
@@ -61,13 +65,27 @@ fn main() {
     }else{
         8
     };
-
+    
     let threshold:u32 = if matches.opt_present("a") {
         matches.opt_str("a").unwrap().parse::<u32>().unwrap()
     }else{
         8
     };
+    
+    let left_primer = if matches.opt_present("l") {
+        matches.opt_str("l").unwrap()
+    }else{
+        print_usage(&program, &opts);
+        return;
+    };
 
+    let right_primer = if matches.opt_present("r") {
+        matches.opt_str("r").unwrap()
+    }else{
+        print_usage(&program, &opts);
+        return;
+    };
+    
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     }else{
@@ -75,6 +93,8 @@ fn main() {
     };
     eprintln!("input  file: {:?}",  input_file);
     eprintln!("loading {:?} done", input_file);
+
+
 
 
     let file = File::open(&input_file).expect("Error during opening the file");
@@ -91,12 +111,9 @@ fn main() {
         let current_sequence = DnaSequence::new(&sequence_as_vec);
         sequences.push(current_sequence);
     }
-    let primer_l_string  = "GGCACATAGGACGTTAGGGT".to_string();
-    let primer_r_string  = "CCAGCCTACCTTAACGGC".to_string();//primer3が吐き出したヤツ
-    let primer_r_revcomp = "GCCGTTAAGGTAGGCTGG".to_string();//revcomp
-    
-    let primer_l:Vec<u8> = primer_l_string.into_bytes();
-    let primer_r:Vec<u8> = primer_r_revcomp.into_bytes();//revcomp
+
+    let primer_l:Vec<u8> = left_primer.into_bytes();
+    let primer_r:Vec<u8> = right_primer.into_bytes();
     let primer_l_struct = DnaSequence::new(&primer_l);
     let primer_r_struct = DnaSequence::new(&primer_r);
     let primer = ((primer_l_struct.subsequence_as_u128(vec![[0, 20]]), 20), (primer_r_struct.subsequence_as_u128(vec![[0, 18]]), 18));//primer: ([u128, usize], [u128, usize])
@@ -105,6 +122,53 @@ fn main() {
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
+
+
+
+    if matches.opt_present("c") {
+        let mut product_size_hashmap = HashMap::<u32, usize>::new();
+        let product_size = matches.opt_str("c").unwrap().parse::<usize>().unwrap();
+        thread::scope(|scope|{
+            let mut children_1 = Vec::new();
+            for i in 1..threads {
+                children_1.push(
+                    scope.spawn(move || 
+                        {
+                            let start_idx: usize = (i - 1) * chunk_size;
+                            let end_idx: usize;
+                            if i != threads - 1{
+                                end_idx = i * chunk_size;
+                            }else{
+                                end_idx = sequences_ref.len() - 1;
+                            }
+                            eprintln!("start calling aggregate_length_between_primer[{}]", i);
+                            let cbf: Vec<u32> = aggregate_length_between_primer(sequences_ref, start_idx, end_idx, i, primer, product_size);
+                            eprintln!("finish calling aggregate_length_between_primer[{}]", i);
+                            cbf
+                        }
+                    )
+                )
+            }
+            for child in children_1{
+                let cbf = child.join().unwrap();
+                for i in cbf{
+                    if let Some(value) = product_size_hashmap.get_mut(&i){
+                        *value += 1;
+                    }else{
+                        product_size_hashmap.insert(i, 1);
+                    }
+                }
+            }
+        }
+    );
+    for (key, value) in product_size_hashmap.iter(){
+        println!("{}\t{}", key, value);
+    }
+    return
+    }
+
+
+
 
     thread::scope(|scope|{
         let mut children_1 = Vec::new();
