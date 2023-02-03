@@ -287,7 +287,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
                 //ここまでで、LとRが一致してる
                 let length: u32 = (r_window_end - l_window_start) as u32;
                 ret_array.push(length);
-                println!("{:?}", String::from_utf8(current_sequence.decode(l_window_start, r_window_end)));
+                println!("{:?}", String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap());
 
                 r_window_start += 1;
             }
