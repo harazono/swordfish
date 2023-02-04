@@ -161,7 +161,7 @@ fn main() {
         }
     );
     for (key, value) in product_size_hashmap.iter(){
-        println!("{}\t{}", key, value);
+        //println!("{}\t{}", key, value);
     }
     return
     }
