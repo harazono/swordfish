@@ -3,7 +3,7 @@ pub const M_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
-const CHUNK_SIZE: usize = 141;
+//const length: usize = 141;
 const DUPPLICATION: u32 = 1;
 use crate::sequence_encoder_util::{DnaSequence, LmrTuple};
 
@@ -13,7 +13,7 @@ use std::collections::HashSet;
 
 //全てのL, M, Rと、hash値を出力する
 //部分配列のdecoderを書き、テストする
-pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize) -> Vec<u32>{
+pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, length: usize, thread_id: usize) -> Vec<u32>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
     let mut m_window_start: usize;
@@ -52,7 +52,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                 if m_window_end >= current_sequence.len() + 1{
                     break 'each_m_window;
                 }
-                if m_window_end - l_window_start >= CHUNK_SIZE - R_LEN{
+                if m_window_end - l_window_start >= length - R_LEN{
                     break 'each_m_window;
                 }
                 let (m_has_repeat_bool, m_has_repeat_offset) = current_sequence.has_repeat(m_window_start, m_window_end);
@@ -69,7 +69,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                         previous_time = end;
                         continue 'each_read;
                     }
-                    if r_window_end - l_window_start >= CHUNK_SIZE{
+                    if r_window_end - l_window_start >= length{
                         break 'each_r_window;
                     }
                     let (r_has_repeat_bool, r_has_repeat_offset) = current_sequence.has_repeat(r_window_start, r_window_end);
@@ -112,7 +112,7 @@ fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &
     return retval;
 }
 
-pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize) -> HashSet<LmrTuple>{
+pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, length: usize, thread_id: usize) -> HashSet<LmrTuple>{
     let mut ret_table: HashSet<LmrTuple> = HashSet::with_capacity(HASHSET_SIZE);
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
@@ -150,7 +150,7 @@ pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &V
                     previous_time = end;
                     continue 'each_read;
                 }
-                if m_window_end - l_window_start >= CHUNK_SIZE - R_LEN{
+                if m_window_end - l_window_start >= length - R_LEN{
                     break 'each_m_window;
                 }
                 let (m_has_repeat_bool, m_has_repeat_offset) = current_sequence.has_repeat(m_window_start, m_window_end);
@@ -167,7 +167,7 @@ pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &V
                         previous_time = end;
                         continue 'each_read;
                     }
-                    if r_window_end - l_window_start > CHUNK_SIZE{
+                    if r_window_end - l_window_start > length{
                         break 'each_r_window;
                     }
                     let (r_has_repeat_bool, r_has_repeat_offset) = current_sequence.has_repeat(r_window_start, r_window_end);

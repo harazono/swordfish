@@ -32,6 +32,7 @@ fn main() {
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("a", "threshold", "threshold of the occurence of each lmr tuple. default value is 1000.", "THRESHOLD");
+    opts.optopt("l", "length", "length of product of PCR. default value is 200.", "LENGTH");
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of k-mer");
     opts.optflag("h", "help", "print this help menu");
@@ -57,6 +58,13 @@ fn main() {
     }else{
         8
     };
+
+    let length: usize = if matches.opt_present("l") {
+        matches.opt_str("l").unwrap().parse::<usize>().unwrap()
+    }else{
+        200
+    };
+
 
     let threshold:u32 = if matches.opt_present("a") {
         matches.opt_str("a").unwrap().parse::<u32>().unwrap()
@@ -106,7 +114,7 @@ fn main() {
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("start calling build_counting_bloom_filter[{}]", i);
-                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
+                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, length, i);
                         eprintln!("finish calling build_counting_bloom_filter[{}]", i);
                         cbf
                     }
@@ -136,7 +144,7 @@ fn main() {
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("thread [{}]: start calling number_of_high_occurence_lmr_tuple", i);
-                        let h_cbf_h: HashSet<LmrTuple> = number_of_high_occurence_lmr_tuple(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i);
+                        let h_cbf_h: HashSet<LmrTuple> = number_of_high_occurence_lmr_tuple(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, length, i);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(h_cbf_h);
                         eprintln!("thread [{}]: finish calling number_of_high_occurence_lmr_tuple", i);
                     }
