@@ -9,7 +9,6 @@ use std::collections::HashSet;
 use std::thread;
 use std::sync::{Mutex, Arc};
 use std::iter::zip;
-use voracious_radix_sort::{RadixSort};
 use search_primer::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
 use search_primer::counting_bloomfilter_util::{L_LEN, R_LEN, HASHSET_SIZE};
 use search_primer::counting_bloomfilter_util::{build_counting_bloom_filter, number_of_high_occurence_lr_tuple};

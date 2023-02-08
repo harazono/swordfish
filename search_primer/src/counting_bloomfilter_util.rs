@@ -1,21 +1,14 @@
 pub const L_LEN: usize = 31;
 pub const R_LEN: usize = 31;
 pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
-const dupplications: u32 = 1;
-use crate::sequence_encoder_util::{DnaSequence, decode_u128_2_dna_seq};
-use std::fs::File;
+pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
+const DUPPLICATION: u32 = 1;
+use crate::sequence_encoder_util::{DnaSequence};
+use std::time::{Instant};
+use std::collections::HashSet;
 use sha2::Sha256;
 use sha2::Digest;
 
-use std::time::{Instant};
-use std::cmp;
-use std::collections::HashSet;
-
-use bio::io::fasta::Reader as faReader;
-use bio::io::fasta::Record as faRecord;
-use bio::io::fasta::FastaRead;
-
-pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 
 //全てのL, Rと、hash値を出力する
 //部分配列のdecoderを書き、テストする
@@ -109,10 +102,10 @@ fn hash_from_u128(source: u128) -> [u32; 8]{
     let sha256_bit_array = result.as_slice();//&[u8;32]
     for i in 0..8{
         for j in 0..4{
-            ret_val[i] += (sha256_bit_array[i * 4 + j] as u32);
+            ret_val[i] += sha256_bit_array[i * 4 + j] as u32;
             ret_val[i] <<= 8;
         }
-        ret_val[i] %= (BLOOMFILTER_TABLE_SIZE as u32);
+        ret_val[i] %= BLOOMFILTER_TABLE_SIZE as u32;
     }
     return ret_val;
 }
@@ -181,7 +174,7 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Ve
                 let lmr_string:u128 = current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end], [r_window_start, r_window_end]]);
                 let table_indice:[u32;8] = hash_from_u128(lmr_string);//u128を受けてhashを返す関数
                 let occurence: u32 = count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
-                if occurence >= threshold * dupplications{
+                if occurence >= threshold * DUPPLICATION{
                     ret_table.insert(lmr_string);
                     ho_lmr += 1;
                 }
