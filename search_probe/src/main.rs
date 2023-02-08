@@ -91,9 +91,6 @@ fn main() {
         format!("{:?}_threshold{}_threads{}.out", input_file, threshold, threads)
     };
     eprintln!("input  file: {:?}",  input_file);
-    eprintln!("loading {:?} done", input_file);
-
-
 
 
     let file = File::open(&input_file).expect("Error during opening the file");
@@ -115,7 +112,7 @@ fn main() {
     let primer_r:Vec<u8> = right_primer.into_bytes();
     let primer_l_struct = DnaSequence::new(&primer_l);
     let primer_r_struct = DnaSequence::new(&primer_r);
-    let primer = ((primer_l_struct.subsequence_as_u128(vec![[0, 20]]), 20), (primer_r_struct.subsequence_as_u128(vec![[0, 18]]), 18));//primer: ([u128, usize], [u128, usize])
+    let primer = ((primer_l_struct.subsequence_as_u128(vec![[0, primer_l_struct.len()]]), primer_l_struct.len()), (primer_r_struct.subsequence_as_u128(vec![[0, primer_r_struct.len()]]), primer_r_struct.len()));//primer: ([u128, usize], [u128, usize])
     //println!("{:#042b}", primer_l_struct.subsequence_as_u128(vec![[0, 20]]));
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
