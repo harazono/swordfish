@@ -38,6 +38,9 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
         let mut l_window_cnt: usize         = 0;
         loop_cnt += 1;
         l_window_start = 0;
+        if current_sequence.len() < primer_l_size + primer_r_size + PROBE_LEN{
+            continue 'each_read;
+        }
         'each_l_window: loop{
             l_window_end = l_window_start + primer_l_size;
             if l_window_end >= current_sequence.len() + 1{
@@ -165,6 +168,10 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
         let mut l_window_cnt: usize         = 0;
         loop_cnt += 1;
         l_window_start = 0;
+        if current_sequence.len() < primer_l_size + primer_r_size + PROBE_LEN{
+            continue 'each_read;
+        }
+
         'each_l_window: loop{
             l_window_end = l_window_start + primer_l_size;
             if l_window_end >= current_sequence.len() + 1{
@@ -231,8 +238,8 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: ((u128, usize), (u128, usize)), product_size_max: usize) -> Vec<u32>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
-    let mut m_window_start: usize;
-    let mut m_window_end:   usize;
+    //let mut m_window_start: usize;
+    //let mut m_window_end:   usize;
     let mut r_window_start: usize;
     let mut r_window_end:   usize;
     let     primer_l_seq:   u128  = primer.0.0;
@@ -252,8 +259,8 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     let mut previous_time = start_time.elapsed();
 
     'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
-        let mut add_bloom_filter_cnt: usize = 0;
-        let mut l_window_cnt: usize         = 0;
+        //let mut add_bloom_filter_cnt: usize = 0;
+        //let mut l_window_cnt: usize         = 0;
         loop_cnt += 1;
         l_window_start = 0;
         'each_l_window: loop{
@@ -261,7 +268,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
             if l_window_end >= current_sequence.len() + 1{
                 break 'each_l_window;
             }
-            l_window_cnt += 1;
+            //l_window_cnt += 1;
             let l_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end]]);
             if (l_window_as_u128 & mask_l) != primer_l_seq{
                 l_window_start += 1;

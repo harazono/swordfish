@@ -11,7 +11,6 @@ use std::io::{BufWriter, Write};
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
-use voracious_radix_sort::{RadixSort};
 use search_probe::find_taqman_probe::BLOOMFILTER_TABLE_SIZE;
 use search_probe::find_taqman_probe::{PROBE_LEN, HASHSET_SIZE};
 use search_probe::find_taqman_probe::{build_counting_bloom_filter, number_of_high_occurence_kmer, aggregate_length_between_primer};
@@ -160,9 +159,11 @@ fn main() {
             }
         }
     );
+    /*
     for (key, value) in product_size_hashmap.iter(){
-        //println!("{}\t{}", key, value);
+        println!("{}\t{}", key, value);
     }
+    */
     return
     }
 
@@ -228,7 +229,7 @@ fn main() {
     });
 
 
-    let mut high_occurence_kmer: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+    let high_occurence_kmer: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
  /*
 ここまで
 */
