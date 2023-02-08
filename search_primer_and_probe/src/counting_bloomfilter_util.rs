@@ -35,7 +35,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
         let mut l_window_cnt: usize         = 0;
         loop_cnt += 1;
         l_window_start = 0;
-        if current_sequence.len() < L_LEN + M_LEN + R_LEN{
+        if current_sequence.len() < L_LEN ||current_sequence.len() < M_LEN ||current_sequence.len() < R_LEN{
             continue 'each_read;
         }
         'each_l_window: loop{
@@ -133,7 +133,7 @@ pub fn number_of_high_occurence_lmr_tuple(source_table: &Vec<u32>, sequences: &V
         let mut l_window_cnt: usize         = 0;
         loop_cnt += 1;
         l_window_start = 0;
-        if current_sequence.len() < L_LEN + M_LEN + R_LEN{
+        if current_sequence.len() < L_LEN ||current_sequence.len() < M_LEN ||current_sequence.len() < R_LEN{
             continue 'each_read;
         }
         'each_l_window: loop{
