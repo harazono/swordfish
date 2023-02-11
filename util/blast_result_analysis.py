@@ -61,7 +61,10 @@ def main():
 	with open(args.blast) as f:
 		reader = csv.reader(f, delimiter='\t')
 		for each_record in reader:
-			blast_results.append(BlastResult(*each_record))
+			each_record_Obj = BlastResult(*each_record)
+			#救済対象か判断。対象でなければappend。
+			if int(each_record_Obj.staxid) not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809] or "metagenome" not in each_record_Obj.scomname or "metagenome" not in each_record_Obj.ssciname:
+				blast_results.append(each_record_Obj)
 
 	primer3_info = None
 	with open (args.primer3, "r") as f:
