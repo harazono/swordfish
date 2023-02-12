@@ -56,7 +56,9 @@ def main():
 	with open(filename) as handle:
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
-
+	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
+	#4529はOryza rufipogon, 野生の稲
+	#4528はOryza longistaminata
 	blast_results = []
 	with open(args.blast) as f:
 		reader = csv.reader(f, delimiter='\t')
@@ -67,7 +69,7 @@ def main():
 				taxon_id = int(each_record_Obj.staxid)
 			except:
 				taxon_id = each_record_Obj.staxid
-			if taxon_id not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]:
+			if taxon_id not in rice_family_taxon_ids:#taxon idにダイズのが登録されていれば、このif文は通過できず救済されない。
 				if "N/A" not in each_record_Obj.scomname:
 					if "N/A" not in each_record_Obj.ssciname:
 						if "metagenome" not in each_record_Obj.scomname:
@@ -82,7 +84,7 @@ def main():
 	primer_blasthit_dict = {k: set() for k in fasta_ids}
 	for each_hit in blast_results:
 		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.scomname};{each_hit.staxid};{each_hit.ssciname}")
-	print(primer_blasthit_dict, file = sys.stderr)
+	#print(primer_blasthit_dict, file = sys.stderr)
 	#for i in primer_blasthit_dict:
 	#	print(len(primer_blasthit_dict[i]), primer_blasthit_dict[i])
 
