@@ -56,7 +56,7 @@ def main():
 	with open(filename) as handle:
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
-	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
+	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A", 2509717, 1911570]
 	#4529はOryza rufipogon, 野生の稲
 	#4528はOryza longistaminata
 	blast_results = []
@@ -83,7 +83,7 @@ def main():
 
 	primer_blasthit_dict = {k: set() for k in fasta_ids}
 	for each_hit in blast_results:
-		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.scomname};{each_hit.staxid};{each_hit.ssciname}")
+		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.staxid};{each_hit.scomname};{each_hit.ssciname}")
 	#print(primer_blasthit_dict, file = sys.stderr)
 	#for i in primer_blasthit_dict:
 	#	print(len(primer_blasthit_dict[i]), primer_blasthit_dict[i])
