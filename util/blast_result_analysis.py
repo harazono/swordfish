@@ -63,7 +63,12 @@ def main():
 		for each_record in reader:
 			each_record_Obj = BlastResult(*each_record)
 			#救済対象か判断。対象でなければappend。
-			if int(each_record_Obj.staxid) not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809]:
+			taxon_id = -1
+			try:
+				taxon_id = int(each_record_Obj.staxid)
+			except:
+				taxon_id = -1
+			if taxon_id not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809]:
 				if "metagenome" not in each_record_Obj.scomname:
 					if "metagenome" not in each_record_Obj.ssciname:
 						blast_results.append(each_record_Obj)
