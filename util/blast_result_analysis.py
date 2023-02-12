@@ -67,8 +67,8 @@ def main():
 			try:
 				taxon_id = int(each_record_Obj.staxid)
 			except:
-				taxon_id = -1
-			if taxon_id not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809]:
+				taxon_id = each_record_Obj.staxid
+			if taxon_id not in [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]:
 				if "metagenome" not in each_record_Obj.scomname:
 					if "metagenome" not in each_record_Obj.ssciname:
 						blast_results.append(each_record_Obj)
