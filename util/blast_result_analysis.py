@@ -80,7 +80,7 @@ def main():
 
 	primer_blasthit_dict = {k: set() for k in fasta_ids}
 	for each_hit in blast_results:
-		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.scomname}({each_hit.staxid}: {each_hit.ssciname})")
+		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.scomname};{each_hit.staxid};{each_hit.ssciname}")
 	print(primer_blasthit_dict, file = sys.stderr)
 	#for i in primer_blasthit_dict:
 	#	print(len(primer_blasthit_dict[i]), primer_blasthit_dict[i])
