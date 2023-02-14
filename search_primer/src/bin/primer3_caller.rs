@@ -139,8 +139,11 @@ fn main(){
         let arc_final_result = Arc::clone(&final_result);
         children.push(
             thread::spawn(move|| {
+                eprintln!("start calling primer3_core");
                 let primer3_results: String = execute_primer3((*chunks_of_input[i]).to_string());
                 arc_final_result.lock().unwrap().push(primer3_results);
+                eprintln!("finish calling primer3_core");
+
         })
         );
     }
