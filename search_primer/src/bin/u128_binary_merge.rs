@@ -56,5 +56,6 @@ fn main() {
     for each_primer_candidate in &u128_primer_candidate_vec{
         w.write(&decode_u128_l(each_primer_candidate)).unwrap();
         w.write(&decode_u128_r(each_primer_candidate)).unwrap();
+        w.write(b"\n").unwrap();
     }
 }
