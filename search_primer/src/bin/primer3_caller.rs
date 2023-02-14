@@ -103,22 +103,19 @@ fn main(){
     let f: File = File::open(&input_file).unwrap();
     eprintln!("finish loading {:?}", &input_file);
     let mut reader = BufReader::new(f);
-    let mut buf: [u8; 16] = [0; 16];
-    let mut tmp_seq_as_u128: u128 = 0;
+    let mut buffer: [u8; 16] = [0; 16];
+    let mut tmp_seq_as_u128: u128;
     let mut candidates: Vec<u128> = Vec::new();
     loop {
-        match reader.read(&mut buf).unwrap() {
-            0 => break,
-            n => {
-                let buf = &buf[..n];
-                for i in 0..16 {
-                    tmp_seq_as_u128 <<= 8;
-                    tmp_seq_as_u128 += u128::from(buf[i]);
-                }
-                candidates.push(tmp_seq_as_u128);
-            }
+        let result = reader.by_ref().take(16).read_exact(&mut buffer);
+        match result {
+            Ok(_val) => {},
+            Err(_err) => break,
         }
+        tmp_seq_as_u128 = u128::from_le_bytes(buffer);
+        candidates.push(tmp_seq_as_u128);
     }
+
     eprintln!("start formatting string");
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
 
