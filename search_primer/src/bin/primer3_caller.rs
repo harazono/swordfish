@@ -99,12 +99,13 @@ fn main(){
         print_usage(&program, &opts);
         return;
     };
+    eprintln!("start  loading {:?}", &input_file);
     let f: File = File::open(&input_file).unwrap();
+    eprintln!("finish loading {:?}", &input_file);
     let mut reader = BufReader::new(f);
     let mut buf: [u8; 16] = [0; 16];
     let mut tmp_seq_as_u128: u128 = 0;
     let mut candidates: Vec<u128> = Vec::new();
-
     loop {
         match reader.read(&mut buf).unwrap() {
             0 => break,
@@ -118,7 +119,7 @@ fn main(){
             }
         }
     }
-
+    eprintln!("start formatting string");
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
 
     let mut chunks_of_input: Vec<String> = Vec::new();

@@ -73,9 +73,6 @@ fn main() {
         format!("{:?}_threshold{}_threads{}.out", input_file, threshold, threads)
     };
     eprintln!("input  file: {:?}",  input_file);
-    eprintln!("loading {:?} done", input_file);
-
-
     let file = File::open(&input_file).expect("Error during opening the file");
     let mut reader = faReader::new(file);
     let mut record = faRecord::new();
