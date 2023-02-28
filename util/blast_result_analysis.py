@@ -108,7 +108,7 @@ def main():
 
 
 
-	survivor = fasta_ids - blast_trapped_seq_ids - discard_set
+	survivor = fasta_ids - blast_trapped_seq_ids# - discard_set
 	survivor_pair = set()
 	for each_primer in survivor:
 		pair = ""
