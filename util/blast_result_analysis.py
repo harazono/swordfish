@@ -43,11 +43,12 @@ def grep_input_record_name(primer_pairs_dict):
 
 def main():
 	parser = argparse.ArgumentParser(description = "compare input fasta file and blast result")
-	parser.add_argument("fasta",   metavar = "fasta",       type = str, help = "fasta file name")
-	parser.add_argument("blast",   metavar = "blast",       type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
-	parser.add_argument("primer3", metavar = "primer3",     type = str, help = "primer3 output file (json)")
-	parser.add_argument("-o",      metavar = "output_file", type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
-	parser.add_argument("--fasta", action='store_true',     help = "output as fasta")
+	parser.add_argument("fasta",     metavar = "fasta",        type = str, help = "primers.fa file name")
+	parser.add_argument("blast",     metavar = "blast",        type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
+	parser.add_argument("primer3",   metavar = "primer3",      type = str, help = "primer3 output file (json)")
+	parser.add_argument("--discard", metavar = "namelist.txt", type = str, help = "list of sequence names to be discarded. one name per line.")
+	parser.add_argument("-o",        metavar = "output_file",  type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
+	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	args = parser.parse_args()
 	filename = args.fasta
 	fasta_ids = set()
@@ -98,9 +99,16 @@ def main():
 	for each_hit in blast_results:
 		blast_trapped_seq_ids.add(each_hit.qseqid)
 
+	seqname2discard_set = set()
+	if args.seqname2discard is not None:
+		seqname2discard_filename = args.seqname2discard
+		with open(seqname2discard_filename) as f:
+			for line in f:
+				seqname2discard_set.add(line.strip())
 
 
-	survivor = fasta_ids - blast_trapped_seq_ids 
+
+	survivor = fasta_ids - blast_trapped_seq_ids - seqname2discard_set
 	survivor_pair = set()
 	for each_primer in survivor:
 		pair = ""
@@ -149,37 +157,3 @@ def main():
 if __name__ == '__main__':
 	main()
 
-
-"""
-c863b6bb4258705996f0adf5ad3a0d89 4
-{ 'PRIMER_INTERNAL': '59,22',
-  'PRIMER_INTERNAL_GC_PERCENT': '59.091',
-  'PRIMER_INTERNAL_HAIRPIN_TH': '41.51',
-  'PRIMER_INTERNAL_PENALTY': '2.441787',
-  'PRIMER_INTERNAL_SELF_ANY_TH': '14.73',
-  'PRIMER_INTERNAL_SELF_END_TH': '10.07',
-  'PRIMER_INTERNAL_SEQUENCE': 'CGACTAACCGCGCCGTTAAGGT',
-  'PRIMER_INTERNAL_TM': '59.558',
-  'PRIMER_LEFT': '3,18',
-  'PRIMER_LEFT_END_STABILITY': '4.0100',
-  'PRIMER_LEFT_GC_PERCENT': '55.556',
-  'PRIMER_LEFT_HAIRPIN_TH': '44.95',
-  'PRIMER_LEFT_PENALTY': '2.261888',
-  'PRIMER_LEFT_SELF_ANY_TH': '7.38',
-  'PRIMER_LEFT_SELF_END_TH': '0.00',
-  'PRIMER_LEFT_SEQUENCE': 'ACGATGTCGGTGTCAAGC',
-  'PRIMER_LEFT_TM': '57.738',
-  'PRIMER_PAIR_COMPL_ANY_TH': '0.00',
-  'PRIMER_PAIR_COMPL_END_TH': '1.26',
-  'PRIMER_PAIR_PENALTY': '4.295782',
-  'PRIMER_PAIR_PRODUCT_SIZE': '137',
-  'PRIMER_PAIR_PRODUCT_TM': '74.6',
-  'PRIMER_RIGHT': '139,18',
-  'PRIMER_RIGHT_END_STABILITY': '5.2800',
-  'PRIMER_RIGHT_GC_PERCENT': '61.111',
-  'PRIMER_RIGHT_HAIRPIN_TH': '0.00',
-  'PRIMER_RIGHT_PENALTY': '2.033894',
-  'PRIMER_RIGHT_SELF_ANY_TH': '0.00',
-  'PRIMER_RIGHT_SELF_END_TH': '0.00',
-  'PRIMER_RIGHT_SEQUENCE': 'GCTCGATTCCATGACCGG',
-  'PRIMER_RIGHT_TM': '57.966'}"""
