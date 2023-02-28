@@ -43,11 +43,11 @@ def grep_input_record_name(primer_pairs_dict):
 
 def main():
 	parser = argparse.ArgumentParser(description = "compare input fasta file and blast result")
-	parser.add_argument("fasta",     metavar = "fasta",        type = str, help = "primers.fa file name")
-	parser.add_argument("blast",     metavar = "blast",        type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
-	parser.add_argument("primer3",   metavar = "primer3",      type = str, help = "primer3 output file (json)")
-	parser.add_argument("--discard", metavar = "namelist.txt", type = str, help = "list of sequence names to be discarded. one name per line.")
-	parser.add_argument("-o",        metavar = "output_file",  type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
+	parser.add_argument("fasta",     metavar = "fasta",       type = str, help = "primers.fa file name")
+	parser.add_argument("blast",     metavar = "blast",       type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
+	parser.add_argument("primer3",   metavar = "primer3",     type = str, help = "primer3 output file (json)")
+	parser.add_argument("--discard", metavar = "namelist",    type = str, help = "list of sequence names to be discarded. one name per line.")
+	parser.add_argument("-o",        metavar = "output_file", type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
 	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	args = parser.parse_args()
 	filename = args.fasta
@@ -99,16 +99,16 @@ def main():
 	for each_hit in blast_results:
 		blast_trapped_seq_ids.add(each_hit.qseqid)
 
-	seqname2discard_set = set()
-	if args.seqname2discard is not None:
-		seqname2discard_filename = args.seqname2discard
-		with open(seqname2discard_filename) as f:
+	discard_set = set()
+	if args.discard is not None:
+		discard_filename = args.discard
+		with open(discard_filename) as f:
 			for line in f:
-				seqname2discard_set.add(line.strip())
+				discard_set.add(line.strip())
 
 
 
-	survivor = fasta_ids - blast_trapped_seq_ids - seqname2discard_set
+	survivor = fasta_ids - blast_trapped_seq_ids - discard_set
 	survivor_pair = set()
 	for each_primer in survivor:
 		pair = ""
