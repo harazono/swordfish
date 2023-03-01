@@ -75,11 +75,11 @@ def main():
 				continue
 			if "N/A" in each_record_Obj.scomname:
 				continue
-			if "N/A" not in each_record_Obj.ssciname:
+			if "N/A" in each_record_Obj.ssciname:
 				continue
-			if "metagenome" not in each_record_Obj.scomname:
+			if "metagenome" in each_record_Obj.scomname:
 				continue
-			if "metagenome" not in each_record_Obj.ssciname:
+			if "metagenome" in each_record_Obj.ssciname:
 				continue
 			blast_results.append(each_record_Obj)
 
