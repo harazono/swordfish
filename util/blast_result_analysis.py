@@ -43,12 +43,12 @@ def grep_input_record_name(primer_pairs_dict):
 
 def main():
 	parser = argparse.ArgumentParser(description = "compare input fasta file and blast result")
-	parser.add_argument("fasta",     metavar = "fasta",       type = str, help = "primers.fa file name")
-	parser.add_argument("blast",     metavar = "blast",       type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
-	parser.add_argument("primer3",   metavar = "primer3",     type = str, help = "primer3 output file (json)")
-	parser.add_argument("--discard", metavar = "namelist",    type = str, help = "list of sequence names to be discarded. one name per line.")
-	parser.add_argument("-o",        metavar = "output_file", type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
-	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
+	parser.add_argument("fasta",     metavar = "fasta",         type = str, help = "primers.fa file name")
+	parser.add_argument("blast",     metavar = "blast",         type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
+	parser.add_argument("primer3",   metavar = "primer3",       type = str, help = "primer3 output file (json)")
+	parser.add_argument("--discard", metavar = "namelist",      type = str, help = "list of sequence names to be discarded. one name per line.")
+	parser.add_argument("-o",        metavar = "output_prefix", type = str, default = "final_result", help = "output file name (default = final_result)")
+	#parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	args = parser.parse_args()
 	filename = args.fasta
 	fasta_ids = set()
@@ -57,6 +57,7 @@ def main():
 	with open(filename) as handle:
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
+
 	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A", 2509717, 1911570]
 	#rice_family_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
 	#4529はOryza rufipogon, 野生の稲
@@ -93,8 +94,6 @@ def main():
 			blast_results.append(each_record_Obj)
 	"""
 
-
-
 	primer3_info = None
 	with open (args.primer3, "r") as f:
 		primer3_info = json.load(f)
@@ -103,9 +102,7 @@ def main():
 	primer_blasthit_dict = {k: set() for k in fasta_ids}
 	for each_hit in blast_results:
 		primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.staxid};{each_hit.scomname};{each_hit.ssciname}")
-	#print(primer_blasthit_dict, file = sys.stderr)
-	#for i in primer_blasthit_dict:
-	#	print(len(primer_blasthit_dict[i]), primer_blasthit_dict[i])
+
 
 
 	blast_trapped_seq_ids = set()
@@ -121,7 +118,7 @@ def main():
 
 
 
-	survivor = fasta_ids - blast_trapped_seq_ids# - discard_set
+	survivor = fasta_ids - blast_trapped_seq_ids - discard_set
 	survivor_pair = set()
 	for each_primer in survivor:
 		pair = ""
@@ -133,38 +130,40 @@ def main():
 			survivor_pair.add(each_primer[0:-2])
 		else:
 			pass
-			#print(f"{each_primer} does not have a partner")
-	print(f"total count of input sequence                  : {len(fasta_ids)}"            , file = output_file)
-	print(f"total count of blast hits                      : {len(blast_results)}"        , file = output_file)
-	print(f"cardinarity of input which was trapped by blast: {len(blast_trapped_seq_ids)}", file = output_file)
-	print(f"survivor                                       : {len(survivor)}"             , file = output_file)
-	print(f"survivor pair                                  : {len(survivor_pair)}"        , file = output_file)
 
-	print("\t".join(["primer id", "left primer", "right primer", "primer left Tm", "primer right Tm", "primer pair product Tm", "survived side", "trapped side", "blast hits"]))
+
+	report_file            = open(args.o + ".report")
+	survivor_tsv_file      = open(args.o + ".survivor.tsv")
+	survivor_pair_tsv_file = open(args.o + ".survivor_pair.tsv")
+	survivor_namelist_file = open(args.o + ".survivor_name.txt")
+
+	print(f"total count of input sequence                  : {len(fasta_ids)}"            , file = report_file)
+	print(f"total count of blast hits                      : {len(blast_results)}"        , file = report_file)
+	print(f"cardinarity of input which was trapped by blast: {len(blast_trapped_seq_ids)}", file = report_file)
+	print(f"survivor                                       : {len(survivor)}"             , file = report_file)
+	print(f"survivor pair                                  : {len(survivor_pair)}"        , file = report_file)
+
+	print("\t".join(["primer id", "left primer", "right primer", "primer left Tm", "primer right Tm", "primer pair product Tm", "survived side", "trapped side", "blast hits"]), file = survivor_tsv_file)
 	for each_survivor in survivor:
 		survivor_info_raw = primer3_info[each_survivor.split("_")[0]]
 		survivor_index    = int(each_survivor.split("_")[1])
 		primer_side       = each_survivor.split("_")[2]
 		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
 		primer_pair       = each_survivor[:-1] + "L" if primer_side == "R" else each_survivor[:-1] + "R"
-		print(each_survivor, file = sys.stderr)
 		blast_hits = primer_blasthit_dict[primer_pair]
-		print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, "L" if primer_side == "R" else "R", blast_hits]]))
-		#print(f"{primer_side} survived\n---\n")
+		print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, "L" if primer_side == "R" else "R", blast_hits]]), file = survivor_tsv_file)
+		print(each_survivor, file = survivor_namelist_file)
 
 
-	primer_pairs_dict = None
-	with open(args.primer3, "r") as f:
-		primer_pairs_dict = json.load(f)
-	#pp.pprint(primer_pairs_dict)
-
-
+	print("\t".join(["primer id", "left primer", "right primer", "primer left Tm", "primer right Tm", "primer pair product Tm", "survived side", "trapped side", "blast hits"]), file = survivor_pair_tsv_file)
 	for each_survivor_pair in survivor_pair:
-		seqid = each_survivor_pair[0:-2]
-		index = each_survivor_pair[-1]
-		print(seqid, index, file = output_file)
-		primer_info = primer_pairs_dict[seqid]["Primer3_output"][int(index)]
-		pp.pprint(primer_info, file = output_file)
+		survivor_info_raw = primer3_info[each_survivor_pair]
+		survivor_index    = int(each_survivor.split("_")[1])
+		primer_side       = each_survivor.split("_")[2]
+		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
+		primer_pair       = each_survivor[:-1] + "L" if primer_side == "R" else each_survivor[:-1] + "R"
+		blast_hits = primer_blasthit_dict[primer_pair]
+		print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, "L" if primer_side == "R" else "R", blast_hits]]), file = survivor_pair_tsv_file)
 
 
 if __name__ == '__main__':
