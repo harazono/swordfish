@@ -71,6 +71,15 @@ def main():
 				taxon_id = int(each_record_Obj.staxid)
 			except:
 				taxon_id = each_record_Obj.staxid
+			if taxon_id not in rice_family_taxon_ids:
+				if "N/A" not in each_record_Obj.scomname:
+					if "N/A" not in each_record_Obj.ssciname:
+						if "metagenome" not in each_record_Obj.scomname:
+							if "metagenome" not in each_record_Obj.ssciname:
+								blast_results.append(each_record_Obj)
+
+
+	"""
 			if taxon_id in rice_family_taxon_ids:
 				continue
 			if "N/A" in each_record_Obj.scomname:
@@ -82,6 +91,9 @@ def main():
 			if "metagenome" in each_record_Obj.ssciname:
 				continue
 			blast_results.append(each_record_Obj)
+	"""
+
+
 
 	primer3_info = None
 	with open (args.primer3, "r") as f:
