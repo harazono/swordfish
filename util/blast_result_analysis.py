@@ -120,13 +120,15 @@ def main():
 	survivor = fasta_ids - blast_trapped_seq_ids - discard_set
 	survivor_pair = set()
 	for each_primer in survivor:
+		id, idx, side = each_primer.split("_")
 		pair = ""
-		if each_primer[-1] == "L":
-			pair = each_primer[0:-1] + "R"
+		if side == "L":
+			pair = "R"
 		else:
-			pair = each_primer[0:-1] + "L"
-		if pair in survivor:
-			survivor_pair.add(each_primer[0:-2])
+			pair = "L"
+		pair_full_name = id + "_" + idx + pair
+		if pair_full_name in survivor:
+			survivor_pair.add(id + "_" + idx)
 		else:
 			pass
 
