@@ -132,10 +132,10 @@ def main():
 			pass
 
 
-	report_file            = open(args.o + ".report")
-	survivor_tsv_file      = open(args.o + ".survivor.tsv")
-	survivor_pair_tsv_file = open(args.o + ".survivor_pair.tsv")
-	survivor_namelist_file = open(args.o + ".survivor_name.txt")
+	report_file            = open(args.o + ".report", mode = "w")
+	survivor_tsv_file      = open(args.o + ".survivor.tsv", mode = "w")
+	survivor_pair_tsv_file = open(args.o + ".survivor_pair.tsv", mode = "w")
+	survivor_namelist_file = open(args.o + ".survivor_name.txt", mode = "w")
 
 	print(f"total count of input sequence                  : {len(fasta_ids)}"            , file = report_file)
 	print(f"total count of blast hits                      : {len(blast_results)}"        , file = report_file)
