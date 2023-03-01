@@ -157,7 +157,7 @@ def main():
 
 	print("\t".join(["primer id", "left primer", "right primer", "primer left Tm", "primer right Tm", "primer pair product Tm", "survived side", "trapped side", "blast hits"]), file = survivor_pair_tsv_file)
 	for each_survivor_pair in survivor_pair:
-		survivor_info_raw = primer3_info[each_survivor_pair]
+		survivor_info_raw = primer3_info[each_survivor_pair.split("_")[0]]
 		survivor_index    = int(each_survivor.split("_")[1])
 		primer_side       = each_survivor.split("_")[2]
 		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
