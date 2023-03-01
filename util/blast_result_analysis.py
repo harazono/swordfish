@@ -58,7 +58,7 @@ def main():
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
 	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A", 2509717, 1911570]
-	rice_family_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
+	#rice_family_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
 	#4529はOryza rufipogon, 野生の稲
 	#4528はOryza longistaminata
 	blast_results = []
