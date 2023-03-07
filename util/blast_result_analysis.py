@@ -133,6 +133,10 @@ def main():
 		else:
 			pass
 
+
+	print(primer3_info.keys()[0], file = sys.stderr)
+	print(list(survivor)[0], file = sys.stderr)
+	print(list(survivor_pair)[0], file = sys.stderr)
 	#print(survivor, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
 	report_file            = open(args.o + ".report", mode = "w")
 	survivor_tsv_file      = open(args.o + ".survivor.tsv", mode = "w")
@@ -162,7 +166,7 @@ def main():
 		survivor_info_raw = primer3_info[each_survivor_pair.split("_")[0]]
 		survivor_index    = int(each_survivor_pair.split("_")[1])
 		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
-		print("\t".join([str(x) for x in [each_survivor_pair.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"]]]), file = survivor_pair_tsv_file)
+		print("\t".join([str(x) for x in [each_survivor_pair, survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"]]]), file = survivor_pair_tsv_file)
 
 
 if __name__ == '__main__':
