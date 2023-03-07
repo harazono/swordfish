@@ -134,7 +134,7 @@ def main():
 			pass
 
 
-	print(primer3_info.keys()[0], file = sys.stderr)
+	print(list(primer3_info.keys())[0], file = sys.stderr)
 	print(list(survivor)[0], file = sys.stderr)
 	print(list(survivor_pair)[0], file = sys.stderr)
 	#print(survivor, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
