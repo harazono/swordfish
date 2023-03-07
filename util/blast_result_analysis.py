@@ -152,7 +152,7 @@ def main():
 		primer_side       = each_survivor.split("_")[2]
 		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
 		primer_pair       = each_survivor[:-1] + "L" if primer_side == "R" else each_survivor[:-1] + "R"
-		blast_hits = primer_blasthit_dict[primer_pair]#自身がhit無しで相方もhitなしの時、set()になる。pair survivorの検出に失敗してるのか？
+		blast_hits = primer_blasthit_dict[primer_pair]
 		print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, "L" if primer_side == "R" else "R", blast_hits]]), file = survivor_tsv_file)
 		print(each_survivor, file = survivor_namelist_file)
 
@@ -162,7 +162,7 @@ def main():
 		survivor_info_raw = primer3_info[each_survivor_pair.split("_")[0]]
 		survivor_index    = int(each_survivor_pair.split("_")[1])
 		survivor_info     = survivor_info_raw["Primer3_output"][survivor_index]
-		print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"]]]), file = survivor_pair_tsv_file)
+		print("\t".join([str(x) for x in [each_survivor_pair.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"]]]), file = survivor_pair_tsv_file)
 
 
 if __name__ == '__main__':
