@@ -9,7 +9,7 @@ use std::time::{Instant};
 use std::collections::HashSet;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 
-pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: &Vec<(Vec<u8>, Vec<u8>, Vec<u8>)>) -> Vec<u32>{
+pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: &Vec<(Vec<u8>, Dnasequence, DnaSequence)>) -> Vec<u32>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
     let mut m_window_start: usize;
@@ -32,10 +32,10 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
     'each_primer: for current_primer in primer.iter() {
-        primer_l_size = current_primer.1.len();
-        primer_l_seq  = DnaSequence::new(&current_primer.1).subsequence_as_u128(vec!([0, primer_l_size]));
-        primer_r_size = current_primer.2.len();
-        primer_r_seq  = DnaSequence::new(&current_primer.2).subsequence_as_u128(vec!([0, primer_r_size]));
+        primer_l_size = current_primer.1.length;
+        primer_l_seq  = &current_primer.1.subsequence_as_u128(vec!([0, primer_l_size]));
+        primer_r_size = current_primer.2.length;
+        primer_r_seq  = &current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
     
@@ -150,7 +150,7 @@ fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &
     return retval;
 }
 
-pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize, primer: &Vec<(Vec<u8>, Vec<u8>, Vec<u8>)>) -> HashSet<u128>{
+pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize, primer: &Vec<(Vec<u8>, Dnasequence, DnaSequence)>) -> HashSet<u128>{
     let mut ret_table: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
@@ -172,10 +172,10 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 
     let mut loop_cnt:usize = 0;
     'each_primer: for current_primer in primer.iter() {
-        primer_l_size = current_primer.1.len();
-        primer_l_seq  = DnaSequence::new(&current_primer.1).subsequence_as_u128(vec!([0, primer_l_size]));
-        primer_r_size = current_primer.2.len();
-        primer_r_seq  = DnaSequence::new(&current_primer.2).subsequence_as_u128(vec!([0, primer_r_size]));
+        primer_l_size = current_primer.1.length;
+        primer_l_seq  = &current_primer.1.subsequence_as_u128(vec!([0, primer_l_size]));
+        primer_r_size = current_primer.2.length;
+        primer_r_seq  = &current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
     
@@ -253,7 +253,7 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 }
 
 
-pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: &Vec<(Vec<u8>, Vec<u8>, Vec<u8>)>, product_size_max: usize) -> Vec<u32>{
+pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: &Vec<(Vec<u8>, Dnasequence, DnaSequence)>, product_size_max: usize) -> Vec<u32>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
     //let mut m_window_start: usize;
@@ -278,10 +278,10 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
     'each_primer: for current_primer in primer.iter() {
-        primer_l_size = current_primer.1.len();
-        primer_l_seq  = DnaSequence::new(&current_primer.1).subsequence_as_u128(vec!([0, primer_l_size]));
-        primer_r_size = current_primer.2.len();
-        primer_r_seq  = DnaSequence::new(&current_primer.2).subsequence_as_u128(vec!([0, primer_r_size]));
+        primer_l_size = current_primer.1.length;
+        primer_l_seq  = &current_primer.1.subsequence_as_u128(vec!([0, primer_l_size]));
+        primer_r_size = current_primer.2.length;
+        primer_r_seq  = &current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
         //combined_string = [b">", &current_primer.0, b"_", &current_primer.1, b"_", &current_primer.2].concat();
