@@ -268,7 +268,6 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     let mut mask_l:         u128;
     let mut mask_r:         u128;
     let mut primer_id:      Vec<u8>;
-    let mut combined_string;
     let mut loop_cnt:usize = 0;
     eprintln!("Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", BLOOMFILTER_TABLE_SIZE);
     let mut ret_array: Vec<u32> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
@@ -284,11 +283,6 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
         primer_r_seq  = current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
-        //combined_string = [b">", current_primer.0, b"_", current_primer.1, b"_", current_primer.2].concat();
-        combined_string = [&b">"[..], &current_primer.0, &b"_"[..], &current_primer.1.decode(0, primer_l_size), &b"_"[..], &current_primer.2.decode(0, primer_r_size)].concat();
-
-
-
 
         'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
             //let mut add_bloom_filter_cnt: usize = 0;
@@ -326,7 +320,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
                     //ここまでで、LとRが一致してる
                     let length: u32 = (r_window_end - l_window_start) as u32;
                     ret_array.push(length);
-                    println!(">{:?}_{}_{}\n{:?}",combined_string, l_window_start, r_window_end, String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap());
+                    println!(">{:?}_{}_{}\n{:?}",current_primer.0, l_window_start, r_window_end, String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap());
 
                     r_window_start += 1;
                 }

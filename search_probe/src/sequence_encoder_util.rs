@@ -43,6 +43,15 @@ pub struct DnaSequence{
     sequence: Vec<u64>
 }
 
+impl Clone for DnaSequence {
+    fn clone(&self) -> Self {
+        DnaSequence {
+            length:   self.length,
+            sequence: self.sequence.clone(),
+        }
+    }
+}
+
 impl DnaSequence{//DNA sequenceは上位bitに寄せてる
     pub fn new(source: &Vec<u8>) -> DnaSequence{
         let mut retval:Vec<u64> = Vec::new();

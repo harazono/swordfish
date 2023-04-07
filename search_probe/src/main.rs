@@ -106,8 +106,6 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
     // 各行を読み取り、タブで分割する
     let mut primer: Vec<(Vec<u8>, DnaSequence, DnaSequence)> = Vec::new();
 
-
-
     for result in BufReader::new(File::open(&primer_filename).unwrap()).lines() {
         let line = result.unwrap();
         if line.starts_with('p') {continue}
@@ -118,10 +116,15 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
         let right_primer         = DnaSequence::new(&Vec::from(fields[2].as_bytes()));
         let left_primer_revcomp  = DnaSequence::new(&Vec::from(fields[1].as_bytes())).reverse_complement();
         let right_primer_revcomp = DnaSequence::new(&Vec::from(fields[2].as_bytes())).reverse_complement();
-        primer.push((&primer_id, &left_primer, &left_primer_revcomp));
-        primer.push((&primer_id, &left_primer, &right_primer_revcomp));
-        primer.push((&primer_id, &right_primer, &left_primer_revcomp));
-        primer.push((&primer_id, &right_primer, &right_primer_revcomp));
+        let id_1: Vec<u8> = [&primer_id, &b"left_primer-left_primer_revcomp"[..]].concat();
+        let id_2: Vec<u8> = [&primer_id, &b"left_primer-right_primer_revcomp"[..]].concat();
+        let id_3: Vec<u8> = [&primer_id, &b"right_primer-left_primer_revcomp"[..]].concat();
+        let id_4: Vec<u8> = [&primer_id, &b"right_primer-right_primer_revcomp"[..]].concat();
+
+        primer.push((id_1, left_primer.clone(), left_primer_revcomp.clone()));
+        primer.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
+        primer.push((id_3, right_primer.clone(), left_primer_revcomp.clone()));
+        primer.push((id_4, right_primer.clone(), right_primer_revcomp.clone()));
 
     }
 
