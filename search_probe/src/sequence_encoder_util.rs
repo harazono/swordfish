@@ -138,6 +138,10 @@ impl DnaSequence{//DNA sequenceは上位bitに寄せてる
         return DnaSequence::new(&retval);
     }
 
+    pub fn reverse_complement(&self) -> DnaSequence{
+        return self.complement().reverse();
+    }
+
 
 
 
