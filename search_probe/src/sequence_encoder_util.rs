@@ -104,6 +104,44 @@ impl DnaSequence{//DNA sequenceは上位bitに寄せてる
         }
         return retval;
     }
+
+    pub fn complement(&self) -> DnaSequence{
+        let mut retval = Vec::new();
+        let mut buf: u8;
+        for i in 0..self.length{
+            buf = ((self.sequence[i / 32] >> (2 * (31 - i % 32))) & 3).try_into().unwrap();
+            match buf{
+                0 => {retval.push('T' as u8);}
+                1 => {retval.push('G' as u8);}
+                2 => {retval.push('C' as u8);}
+                3 => {retval.push('A' as u8);}
+                _ => {panic!("Never reached!!!buf: {}", buf);}
+            }
+        }
+        return DnaSequence::new(&retval);
+    }
+
+    pub fn reverse(&self) -> DnaSequence{
+        let mut retval = Vec::new();
+        let mut buf: u8;
+        for i in 0..self.length{
+            let j = self.length - i - 1;
+            buf = ((self.sequence[j / 32] >> (2 * (31 - j % 32))) & 3).try_into().unwrap();
+            match buf{
+                0 => {retval.push('A' as u8);}
+                1 => {retval.push('C' as u8);}
+                2 => {retval.push('G' as u8);}
+                3 => {retval.push('T' as u8);}
+                _ => {panic!("Never reached!!!buf: {}", buf);}
+            }
+        }
+        return DnaSequence::new(&retval);
+    }
+
+
+
+
+
 //subsequenceは左詰め
 //実装したけど、出番はなかった
     pub fn subsequence(&self, ranges: Vec<[usize; 2]>) -> DnaSequence{
@@ -469,414 +507,414 @@ mod tests{
 
 /*
 *
-*has_poly_base_test
+*has_one_base_test
 *4つからtrue
 *
 */
 
 #[test]
     #[named]
-    fn has_poly_base_test_8C(){
+    fn has_one_base_test_8C(){
         let source: Vec<u8> = vec![b'C', b'C', b'C', b'C', b'C', b'C', b'C', b'C'];
         let obj = DnaSequence::new(&source);
-        assert!(obj.has_poly_base(0, 4) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 5) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 6) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 7) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 4) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 5) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 6) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 7) == (true, 0),  "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_8G(){
+    fn has_one_base_test_8G(){
         let source: Vec<u8> = vec![b'G', b'G', b'G', b'G', b'G', b'G', b'G', b'G'];
         let obj = DnaSequence::new(&source);
-        assert!(obj.has_poly_base(0, 4) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 5) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 6) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 7) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 4) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 5) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 6) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 7) == (true, 0),  "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_8T(){
+    fn has_one_base_test_8T(){
         let source: Vec<u8> = vec![b'T', b'T', b'T', b'T', b'T', b'T', b'T', b'T'];
         let obj = DnaSequence::new(&source);
-        assert!(obj.has_poly_base(0, 4) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 5) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 6) == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 7) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 4) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 5) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 6) == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 7) == (true, 0),  "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_8N(){
+    fn has_one_base_test_8N(){
         let source: Vec<u8> = vec![b'A', b'C', b'G', b'T', b'A', b'C', b'G', b'T'];
         let obj = DnaSequence::new(&source);
-        assert!(obj.has_poly_base(0, 4) == (false, 0), "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 5) == (false, 0), "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 6) == (false, 0), "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 7) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 4) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 5) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 6) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 7) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_120N(){
+    fn has_one_base_test_120N(){
         let source: String = "GAACGACTGTTTTTACTATAAATCCTTCCTTCCTAGCCTATCATTTCTGGAGTCCTTGGTGAACTGTAGGAAGCTCTGAACACACACGTTCCCTTGGATTCGTACCTATGAATACTCCGT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 9)   == (false, 0), "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 19)  == (true, 9),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(9, 20)  == (true, 0),  "{} failed", function_name!());
-        assert!(obj.has_poly_base(28, 39) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 9)   == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19)  == (true, 9),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(9, 20)  == (true, 0),  "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(28, 39) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_1(){
+    fn has_one_base_test_27N_1(){
         let source: String = "ATTCATACTTAATACTGTATCAGTTGA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_2(){
+    fn has_one_base_test_27N_2(){
         let source: String = "TTCATACTTAATACTGTATCAGTTGAG".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_3(){
+    fn has_one_base_test_27N_3(){
         let source: String = "TCATACTTAATACTGTATCAGTTGAGT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_4(){
+    fn has_one_base_test_27N_4(){
         let source: String = "TTCGAAAATCATCATCATCATCATCAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (true, 4), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (true, 4), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_5(){
+    fn has_one_base_test_27N_5(){
         let source: String = "TTCGAAATTCATCATCATCATCATCAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_6(){
+    fn has_one_base_test_27N_6(){
         let source: String = "TTCGTAATTCATCATCATCATCATCAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_7(){
+    fn has_one_base_test_27N_7(){
         let source: String = "AAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (true, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_8(){
+    fn has_one_base_test_27N_8(){
         let source: String = "AAAACGTCGTCGTCGCATACGATCGAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (true, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_9(){
+    fn has_one_base_test_27N_9(){
         let source: String = "AAACGTCGTCGTCGCATACGAATCGAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_10(){
+    fn has_one_base_test_27N_10(){
         let source: String = "GTCGTCGTCGCATACGAATCGATAAAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 27) == (true, 23), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 27) == (true, 23), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_11(){
+    fn has_one_base_test_27N_11(){
         let source: String = "GTCGTCGTCGCATACGAATCGATTAAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 23) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 23) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_12(){
+    fn has_one_base_test_27N_12(){
         let source: String = "GAATCCTCAGCTGCTTGTATACAGGGGATT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 30) == (true, 23), "{} failed", function_name!());
-        assert!(obj.has_poly_base(0, 19) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 30) == (true, 23), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_13(){
+    fn has_one_base_test_27N_13(){
         let source: String = "TAATGTATTCACTAACAAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 19) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_14(){
+    fn has_one_base_test_27N_14(){
         let source: String = "TAATGTATTCACTAACCAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 19) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (false, 0), "{} failed", function_name!());
     }
 
     #[test]
     #[named]
-    fn has_poly_base_test_27N_15(){
+    fn has_one_base_test_27N_15(){
         let source: String = "CTTGTATACAGGGGATTTC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 19) == (true, 10), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (true, 10), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_test_27N_16(){
+    fn has_one_base_test_27N_16(){
         let source: String = "GCTTGTATACAGGGGATTT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 19) == (true, 11), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (true, 11), "{} failed", function_name!());
     }
 
     #[test]
     #[named]
-    fn has_poly_base_test_27N_17(){
+    fn has_one_base_test_27N_17(){
         let source: String = "CTTGTATACAGGGGATTTC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(0, 19) == (true, 10), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(0, 19) == (true, 10), "{} failed", function_name!());
     }
 
 
     #[test]
     #[named]
-    fn has_poly_base_test_27N_18(){
+    fn has_one_base_test_27N_18(){
         let source: String = "AACGTACGTACGTACGTACGTACGTACGTACGTCTTGTATACAGGGGATTTC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base(30, 52) == (true, 13), "{} failed", function_name!());
+        assert!(obj.has_one_base_repeat(30, 52) == (true, 13), "{} failed", function_name!());
     }
 
 
 /*
 *
-*has_simple_repeat
+*has_three_base_repeat
 *
 */
     #[test]
     #[named]
-    fn has_simple_repeat_27N_1(){
+    fn has_three_base_repeat_27N_1(){
         let source: String = "TCATATGCAACAACAACTCATACTTAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 27) == (true, 7), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 27) == (true, 7), "{} failed", function_name!());
     }
 
     #[test]
     #[named]
-    fn has_simple_repeat_27N_1_a(){
+    fn has_three_base_repeat_27N_1_a(){
         let source: String = "ACGTACGTCAACAAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 15) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 15) == (false, 0), "{} failed", function_name!());
     }
 
     #[test]
     #[named]
-    fn has_simple_repeat_27N_2(){
+    fn has_three_base_repeat_27N_2(){
         let source: String = "TCATATGCTACAACAACTCATACTTAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
 
     #[test]
     #[named]
-    fn has_simple_repeat_27N_3(){
+    fn has_three_base_repeat_27N_3(){
         let source: String = "CAACAACTGC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 10) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 10) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_simple_repeat_27N_4(){
+    fn has_three_base_repeat_27N_4(){
         let source: String = "ACGTACGTCAACAAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 15) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 15) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_simple_repeat_27N_5(){
+    fn has_three_base_repeat_27N_5(){
         let source: String = "CGTACGTCAACAACA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 15) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 15) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_simple_repeat_27N_6(){
+    fn has_three_base_repeat_27N_6(){
         let source: String = "GTACGTCAACAACAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_simple_repeat(0, 15) == (true, 6), "{} failed", function_name!());
+        assert!(obj.has_three_base_repeat(0, 15) == (true, 6), "{} failed", function_name!());
     }
 /*
 *
-*has_2base_repeat
+*has_two_base_repeat
 *
 */
     #[test]
     #[named]
-    fn has_2base_repeat_27N_1(){
+    fn has_two_base_repeat_27N_1(){
         let source: String = "TCATATGCTACAACAACTCATACTTAA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2(){
+    fn has_two_base_repeat_27N_2(){
         let source: String = "CGTACGCTTATATATATATATACCGCA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (true, 8), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (true, 8), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x6_1(){
+    fn has_two_base_repeat_27N_2x6_1(){
         let source: String = "TATATATATATAGCCCGCACGTACGCT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x6_2(){
+    fn has_two_base_repeat_27N_2x6_2(){
         let source: String = "GCCCGCACGTACGCTATATATATATAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (true, 14), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (true, 14), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x5_1(){
+    fn has_two_base_repeat_27N_2x5_1(){
         let source: String = "TATATATATACTGCCCGCACGTACGCT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (true, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x5_2(){
+    fn has_two_base_repeat_27N_2x5_2(){
         let source: String = "CTGCCCGCACGTACGCTATATATATAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (true, 16), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (true, 16), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x4_1(){
+    fn has_two_base_repeat_27N_2x4_1(){
         let source: String = "TATATATACTGCCCGAACACGTACGCT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_2x4_2(){
+    fn has_two_base_repeat_27N_2x4_2(){
         let source: String = "CTGCCCGAACACGTACGCTATATATAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_3(){
+    fn has_two_base_repeat_27N_3(){
         let source: String = "GAATTCGTTACGTAACGACGCGCGCGC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_5(){
+    fn has_two_base_repeat_27N_5(){
         let source: String = "ACGTTATACCTGTACCGCACGTACGCT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_6(){
+    fn has_two_base_repeat_27N_6(){
         let source: String = "GCGGTATATACGTACCGCACGTACGCT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_2base_repeat_27N_7(){
+    fn has_two_base_repeat_27N_7(){
         let source: String = "CGGTATATACGTACCGCACGCACACAC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_2base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
+        assert!(obj.has_two_base_repeat(0, 27) == (false, 0), "{} failed", function_name!());
     }
 /*
 
-has_poly_base_or_simple_repeat test
+has_repeat test
 */
     #[test]
     #[named]
-    fn has_poly_base_or_simple_repeat_1(){
+    fn has_repeat_1(){
         let source: String = "CTTGTATACAGGGGATTTC".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base_or_simple_repeat(0, 19) == true, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 19) == (true, 10), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_or_simple_repeat_2(){
+    fn has_repeat_2(){
         let source: String = "CATCACCAATTATTGGTCCTAATGTA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base_or_simple_repeat(0, 26) == false, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 26) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_or_simple_repeat_3(){
+    fn has_repeat_3(){
         let source: String = "ATCCTCAGCTGCTTGTATA".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
-        assert!(obj.has_poly_base_or_simple_repeat(0, 19) == false, "{} failed", function_name!());
+        assert!(obj.has_repeat(0, 19) == (false, 0), "{} failed", function_name!());
     }
     #[test]
     #[named]
-    fn has_poly_base_or_simple_repeat_4(){
+    fn has_repeat_4(){
         for string in ["ATCCTCAGCTGCTTGTATA"]{
             let source: String = string.to_string();
             let v: Vec<u8> = source.into_bytes();
             let obj = DnaSequence::new(&v);
-            assert!(obj.has_poly_base_or_simple_repeat(0, 19) == false, "{} failed", function_name!());
+            assert!(obj.has_repeat(0, 19) == (false, 0), "{} failed", function_name!());
         }
     }
 
@@ -1030,5 +1068,511 @@ has_poly_base_or_simple_repeat test
         assert!(ret1 == ret2, "{} failed", function_name!());
     }
  */
+
+/*
+*
+*reverse Test
+*
+*/
+
+    #[test]
+    #[named]
+    fn reverse_1(){
+        let source: String = "AAAA".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.reverse();
+        let subseq: String = "AAAA".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_2(){
+        let source: String = "ACGT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.reverse();
+        let subseq: String = "TGCA".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_3(){
+        let source: String = "AAAATTTTCCCCGGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.reverse();
+        let subseq: String = "GGGGCCCCTTTTAAAA".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_4(){
+        let source: String = "AAAATTTTCCCCGGGGAAAATTTTCCCCGGGGAAAATTTTCCCCGGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.reverse();
+        let subseq: String = "GGGGCCCCTTTTAAAAGGGGCCCCTTTTAAAAGGGGCCCCTTTTAAAA".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+/*
+*
+*complement Test
+*
+*/
+    #[test]
+    #[named]
+    fn complement_1(){
+        let source: String = "AAAA".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "TTTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_2(){
+        let source: String = "CCCC".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "GGGG".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_3(){
+        let source: String = "GGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+    #[test]
+    #[named]
+    fn complement_4(){
+        let source: String = "TTTT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "AAAA".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 4) == &obj2.decode(0, 4), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+    #[test]
+    #[named]
+    fn complement_5(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_6(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_7(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_8(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_9(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_10(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_11(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_12(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_13(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn complement_14(){
+        let source: String = "GAGTTAAAATTGGACTGGGTATCACGGG".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement();
+        let subseq: String = "CTCAATTTTAACCTGACCCATAGTGCCC".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 28) == &obj2.decode(0, 28), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_0(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_1(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_2(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_3(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_4(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_5(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_6(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_7(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_8(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_9(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_10(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_11(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_12(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_13(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_14(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_15(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_16(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_17(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_18(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+    #[test]
+    #[named]
+    fn reverse_complement_19(){
+        let source: String = "AAGTTTGAGGCATGCTTTCT".to_string();
+        let v1: Vec<u8> = source.into_bytes();
+        let obj1 = DnaSequence::new(&v1);
+        let ret1 = obj1.complement().reverse();
+        let subseq: String = "AGAAAGCATGCCTCAAACTT".to_string();
+        let v2: Vec<u8> = subseq.into_bytes();
+        let obj2 = DnaSequence::new(&v2);
+        assert!(&ret1.decode(0, 20) == &obj2.decode(0, 20), "{} failed. {} and {}", function_name!(), String::from_utf8(ret1.decode(0, 4)).unwrap(), String::from_utf8(obj2.decode(0, 4)).unwrap());
+    }
+
+
+
 }
 

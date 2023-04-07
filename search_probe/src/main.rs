@@ -19,8 +19,8 @@ use search_probe::sequence_encoder_util::DnaSequence;
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
 use crate::bio::io::fasta::FastaRead;
-
-
+use std::io::BufReader;
+use std::io::BufRead;
 
 fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} FILE [options]", program);
@@ -36,11 +36,10 @@ fn main() {
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("a", "threshold", "threshold for hyper log counter. default value is 8.", "THRESHOLD");
-    opts.optopt("l", "left_primer", "left primer string", "LEFT PRIMER");
-    opts.optopt("r", "right_primer", "right primer string. note that primer3 outputs a reverse complement sequence of right primer", "RIGHT PRIMER");
     opts.optopt("c", "count", "count number of possible primer products", "PRODUCT SIZE");
+    opts.optopt("p", "primer", "input primers (TSV file).", "TSV FILE");
     opts.optflag("b", "binary", "outputs binary file");
-    opts.optflag("r", "only-num", "outputs only total number of k-mer");
+    opts.optflag("r", "only-num", "outputs only total number of primer products");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -52,7 +51,7 @@ fn main() {
         return;
     }
 
-    let input_file = if !matches.free.is_empty() {
+    let ngsread_input_file = if !matches.free.is_empty() {
         matches.free[0].clone()
     } else {
         print_usage(&program, &opts);
@@ -71,33 +70,62 @@ fn main() {
         8
     };
     
-    let left_primer = if matches.opt_present("l") {
-        matches.opt_str("l").unwrap()
+    let primer_filename = if matches.opt_present("p") {
+        matches.opt_str("p").unwrap()
     }else{
         print_usage(&program, &opts);
         return;
     };
 
-    let right_primer = if matches.opt_present("r") {
-        matches.opt_str("r").unwrap()
-    }else{
-        print_usage(&program, &opts);
-        return;
-    };
     
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     }else{
-        format!("{:?}_threshold{}_threads{}.out", input_file, threshold, threads)
+        format!("{:?}_threshold{}_threads{}.out", ngsread_input_file, threshold, threads)
     };
-    eprintln!("input  file: {:?}",  input_file);
+    eprintln!("input  file: {:?}",  ngsread_input_file);
 
 
-    let file = File::open(&input_file).expect("Error during opening the file");
-    let mut reader = faReader::new(file);
+/*
+primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
+2baf2cca8e913286d099b61c1665bc2_1       AGGTGGTTAGTATAGGGATGGCAC        GCGGTTAGTCGACGCGCTTGAC  61.490  66.591  74.2
+bcaba327c863b6bb4266d8705996f0a_2       TAGGGTGGATAGCTTAGACGATGTCGG     CTTAACGGCGCGGTTAGTCGAC  65.125  63.999  75.4
+bcaba327c863b6b9099b61c1665bc2b_0       TAGGGTGGATAGCTTAGACGATGTCGG     CCTTAACGGCGCGGTTAGTCGAC 65.125  65.907  75.7
+2cca8e913286f2adc1665bc2b29e9a9_4       TGGCACATAGGACGTTAGGGT   GCCCGCCAGCCTACCTTAAC    60.898  63.217  75.4
+9cd45706d73b94fa15d233d86fdb60_3        TATCCACCCTAACGTCCTATGTGCCA      GAAACGTCGAATATCTGAGGGTCCA       64.991  62.400  72.6
+aebcb32a3a44ca19b61c1665bc2b29e_1       GGTGGTTAGTATAGGGATGGCAC CCTACCTTAACGGCGCGGTTAGTC        60.244  65.268  75.4
+baf2cca8e913286f61c1665bc2b29e9_2       GTGGTTAGTATAGGGATGGCAC  CTACCTTAACGGCGCGGTTAGTCG        57.996  65.492  74.0
+ae8c9f218edaed0a6d8705996f0aca7_3       TGGATAGCTTAGACGATGTCGGTGTCA     CCTACCTTAACGGCGCGGTTAGTC        65.224  65.268  75.1
+baf2cca8e913286ed099b61c1665bc2_2       GTGGTTAGTATAGGGATGGCAC  GCGGTTAGTCGACGCGCTTGA   57.996  65.776  74.2
+gc016 check_crossing_reaction 23/04/07 23:33:13$ 
+ */
+
+    let primer_file = File::open(&primer_filename).expect("Error during opening the file");
+    //let primer_reader = BufReader::new(primer_file);
+
+    // 各行を読み取り、タブで分割する
+    let mut primer: Vec<(Vec<u8>, Vec<u8>, Vec<u8>)> = Vec::new();
+
+
+
+    for result in BufReader::new(File::open(&primer_filename).unwrap()).lines() {
+        let line = result.unwrap();
+        if line.starts_with('p') {continue}
+        let fields: Vec<&str> = line.split('\t').collect();
+        // 1, 2, 3カラムのデータをu8型に変換してベクターに格納する
+        let mut primer_id    = Vec::from(fields[0].as_bytes());
+        let mut left_primer  = Vec::from(fields[1].as_bytes());
+        let mut right_primer = Vec::from(fields[2].as_bytes());
+        primer.push((left_primer, right_primer, primer_id));
+    }
+
+
+
+    let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
+    let mut reader = faReader::new(ngsread_file);
     let mut record = faRecord::new();
     let mut sequences: Vec<DnaSequence> = Vec::new();
-    eprintln!("loading {:?} done", input_file);
+    eprintln!("loading {:?} done", ngsread_input_file);
     'each_read: loop {
         reader.read(&mut record).unwrap();
         if record.is_empty(){
@@ -107,18 +135,10 @@ fn main() {
         let current_sequence = DnaSequence::new(&sequence_as_vec);
         sequences.push(current_sequence);
     }
-
-    let primer_l:Vec<u8> = left_primer.into_bytes();
-    let primer_r:Vec<u8> = right_primer.into_bytes();
-    let primer_l_struct = DnaSequence::new(&primer_l);
-    let primer_r_struct = DnaSequence::new(&primer_r);
-    let primer = ((primer_l_struct.subsequence_as_u128(vec![[0, primer_l_struct.len()]]), primer_l_struct.len()), (primer_r_struct.subsequence_as_u128(vec![[0, primer_r_struct.len()]]), primer_r_struct.len()));//primer: ([u128, usize], [u128, usize])
-    //println!("{:#042b}", primer_l_struct.subsequence_as_u128(vec![[0, 20]]));
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
-
-
+    let primer_ref = &primer;
 
     if matches.opt_present("c") {
         let mut product_size_hashmap = HashMap::<u32, usize>::new();
@@ -137,7 +157,7 @@ fn main() {
                                 end_idx = sequences_ref.len() - 1;
                             }
                             eprintln!("start calling aggregate_length_between_primer[{}]", i);
-                            let cbf: Vec<u32> = aggregate_length_between_primer(sequences_ref, start_idx, end_idx, i, primer, product_size);
+                            let cbf: Vec<u32> = aggregate_length_between_primer(sequences_ref, start_idx, end_idx, i, primer_ref, product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             cbf
                         }
@@ -181,7 +201,7 @@ fn main() {
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("start calling build_counting_bloom_filter[{}]", i);
-                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i, primer);
+                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i, primer_ref);
                         eprintln!("finish calling build_counting_bloom_filter[{}]", i);
                         cbf
                     }
@@ -212,7 +232,7 @@ fn main() {
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
-                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i, primer);
+                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i, primer_ref);
                         //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                         eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
@@ -255,7 +275,7 @@ fn main() {
             }
             previous_kmer = *each_kmer;
         }
-        writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &input_file).unwrap();
+        writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &ngsread_input_file).unwrap();
     }
     if !matches.opt_present("r") && matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
@@ -288,6 +308,6 @@ fn main() {
     eprintln!("finish writing to output file: {:?}", &output_file);
     eprintln!("threshold: {}({}x63)\tcardinarity: {}", threshold, threshold / 63, cnt);
     eprintln!("total cardinarity: {}", cnt);
-    eprintln!("threads: {}\tthreshold: {}\tinput file {:?}", threads, threshold, &input_file);
+    eprintln!("threads: {}\tthreshold: {}\tinput file {:?}", threads, threshold, &ngsread_input_file);
 
 }

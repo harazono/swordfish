@@ -134,9 +134,9 @@ def main():
 			pass
 
 
-	print(list(primer3_info.keys())[0], file = sys.stderr)
-	print(list(survivor)[0], file = sys.stderr)
-	print(list(survivor_pair)[0], file = sys.stderr)
+	print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
+	print(list(survivor)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
+	print(list(survivor_pair)[0], file = sys.stderr) #62baf2cca8e91329bcaba327c863b6b_4
 	#print(survivor, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
 	report_file            = open(args.o + ".report", mode = "w")
 	survivor_tsv_file      = open(args.o + ".survivor.tsv", mode = "w")
