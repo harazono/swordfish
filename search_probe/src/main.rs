@@ -113,14 +113,16 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
         if line.starts_with('p') {continue}
         let fields: Vec<&str> = line.split('\t').collect();
         // 1, 2, 3カラムのデータをu8型に変換してベクターに格納する
-        let primer_id_1          = Vec::from(fields[0].as_bytes());
-        let primer_id_2          = Vec::from(fields[0].as_bytes());
+        let primer_id            = Vec::from(fields[0].as_bytes());
         let left_primer          = DnaSequence::new(&Vec::from(fields[1].as_bytes()));
         let right_primer         = DnaSequence::new(&Vec::from(fields[2].as_bytes()));
         let left_primer_revcomp  = DnaSequence::new(&Vec::from(fields[1].as_bytes())).reverse_complement();
         let right_primer_revcomp = DnaSequence::new(&Vec::from(fields[2].as_bytes())).reverse_complement();
-        primer.push((primer_id_1, left_primer, right_primer));
-        primer.push((primer_id_2, left_primer_revcomp, right_primer_revcomp));
+        primer.push((&primer_id, &left_primer, &left_primer_revcomp));
+        primer.push((&primer_id, &left_primer, &right_primer_revcomp));
+        primer.push((&primer_id, &right_primer, &left_primer_revcomp));
+        primer.push((&primer_id, &right_primer, &right_primer_revcomp));
+
     }
 
 
