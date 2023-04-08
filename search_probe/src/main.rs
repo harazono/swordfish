@@ -86,6 +86,14 @@ fn main() {
     eprintln!("input  file: {:?}",  ngsread_input_file);
 
 
+    println!("Output file name: {:?}", matches.opt_str("o"));
+    println!("Number of threads: {:?}", matches.opt_str("t"));
+    println!("Threshold: {:?}", matches.opt_str("a"));
+    println!("Product size: {:?}", matches.opt_str("c"));
+    println!("Input primers file: {:?}", matches.opt_str("p"));
+    println!("Outputs binary file: {:?}", matches.opt_present("b"));
+    println!("Outputs only total number: {:?}", matches.opt_present("r"));
+
     /*
     primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
     2baf2cca8e913286d099b61c1665bc2_1       AGGTGGTTAGTATAGGGATGGCAC        GCGGTTAGTCGACGCGCTTGAC  61.490  66.591  74.2
@@ -127,7 +135,6 @@ fn main() {
         primer.push((id_4, right_primer.clone(), right_primer_revcomp.clone()));
 
     }
-
 
 
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
