@@ -126,13 +126,13 @@ fn main() {
         let right_primer_revcomp = DnaSequence::new(&Vec::from(fields[2].as_bytes())).reverse_complement();
         let id_1: Vec<u8> = [&primer_id, &b"left_primer-left_primer_revcomp"[..]].concat();
         let id_2: Vec<u8> = [&primer_id, &b"left_primer-right_primer_revcomp"[..]].concat();
-        let id_3: Vec<u8> = [&primer_id, &b"right_primer-left_primer_revcomp"[..]].concat();
-        let id_4: Vec<u8> = [&primer_id, &b"right_primer-right_primer_revcomp"[..]].concat();
+        //let id_3: Vec<u8> = [&primer_id, &b"right_primer-left_primer_revcomp"[..]].concat();
+        let id_4: Vec<u8> = [&primer_id, &b"right_primer_revcomp-right_primer"[..]].concat();
 
         primer.push((id_1, left_primer.clone(), left_primer_revcomp.clone()));
         primer.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
-        primer.push((id_3, right_primer.clone(), left_primer_revcomp.clone()));
-        primer.push((id_4, right_primer.clone(), right_primer_revcomp.clone()));
+        //primer.push((id_3, right_primer.clone(), left_primer_revcomp.clone()));
+        primer.push((id_4, right_primer_revcomp.clone(), right_primer.clone()));
 
     }
 
