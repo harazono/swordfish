@@ -146,8 +146,8 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
     }
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
+    let primer_ref    = &primer;
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
-    let primer_ref = &primer;
 
     if matches.opt_present("c") {
         let mut product_size_hashmap = HashMap::<u32, usize>::new();

@@ -326,10 +326,11 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
                 }
                 l_window_start += 1;
             }
-            let end = start_time.elapsed();
-            eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
-            previous_time = end;
         }
+        let end = start_time.elapsed();
+        //eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+        eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+        previous_time = end;
     }
     return ret_array;
 }
