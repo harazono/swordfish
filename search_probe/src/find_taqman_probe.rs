@@ -253,14 +253,11 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 }
 
 
-pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) -> Vec<u32>{
+pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) -> Vec<u32>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
-    //let mut m_window_start: usize;
-    //let mut m_window_end:   usize;
     let mut r_window_start: usize;
     let mut r_window_end:   usize;
-
     let mut primer_l_seq:   u128;
     let mut primer_l_size:  usize;
     let mut primer_r_seq:   u128;
@@ -275,7 +272,6 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     eprintln!("[{}]finish allocating", thread_id);
     eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
 
-
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
     'each_primer: for current_primer in primer.iter() {
@@ -287,7 +283,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
         loop_cnt += 1;
 
-        'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
+        'each_read: for current_sequence in sequences.iter() {
             //let mut add_bloom_filter_cnt: usize = 0;
             //let mut l_window_cnt: usize         = 0;
             l_window_start = 0;
@@ -330,7 +326,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
             }
         }
         let end = start_time.elapsed();
-        eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+        eprintln!("loop[{:02?}]: {:09?}\tsec: {}.{:03}",thread_id, loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
         previous_time = end;
     }
     return ret_array;

@@ -184,7 +184,7 @@ fn main() {
                             cloned_slice_of_sequences.clone_from_slice_sequences(slice);
 */
                             eprintln!("start calling aggregate_length_between_primer[{}]", i);
-                            let cbf: Vec<u32> = aggregate_length_between_primer(&slice_sequences, start_idx, end_idx, i, &primer_ref_mine, product_size);
+                            let cbf: Vec<u32> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             cbf
                         }
