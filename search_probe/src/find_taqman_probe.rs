@@ -253,7 +253,7 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 }
 
 
-pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) -> Vec<u32>{
+pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) /* -> Vec<u32> */{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
     let mut r_window_start: usize;
@@ -266,10 +266,10 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
     let mut mask_r:         u128;
     let mut primer_id:      Vec<u8>;
     let mut loop_cnt:usize = 0;
-    eprintln!("[{}]Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", thread_id, BLOOMFILTER_TABLE_SIZE);
-    let mut ret_array: Vec<u32> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
-    eprintln!("[{}]Filling Vec<u32; {}> with 0", thread_id, BLOOMFILTER_TABLE_SIZE);
-    eprintln!("[{}]finish allocating", thread_id);
+    //eprintln!("[{}]Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", thread_id, BLOOMFILTER_TABLE_SIZE);
+    //let mut ret_array: Vec<u32> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
+    //eprintln!("[{}]Filling Vec<u32; {}> with 0", thread_id, BLOOMFILTER_TABLE_SIZE);
+    //eprintln!("[{}]finish allocating", thread_id);
     eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
 
     let start_time = Instant::now();
@@ -317,7 +317,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     }
                     //ここまでで、LとRが一致してる
                     let length: u32 = (r_window_end - l_window_start) as u32;
-                    ret_array.push(length);
+                    //ret_array.push(length);
                     println!(">{:?}_{}_{}\n{:?}",current_primer.0, l_window_start, r_window_end, String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap());
 
                     r_window_start += 1;
@@ -326,8 +326,8 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
             }
         }
         let end = start_time.elapsed();
-        eprintln!("loop[{:02?}]: {:09?}\tsec: {}.{:03}",thread_id, loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\tsec: {}.{:03}",thread_id, sequences.len(), loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
         previous_time = end;
     }
-    return ret_array;
+    //return ret_array;
 }

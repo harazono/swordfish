@@ -183,15 +183,16 @@ fn main() {
                             cloned_slice_of_sequences.resize(slice_sequences.len(), DnaSequence::new(&vec![])););
                             cloned_slice_of_sequences.clone_from_slice_sequences(slice);
 */
-                            eprintln!("start calling aggregate_length_between_primer[{}]", i);
-                            let cbf: Vec<u32> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, product_size);
+                            eprintln!("start calling aggregate_length_between_primer[{}], # of sequence: {}", i, &slice_sequences.len());
+                            /* let cbf: Vec<u32> =  */aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
-                            cbf
+                            //cbf
                         }
                     )
                 )
             }
-            for child in children_1{
+/*
+             for child in children_1{
                 let cbf = child.join().unwrap();
                 for i in cbf{
                     if let Some(value) = product_size_hashmap.get_mut(&i){
@@ -201,6 +202,7 @@ fn main() {
                     }
                 }
             }
+ */
         }
     );
     /*
