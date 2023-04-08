@@ -86,19 +86,19 @@ fn main() {
     eprintln!("input  file: {:?}",  ngsread_input_file);
 
 
-/*
-primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
-2baf2cca8e913286d099b61c1665bc2_1       AGGTGGTTAGTATAGGGATGGCAC        GCGGTTAGTCGACGCGCTTGAC  61.490  66.591  74.2
-bcaba327c863b6bb4266d8705996f0a_2       TAGGGTGGATAGCTTAGACGATGTCGG     CTTAACGGCGCGGTTAGTCGAC  65.125  63.999  75.4
-bcaba327c863b6b9099b61c1665bc2b_0       TAGGGTGGATAGCTTAGACGATGTCGG     CCTTAACGGCGCGGTTAGTCGAC 65.125  65.907  75.7
-2cca8e913286f2adc1665bc2b29e9a9_4       TGGCACATAGGACGTTAGGGT   GCCCGCCAGCCTACCTTAAC    60.898  63.217  75.4
-9cd45706d73b94fa15d233d86fdb60_3        TATCCACCCTAACGTCCTATGTGCCA      GAAACGTCGAATATCTGAGGGTCCA       64.991  62.400  72.6
-aebcb32a3a44ca19b61c1665bc2b29e_1       GGTGGTTAGTATAGGGATGGCAC CCTACCTTAACGGCGCGGTTAGTC        60.244  65.268  75.4
-baf2cca8e913286f61c1665bc2b29e9_2       GTGGTTAGTATAGGGATGGCAC  CTACCTTAACGGCGCGGTTAGTCG        57.996  65.492  74.0
-ae8c9f218edaed0a6d8705996f0aca7_3       TGGATAGCTTAGACGATGTCGGTGTCA     CCTACCTTAACGGCGCGGTTAGTC        65.224  65.268  75.1
-baf2cca8e913286ed099b61c1665bc2_2       GTGGTTAGTATAGGGATGGCAC  GCGGTTAGTCGACGCGCTTGA   57.996  65.776  74.2
-gc016 check_crossing_reaction 23/04/07 23:33:13$ 
- */
+    /*
+    primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
+    2baf2cca8e913286d099b61c1665bc2_1       AGGTGGTTAGTATAGGGATGGCAC        GCGGTTAGTCGACGCGCTTGAC  61.490  66.591  74.2
+    bcaba327c863b6bb4266d8705996f0a_2       TAGGGTGGATAGCTTAGACGATGTCGG     CTTAACGGCGCGGTTAGTCGAC  65.125  63.999  75.4
+    bcaba327c863b6b9099b61c1665bc2b_0       TAGGGTGGATAGCTTAGACGATGTCGG     CCTTAACGGCGCGGTTAGTCGAC 65.125  65.907  75.7
+    2cca8e913286f2adc1665bc2b29e9a9_4       TGGCACATAGGACGTTAGGGT   GCCCGCCAGCCTACCTTAAC    60.898  63.217  75.4
+    9cd45706d73b94fa15d233d86fdb60_3        TATCCACCCTAACGTCCTATGTGCCA      GAAACGTCGAATATCTGAGGGTCCA       64.991  62.400  72.6
+    aebcb32a3a44ca19b61c1665bc2b29e_1       GGTGGTTAGTATAGGGATGGCAC CCTACCTTAACGGCGCGGTTAGTC        60.244  65.268  75.4
+    baf2cca8e913286f61c1665bc2b29e9_2       GTGGTTAGTATAGGGATGGCAC  CTACCTTAACGGCGCGGTTAGTCG        57.996  65.492  74.0
+    ae8c9f218edaed0a6d8705996f0aca7_3       TGGATAGCTTAGACGATGTCGGTGTCA     CCTACCTTAACGGCGCGGTTAGTC        65.224  65.268  75.1
+    baf2cca8e913286ed099b61c1665bc2_2       GTGGTTAGTATAGGGATGGCAC  GCGGTTAGTCGACGCGCTTGA   57.996  65.776  74.2
+    gc016 check_crossing_reaction 23/04/07 23:33:13$ 
+    */
 
     let primer_file = File::open(&primer_filename).expect("Error during opening the file");
     //let primer_reader = BufReader::new(primer_file);
@@ -145,8 +145,8 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
         sequences.push(current_sequence);
     }
     let chunk_size: usize = sequences.len() / (threads - 1);
-    let sequences_ref = &sequences;
-    let primer_ref    = &primer;
+    let sequences_ref = Arc::new(sequences);
+    let primer_ref    = Arc::new(primer);
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
 
     if matches.opt_present("c") {
@@ -155,6 +155,8 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
         thread::scope(|scope|{
             let mut children_1 = Vec::new();
             for i in 1..threads {
+                let sequences_ref = Arc::clone(&sequences_ref);
+                let primer_ref    = Arc::clone(&primer_ref);
                 children_1.push(
                     scope.spawn(move || 
                         {
@@ -166,7 +168,7 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
                                 end_idx = sequences_ref.len() - 1;
                             }
                             eprintln!("start calling aggregate_length_between_primer[{}]", i);
-                            let cbf: Vec<u32> = aggregate_length_between_primer(sequences_ref, start_idx, end_idx, i, primer_ref, product_size);
+                            let cbf: Vec<u32> = aggregate_length_between_primer(&sequences_ref, start_idx, end_idx, i, &primer_ref, product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             cbf
                         }
@@ -199,6 +201,9 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
     thread::scope(|scope|{
         let mut children_1 = Vec::new();
         for i in 1..threads {
+            let sequences_ref = Arc::clone(&sequences_ref);
+            let primer_ref    = Arc::clone(&primer_ref);
+
             children_1.push(
                 scope.spawn(move || 
                     {
@@ -210,7 +215,7 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("start calling build_counting_bloom_filter[{}]", i);
-                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i, primer_ref);
+                        let cbf: Vec<u32> = build_counting_bloom_filter(&sequences_ref, start_idx, end_idx, i, &primer_ref);
                         eprintln!("finish calling build_counting_bloom_filter[{}]", i);
                         cbf
                     }
@@ -230,6 +235,9 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
     thread::scope(|scope|{
         let mut children_2 = Vec::new();
         for i in 1..threads {
+            let sequences_ref = Arc::clone(&sequences_ref);
+            let primer_ref    = Arc::clone(&primer_ref);
+
             children_2.push(
                 scope.spawn(move ||
                     {
@@ -241,7 +249,7 @@ gc016 check_crossing_reaction 23/04/07 23:33:13$
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
-                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, sequences_ref, start_idx, end_idx, threshold, i, primer_ref);
+                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, &sequences_ref, start_idx, end_idx, threshold, i, &primer_ref);
                         //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
                         h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                         eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
