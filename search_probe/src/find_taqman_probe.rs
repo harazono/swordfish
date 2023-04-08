@@ -269,10 +269,11 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     let mut mask_r:         u128;
     let mut primer_id:      Vec<u8>;
     let mut loop_cnt:usize = 0;
-    eprintln!("Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", BLOOMFILTER_TABLE_SIZE);
+    eprintln!("[{}]Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", thread_id, BLOOMFILTER_TABLE_SIZE);
     let mut ret_array: Vec<u32> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
-    eprintln!("Filling Vec<u32; {}> with 0", BLOOMFILTER_TABLE_SIZE);
-    eprintln!("finish allocating");
+    eprintln!("[{}]Filling Vec<u32; {}> with 0", thread_id, BLOOMFILTER_TABLE_SIZE);
+    eprintln!("[{}]finish allocating", thread_id);
+    eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
 
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
@@ -283,11 +284,11 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
         primer_r_seq  = current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
+        loop_cnt += 1;
 
         'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
             //let mut add_bloom_filter_cnt: usize = 0;
             //let mut l_window_cnt: usize         = 0;
-            loop_cnt += 1;
             l_window_start = 0;
             'each_l_window: loop{
                 l_window_end = l_window_start + primer_l_size;
@@ -328,7 +329,6 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
             }
         }
         let end = start_time.elapsed();
-        //eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
         eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
         previous_time = end;
     }
