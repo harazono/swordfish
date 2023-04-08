@@ -275,6 +275,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, start_idx: 
     eprintln!("[{}]finish allocating", thread_id);
     eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
 
+
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
     'each_primer: for current_primer in primer.iter() {

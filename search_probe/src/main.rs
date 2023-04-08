@@ -166,7 +166,7 @@ fn main() {
                 let primer_ref    = Arc::clone(&primer_ref);
                 children_1.push(
                     scope.spawn(move || 
-                        {
+                        {   
                             let start_idx: usize = (i - 1) * chunk_size;
                             let end_idx: usize;
                             if i != threads - 1{
@@ -174,8 +174,17 @@ fn main() {
                             }else{
                                 end_idx = sequences_ref.len() - 1;
                             }
+                            let primer_ref_mine = (*primer_ref).clone();
+                            let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
+
+/*
+                             let mut cloned_slice_of_sequences: Vec<DnaSequence> = Vec::resize(slice_sequences.len());
+                            let mut cloned_slice_of_sequences: Vec<DnaSequence> = vec!([0; slice_sequences.len()]);
+                            cloned_slice_of_sequences.resize(slice_sequences.len(), DnaSequence::new(&vec![])););
+                            cloned_slice_of_sequences.clone_from_slice_sequences(slice);
+*/
                             eprintln!("start calling aggregate_length_between_primer[{}]", i);
-                            let cbf: Vec<u32> = aggregate_length_between_primer(&sequences_ref, start_idx, end_idx, i, &primer_ref, product_size);
+                            let cbf: Vec<u32> = aggregate_length_between_primer(&slice_sequences, start_idx, end_idx, i, &primer_ref_mine, product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             cbf
                         }
