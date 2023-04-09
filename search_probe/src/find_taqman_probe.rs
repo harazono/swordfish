@@ -318,15 +318,19 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     //ここまでで、LとRが一致してる
                     let length: u32 = (r_window_end - l_window_start) as u32;
                     //ret_array.push(length);
-                    println!(">{:?}_{}_{}\n{:?}",current_primer.0, l_window_start, r_window_end, String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap());
-
+                    let vec_u8 = vec![72, 101, 108, 108, 111]; // "Hello"のUTF-8バイト列
+                    let primer_id          = String::from_utf8(current_primer.0.clone()).unwrap();
+                    let primer_id_str      = format!("{:?}", primer_id);
+                    let sequence_slice     = String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap();
+                    let sequence_slice_str = format!("{:?}", sequence_slice);
+                    println!(">{:?}_{}\n{:?}", primer_id_str, r_window_end - l_window_start, sequence_slice_str);
                     r_window_start += 1;
                 }
                 l_window_start += 1;
             }
         }
         let end = start_time.elapsed();
-        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\tsec: {}.{:03}",thread_id, sequences.len(), loop_cnt,  end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\tsec: {}.{:03}",thread_id, primer.len(), loop_cnt, end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
         previous_time = end;
     }
     //return ret_array;
