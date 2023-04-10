@@ -318,11 +318,10 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     //ここまでで、LとRが一致してる
                     let length: u32 = (r_window_end - l_window_start) as u32;
                     //ret_array.push(length);
-                    let vec_u8 = vec![72, 101, 108, 108, 111]; // "Hello"のUTF-8バイト列
                     let primer_id          = String::from_utf8(current_primer.0.clone()).unwrap();
-                    let primer_id_str      = format!("{:?}", primer_id);
+                    let primer_id_str      = format!("{}", primer_id);
                     let sequence_slice     = String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap();
-                    let sequence_slice_str = format!("{:?}", sequence_slice);
+                    let sequence_slice_str = format!("{}", sequence_slice);
                     println!(">{}_{}\n{}", primer_id_str, r_window_end - l_window_start, sequence_slice_str);
                     r_window_start += 1;
                 }
