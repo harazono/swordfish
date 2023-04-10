@@ -323,7 +323,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     let primer_id_str      = format!("{:?}", primer_id);
                     let sequence_slice     = String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap();
                     let sequence_slice_str = format!("{:?}", sequence_slice);
-                    println!(">{:?}_{}\n{:?}", primer_id_str, r_window_end - l_window_start, sequence_slice_str);
+                    println!(">{}_{}\n{}", primer_id_str, r_window_end - l_window_start, sequence_slice_str);
                     r_window_start += 1;
                 }
                 l_window_start += 1;
