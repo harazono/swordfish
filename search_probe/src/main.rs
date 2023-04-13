@@ -119,9 +119,21 @@ fn main() {
         if line.starts_with('p') {continue}
         let fields: Vec<&str> = line.split('\t').collect();
         // 1, 2, 3カラムのデータをu8型に変換してベクターに格納する
+        //pub fn subsequence(&self, ranges: Vec<[usize; 2]>) -> DnaSequence{
+        /*
+        L primerは、添字が若い方が5'
+        つまり前半数塩基をトリミングする
+        L primerも、添字が若い方が5'
+        つまり前半数塩基をトリミングする
+        */
         let primer_id            = Vec::from(fields[0].as_bytes());
-        let left_primer          = DnaSequence::new(&Vec::from(fields[1].as_bytes()));
-        let right_primer         = DnaSequence::new(&Vec::from(fields[2].as_bytes()));
+        let left_primer_seq      = &fields[1][fields[1].len() - 15..]; // 後ろから15文字を取得
+        let right_primer_seq     = &fields[2][fields[2].len() - 15..]; // 後ろから15文字を取得
+        let left_primer          = DnaSequence::new(&left_primer_seq.into());
+        let right_primer         = DnaSequence::new(&right_primer_seq.into());
+
+        //let left_primer          = DnaSequence::new(&Vec::from(fields[1].as_bytes()));
+        //let right_primer         = DnaSequence::new(&Vec::from(fields[2].as_bytes()));
         let left_primer_revcomp  = DnaSequence::new(&Vec::from(fields[1].as_bytes())).reverse_complement();
         let right_primer_revcomp = DnaSequence::new(&Vec::from(fields[2].as_bytes())).reverse_complement();
         let id_1: Vec<u8> = [&primer_id, &b"left_primer-left_primer_revcomp"[..]].concat();
