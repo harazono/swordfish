@@ -123,12 +123,12 @@ fn main() {
         /*
         L primerは、添字が若い方が5'
         つまり前半数塩基をトリミングする
-        L primerも、添字が若い方が5'
+        R primerも、添字が若い方が5'
         つまり前半数塩基をトリミングする
         */
         let primer_id            = Vec::from(fields[0].as_bytes());
-        let left_primer_seq      = &fields[1][fields[1].len() - 15..]; // 後ろから15文字を取得
-        let right_primer_seq     = &fields[2][fields[2].len() - 15..]; // 後ろから15文字を取得
+        let left_primer_seq      = &fields[1][fields[1].len() - 12..]; // 後ろから15文字を取得
+        let right_primer_seq     = &fields[2][fields[2].len() - 12..]; // 後ろから15文字を取得
         let left_primer          = DnaSequence::new(&left_primer_seq.into());
         let right_primer         = DnaSequence::new(&right_primer_seq.into());
 
