@@ -36,6 +36,7 @@ fn main() {
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("a", "threshold", "threshold for hyper log counter. default value is 8.", "THRESHOLD");
+    opts.optopt("s", "triming_size", "each primer will be trimmed to this size. 3' side will be remain.", "TRIMSIZE");
     opts.optopt("c", "count", "count number of possible primer products", "PRODUCT SIZE");
     opts.optopt("p", "primer", "input primers (TSV file).", "TSV FILE");
     opts.optflag("b", "binary", "outputs binary file");
@@ -63,7 +64,14 @@ fn main() {
     }else{
         8
     };
-    
+
+    let triming_size: usize = if matches.opt_present("s") {
+        matches.opt_str("s").unwrap().parse::<usize>().unwrap()
+    }else{
+        15
+    };
+
+
     let threshold:u32 = if matches.opt_present("a") {
         matches.opt_str("a").unwrap().parse::<u32>().unwrap()
     }else{
@@ -88,7 +96,7 @@ fn main() {
 
     eprintln!("Output file name: {:?}", matches.opt_str("o"));
     eprintln!("Number of threads: {:?}", matches.opt_str("t"));
-    eprintln!("Threshold: {:?}", matches.opt_str("a"));
+    eprintln!("Triming size: {:?}", matches.opt_str("s"));
     eprintln!("Product size: {:?}", matches.opt_str("c"));
     eprintln!("Input primers file: {:?}", matches.opt_str("p"));
     eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
@@ -127,8 +135,8 @@ fn main() {
         つまり前半数塩基をトリミングする
         */
         let primer_id            = Vec::from(fields[0].as_bytes());
-        let left_primer_seq      = &fields[1][fields[1].len() - 12..]; // 後ろから15文字を取得
-        let right_primer_seq     = &fields[2][fields[2].len() - 12..]; // 後ろから15文字を取得
+        let left_primer_seq      = &fields[1][fields[1].len() - triming_size..]; // 後ろから15文字を取得
+        let right_primer_seq     = &fields[2][fields[2].len() - triming_size..]; // 後ろから15文字を取得
         let left_primer          = DnaSequence::new(&left_primer_seq.into());
         let right_primer         = DnaSequence::new(&right_primer_seq.into());
 
