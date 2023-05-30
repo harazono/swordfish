@@ -71,7 +71,6 @@ fn main() {
         15
     };
 
-
     let threshold:u32 = if matches.opt_present("a") {
         matches.opt_str("a").unwrap().parse::<u32>().unwrap()
     }else{
