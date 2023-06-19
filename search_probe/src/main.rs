@@ -103,7 +103,6 @@ fn main() {
     eprintln!("Triming size: {:?}", triming_size);
     eprintln!("Input primers file: {:?}", primer_filename);
     eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
-    eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
 	eprintln!("Extract: {:?}", matches.opt_present("e"));
 
     /*
