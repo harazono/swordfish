@@ -155,9 +155,8 @@ fn main() {
         primer.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
         //primer.push((id_3, right_primer.clone(), left_primer_revcomp.clone()));
         primer.push((id_4, right_primer_revcomp.clone(), right_primer.clone()));
-
     }
-
+    eprintln!("Number of primers: {:?}", &primer.len());
 
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
     let mut reader = faReader::new(ngsread_file);

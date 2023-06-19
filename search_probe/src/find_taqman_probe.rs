@@ -281,6 +281,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
         mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
         loop_cnt += 1;
+        
 
         'each_read: for current_sequence in sequences.iter() {
             l_window_start = 0;
