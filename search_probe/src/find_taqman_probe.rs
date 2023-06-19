@@ -267,7 +267,8 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
     let mut primer_id:      Vec<u8>;
     let mut loop_cnt:usize = 0;
     let mut ret_array: Vec<u8> = Vec::new();
-	let mut hit_counter:usize = 0;
+    let mut lr_hit_counter:usize = 0;
+    let mut l_hit_counter:usize  = 0;
     eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
 
     let start_time = Instant::now();
@@ -295,6 +296,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     continue 'each_l_window;
                 }
                 r_window_start = l_window_end + PROBE_LEN;
+                l_hit_counter += 1;
                 'each_r_window: loop{
                     r_window_end = r_window_start + primer_r_size;
                     if r_window_end >= current_sequence.len() + 1{
@@ -322,7 +324,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     let result_bytes = result_str.into_bytes();
                     // Add the bytes to ret_array
                     ret_array.extend(result_bytes);
-					hit_counter += 1;
+                    lr_hit_counter += 1;
                     r_window_start += 1;
                 }
                 l_window_start += 1;
@@ -330,9 +332,10 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
         }
         let end = start_time.elapsed();
         
-        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\t{}\tsec: {}.{:03}",thread_id, primer.len(), loop_cnt, hit_counter, end.as_secs() - previous_time.as_secs(), end.subsec_nanos() - previous_time.subsec_nanos());
+        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\t{}\t{}\tsec: {}.{:03}",thread_id, primer.len(), loop_cnt, lr_hit_counter, l_hit_counter, end.as_secs() - previous_time.as_secs(), end.subsec_nanos() - previous_time.subsec_nanos());
         previous_time = end;
-		hit_counter = 0;
+        lr_hit_counter = 0;
+        l_hit_counter = 0;
     }
     return ret_array;
 }
