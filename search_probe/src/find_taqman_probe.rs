@@ -284,7 +284,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
 
 
         'each_read: for current_sequence in sequences.iter() {
-            eprintln!("{}", current_sequence.len());
+            //eprintln!("{}", current_sequence.len());//見えてる
             l_window_start = 0;
             'each_l_window: loop{
                 l_window_end = l_window_start + primer_l_size;
@@ -295,6 +295,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                 let l_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end]]);
                 if (l_window_as_u128 & mask_l) != primer_l_seq{
                     l_window_start += 1;
+                    eprintln!("exit due to l_window mask fail");
                     continue 'each_l_window;
                 }
                 r_window_start = l_window_end + PROBE_LEN;
@@ -313,6 +314,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     let r_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[r_window_start, r_window_end]]);
                     if (r_window_as_u128 & mask_r) != primer_r_seq {
                         r_window_start += 1;
+                        eprintln!("exit due to r_window mask fail");
                         continue 'each_r_window;
                     }
                     //ここまでで、LとRが一致してる
