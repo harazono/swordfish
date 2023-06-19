@@ -198,7 +198,7 @@ fn main() {
                             let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
 
                             eprintln!("start calling aggregate_length_between_primer[{}], # of sequence: {}", i, &slice_sequences.len());
-                            let cbf: Vec<Vec<u8>> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
+                            let cbf: Vec<u8> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             return cbf
                         }
@@ -210,10 +210,7 @@ fn main() {
             for child in children_1 {
                 match child.join() {
                     Ok(result) => {
-                        let vec_of_strings: Vec<String> = result.into_iter().map(|vec| String::from_utf8(vec).unwrap()).collect();
-                        let joined_string = vec_of_strings.join("\n");
-                        let result_vec: Vec<u8> = joined_string.into_bytes();
-                        file.write_all(&result_vec).unwrap();
+                        file.write_all(&result).unwrap();
                     }
                     Err(e) => {
                         eprintln!("Error: {:?}", e);
