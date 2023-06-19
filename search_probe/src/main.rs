@@ -198,28 +198,28 @@ fn main() {
                             let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
 
                             eprintln!("start calling aggregate_length_between_primer[{}], # of sequence: {}", i, &slice_sequences.len());
-                            let cbf: Vec<u8> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
+                            let cbf: Vec<Vec<u8>> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
                             return cbf
                         }
                     )
                 )
             }
-            let mut results: Vec<u8> = Vec::new();
+            eprintln!("start  writing to output file: {:?}", &output_file);
+            let mut file = File::create(&output_file).unwrap();
             for child in children_1 {
                 match child.join() {
                     Ok(result) => {
-                        results.extend(result);
+                        let vec_of_strings: Vec<String> = result.into_iter().map(|vec| String::from_utf8(vec).unwrap()).collect();
+                        let joined_string = vec_of_strings.join("\n");
+                        let result_vec: Vec<u8> = joined_string.into_bytes();
+                        file.write_all(&result_vec).unwrap();
                     }
                     Err(e) => {
                         eprintln!("Error: {:?}", e);
                     }
                 }
             }
-    
-            let mut file = File::create(&output_file).unwrap();
-            file.write_all(&results).unwrap();
-
             eprintln!("finish writing to output file: {:?}", &output_file);
 
         }
