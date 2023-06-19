@@ -314,7 +314,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     let r_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[r_window_start, r_window_end]]);
                     if (r_window_as_u128 & mask_r) != primer_r_seq {
                         r_window_start += 1;
-                        eprintln!("exit due to r_window mask fail");
+                        //eprintln!("exit due to r_window mask fail");//ここまで到達してる
                         continue 'each_r_window;
                     }
                     //ここまでで、LとRが一致してる
@@ -335,11 +335,10 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
             }
         }
         let end = start_time.elapsed();
-        
         eprintln!("loop[{:02?}]: {:06?}\t{:09?}\t{}\t{}\tsec: {}.{:03}",thread_id, primer.len(), loop_cnt, lr_hit_counter, l_hit_counter, end.as_secs() - previous_time.as_secs(), end.subsec_nanos() - previous_time.subsec_nanos());
-        previous_time = end;
+        previous_time  = end;
         lr_hit_counter = 0;
-        l_hit_counter = 0;
+        l_hit_counter  = 0;
     }
     return ret_array;
 }
