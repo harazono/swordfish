@@ -295,7 +295,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                 let l_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end]]);
                 if (l_window_as_u128 & mask_l) != primer_l_seq{
                     l_window_start += 1;
-                    eprintln!("exit due to l_window mask fail");
+                    //eprintln!("exit due to l_window mask fail");
                     continue 'each_l_window;
                 }
                 r_window_start = l_window_end + PROBE_LEN;
