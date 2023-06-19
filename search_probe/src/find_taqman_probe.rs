@@ -319,16 +319,25 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     }
                     //ここまでで、LとRが一致してる
                     let length: u32 = (r_window_end - l_window_start) as u32;
-                    //ret_array.push(length);
-                    let primer_id          = String::from_utf8(current_primer.0.clone()).unwrap();
-                    let primer_id_str      = format!("{}", primer_id);
-                    let sequence_slice     = String::from_utf8(current_sequence.decode(l_window_start, r_window_end)).unwrap();
-                    let sequence_slice_str = format!("{}", sequence_slice);
-                    let result_str         = format!(">{}_{}\n{}\n", primer_id_str, r_window_end - l_window_start, sequence_slice_str);
-                    let result_bytes: Vec<u8>      = result_str.into_bytes();
-                    // Add the bytes to ret_array
-                    ret_array.extend(result_bytes);
-                    lr_hit_counter += 1;
+                    let primer_id = &current_primer.0;
+                    let sequence_slice = current_sequence.decode(l_window_start, r_window_end);
+                    let length = r_window_end - l_window_start;
+                    
+                    // `>`とprimer_idと`_`を追加
+                    ret_array.push(b'>');
+                    ret_array.extend(primer_id);
+                    ret_array.push(b'_');
+                    
+                    // lengthを追加
+                    for digit in length.to_string().as_bytes() {
+                        ret_array.push(*digit);
+                    }
+                    
+                    // `\n`とsequence_sliceと`\n`を追加
+                    ret_array.push(b'\n');
+                    ret_array.extend(sequence_slice);
+                    ret_array.push(b'\n');
+                                        lr_hit_counter += 1;
                     r_window_start += 1;
                 }
                 l_window_start += 1;
