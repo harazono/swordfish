@@ -37,10 +37,10 @@ fn main() {
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("a", "threshold", "threshold for hyper log counter. default value is 8.", "THRESHOLD");
     opts.optopt("s", "triming_size", "each primer will be trimmed to this size. 3' side will be remain.", "TRIMSIZE");
-    opts.optopt("c", "count", "count number of possible primer products", "PRODUCT SIZE");
+    opts.optopt("l", "max_product_size", "max product size of PCR", "PRODUCT SIZE");
     opts.optopt("p", "primer", "input primers (TSV file).", "TSV FILE");
+    opts.optflag("e", "extract", "extract genomic region where primer is located");
     opts.optflag("b", "binary", "outputs binary file");
-    opts.optflag("r", "only-num", "outputs only total number of primer products");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -84,22 +84,28 @@ fn main() {
         return;
     };
 
-    
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     }else{
         format!("{:?}_threshold{}_threads{}.out", ngsread_input_file, threshold, threads)
     };
+
+    let max_product_size = if matches.opt_present("l") {
+        matches.opt_str("l").unwrap().parse::<usize>().unwrap()
+    }else{
+        usize::MAX
+    };
+
+
     eprintln!("input  file: {:?}",  ngsread_input_file);
-
-
     eprintln!("Output file name: {:?}", output_file);
     eprintln!("Number of threads: {:?}", threads);
     eprintln!("Triming size: {:?}", triming_size);
-    //eprintln!("Product size: {:?}", matches.opt_str("c"));
+    eprintln!("Product size: {:?}", matches.opt_str("c"));
     eprintln!("Input primers file: {:?}", primer_filename);
-    //eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
-    //eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
+    eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
+    eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
+	eprintln!("Extract: {:?}", matches.opt_present("e"));
 
     /*
     primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
@@ -174,9 +180,8 @@ fn main() {
     let primer_ref    = Arc::new(primer);
     let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
 
-    if matches.opt_present("c") {
-        let mut product_size_hashmap = HashMap::<u32, usize>::new();
-        let product_size = matches.opt_str("c").unwrap().parse::<usize>().unwrap();
+    if matches.opt_present("e") {
+        //let mut product_size_hashmap = HashMap::<u32, usize>::new();
         thread::scope(|scope|{
             let mut children_1 = Vec::new();
             for i in 1..threads {
@@ -195,172 +200,146 @@ fn main() {
                             let primer_ref_mine = (*primer_ref).clone();
                             let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
 
-/*
-                             let mut cloned_slice_of_sequences: Vec<DnaSequence> = Vec::resize(slice_sequences.len());
-                            let mut cloned_slice_of_sequences: Vec<DnaSequence> = vec!([0; slice_sequences.len()]);
-                            cloned_slice_of_sequences.resize(slice_sequences.len(), DnaSequence::new(&vec![])););
-                            cloned_slice_of_sequences.clone_from_slice_sequences(slice);
-*/
                             eprintln!("start calling aggregate_length_between_primer[{}], # of sequence: {}", i, &slice_sequences.len());
-                            /* let cbf: Vec<u32> =  */aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, product_size);
+                            let cbf: Vec<u8> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
-                            //cbf
+                            return cbf
                         }
                     )
                 )
             }
-/*
-             for child in children_1{
-                let cbf = child.join().unwrap();
-                for i in cbf{
-                    if let Some(value) = product_size_hashmap.get_mut(&i){
-                        *value += 1;
-                    }else{
-                        product_size_hashmap.insert(i, 1);
+            let mut results: Vec<u8> = Vec::new();
+            for child in children_1 {
+                match child.join() {
+                    Ok(result) => {
+                        results.extend(result);
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {:?}", e);
                     }
                 }
             }
- */
+    
+            let mut file = File::create(&output_file).unwrap();
+            file.write_all(&results).unwrap();
+
+            eprintln!("finish writing to output file: {:?}", &output_file);
+
         }
     );
-    /*
-    for (key, value) in product_size_hashmap.iter(){
-        println!("{}\t{}", key, value);
-    }
-    */
-    return
-    }
+    }else{
+        thread::scope(|scope|{
+            let mut children_1 = Vec::new();
+            for i in 1..threads {
+                let sequences_ref = Arc::clone(&sequences_ref);
+                let primer_ref    = Arc::clone(&primer_ref);
 
-
-
-
-    thread::scope(|scope|{
-        let mut children_1 = Vec::new();
-        for i in 1..threads {
-            let sequences_ref = Arc::clone(&sequences_ref);
-            let primer_ref    = Arc::clone(&primer_ref);
-
-            children_1.push(
-                scope.spawn(move || 
-                    {
-                        let start_idx: usize = (i - 1) * chunk_size;
-                        let end_idx: usize;
-                        if i != threads - 1{
-                            end_idx = i * chunk_size;
-                        }else{
-                            end_idx = sequences_ref.len() - 1;
+                children_1.push(
+                    scope.spawn(move || 
+                        {
+                            let start_idx: usize = (i - 1) * chunk_size;
+                            let end_idx: usize;
+                            if i != threads - 1{
+                                end_idx = i * chunk_size;
+                            }else{
+                                end_idx = sequences_ref.len() - 1;
+                            }
+                            eprintln!("start calling build_counting_bloom_filter[{}]", i);
+                            let cbf: Vec<u32> = build_counting_bloom_filter(&sequences_ref, start_idx, end_idx, i, &primer_ref);
+                            eprintln!("finish calling build_counting_bloom_filter[{}]", i);
+                            cbf
                         }
-                        eprintln!("start calling build_counting_bloom_filter[{}]", i);
-                        let cbf: Vec<u32> = build_counting_bloom_filter(&sequences_ref, start_idx, end_idx, i, &primer_ref);
-                        eprintln!("finish calling build_counting_bloom_filter[{}]", i);
-                        cbf
-                    }
+                    )
                 )
-            )
-        }
-        for child in children_1{
-            let cbf = child.join().unwrap();
-            zip(cbf_oyadama.iter_mut(), cbf).for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u32::MAX));
-        }
-    });
-    let h_cbf_h_oyadama: Arc<Mutex<HashSet<u128>>> = Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
-    let cbf_oyadama_ref = &cbf_oyadama;
-    let h_cbf_h_oyadama_ref = &h_cbf_h_oyadama;
-
-
-    thread::scope(|scope|{
-        let mut children_2 = Vec::new();
-        for i in 1..threads {
-            let sequences_ref = Arc::clone(&sequences_ref);
-            let primer_ref    = Arc::clone(&primer_ref);
-
-            children_2.push(
-                scope.spawn(move ||
-                    {
-                        let start_idx: usize = (i - 1) * chunk_size;
-                        let end_idx: usize;
-                        if i != threads - 1{
-                            end_idx = i * chunk_size;
-                        }else{
-                            end_idx = sequences_ref.len() - 1;
-                        }
-                        eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
-                        let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, &sequences_ref, start_idx, end_idx, threshold, i, &primer_ref);
-                        //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
-                        h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
-                        eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
-                    }
-                )
-            )
-        }
-        for child in children_2{
-            let _ = child.join();
-        }
-    });
-
-
-    let high_occurence_kmer: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
- /*
-ここまで
-*/
-
-/* 
-    //sortする
-    eprintln!("start voracious_mt_sort({})", threads);
-    high_occurence_kmer.voracious_mt_sort(threads);
-    eprintln!("finish voracious_mt_sort({})", threads);
-    eprintln!("start  writing to output file: {:?}", &output_file);
- */
-    //let mut w = File::create(&output_file).unwrap();
-    let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
-    //let mut w_kensho = BufWriter::new(fs::File::create("./kensho_out").unwrap());
-
-    let mut previous_kmer: u128 = 0;
-    let mut cnt = 0;
-    let mut buf_array: [u8; 16] = [0; 16];
-    let mut buf_num: u128;
-
-    if matches.opt_present("r") {
-        eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
             }
-            previous_kmer = *each_kmer;
-        }
-        writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &ngsread_input_file).unwrap();
-    }
-    if !matches.opt_present("r") && matches.opt_present("b"){
-        eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
-                buf_num = *each_kmer;
-                for i in 0..16{
-                    buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
-                    buf_num >>= 8;
+            for child in children_1{
+                let cbf = child.join().unwrap();
+                zip(cbf_oyadama.iter_mut(), cbf).for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u32::MAX));
+            }
+        });
+        let h_cbf_h_oyadama: Arc<Mutex<HashSet<u128>>> = Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
+        let cbf_oyadama_ref = &cbf_oyadama;
+        let h_cbf_h_oyadama_ref = &h_cbf_h_oyadama;
+
+        thread::scope(|scope|{
+            let mut children_2 = Vec::new();
+            for i in 1..threads {
+                let sequences_ref = Arc::clone(&sequences_ref);
+                let primer_ref    = Arc::clone(&primer_ref);
+
+                children_2.push(
+                    scope.spawn(move ||
+                        {
+                            let start_idx: usize = (i - 1) * chunk_size;
+                            let end_idx: usize;
+                            if i != threads - 1{
+                                end_idx = i * chunk_size;
+                            }else{
+                                end_idx = sequences_ref.len() - 1;
+                            }
+                            eprintln!("thread [{}]: start calling number_of_high_occurence_kmer", i);
+                            let h_cbf_h: HashSet<u128> = number_of_high_occurence_kmer(cbf_oyadama_ref, &sequences_ref, start_idx, end_idx, threshold, i, &primer_ref);
+                            //h_cbf_h_oyadama = h_cbf_h_oyadama_ref.lock().unwrap().union(&h_cbf_h);
+                            h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
+                            eprintln!("thread [{}]: finish calling number_of_high_occurence_kmer", i);
+                        }
+                    )
+                )
+            }
+            for child in children_2{
+                let _ = child.join();
+            }
+        });
+
+
+        let high_occurence_kmer: Vec<u128> = Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+        let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
+
+        let mut previous_kmer: u128 = 0;
+        let mut cnt = 0;
+        let mut buf_array: [u8; 16] = [0; 16];
+        let mut buf_num: u128;
+
+        if matches.opt_present("r") {
+            eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
+            for each_kmer in &high_occurence_kmer{
+                if previous_kmer != *each_kmer{
+                    cnt += 1;
                 }
-                w.write(&buf_array).unwrap();
+                previous_kmer = *each_kmer;
             }
-            previous_kmer = *each_kmer;
+            writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &ngsread_input_file).unwrap();
         }
-    }
-    if !matches.opt_present("r") && !matches.opt_present("b"){
-        eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
-        for each_kmer in &high_occurence_kmer{
-            if previous_kmer != *each_kmer{
-                cnt += 1;
-                writeln!(&mut w, "{:?}", String::from_utf8(decode_u128_2_dna_seq(&each_kmer, PROBE_LEN)).unwrap()).unwrap();
+        if !matches.opt_present("r") && matches.opt_present("b"){
+            eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
+            for each_kmer in &high_occurence_kmer{
+                if previous_kmer != *each_kmer{
+                    cnt += 1;
+                    buf_num = *each_kmer;
+                    for i in 0..16{
+                        buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
+                        buf_num >>= 8;
+                    }
+                    w.write(&buf_array).unwrap();
+                }
+                previous_kmer = *each_kmer;
             }
-            previous_kmer = *each_kmer;
         }
+        if !matches.opt_present("r") && !matches.opt_present("b"){
+            eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
+            for each_kmer in &high_occurence_kmer{
+                if previous_kmer != *each_kmer{
+                    cnt += 1;
+                    writeln!(&mut w, "{:?}", String::from_utf8(decode_u128_2_dna_seq(&each_kmer, PROBE_LEN)).unwrap()).unwrap();
+                }
+                previous_kmer = *each_kmer;
+            }
+        }
+
+
+        eprintln!("finish writing to output file: {:?}", &output_file);
+        eprintln!("threshold: {}({}x63)\tcardinarity: {}", threshold, threshold / 63, cnt);
+        eprintln!("total cardinarity: {}", cnt);
+        eprintln!("threads: {}\tthreshold: {}\tinput file {:?}", threads, threshold, &ngsread_input_file);
     }
-
-
-
-    eprintln!("finish writing to output file: {:?}", &output_file);
-    eprintln!("threshold: {}({}x63)\tcardinarity: {}", threshold, threshold / 63, cnt);
-    eprintln!("total cardinarity: {}", cnt);
-    eprintln!("threads: {}\tthreshold: {}\tinput file {:?}", threads, threshold, &ngsread_input_file);
-
 }
