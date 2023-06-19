@@ -93,13 +93,13 @@ fn main() {
     eprintln!("input  file: {:?}",  ngsread_input_file);
 
 
-    eprintln!("Output file name: {:?}", matches.opt_str("o"));
-    eprintln!("Number of threads: {:?}", matches.opt_str("t"));
-    eprintln!("Triming size: {:?}", matches.opt_str("s"));
-    eprintln!("Product size: {:?}", matches.opt_str("c"));
-    eprintln!("Input primers file: {:?}", matches.opt_str("p"));
-    eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
-    eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
+    eprintln!("Output file name: {:?}", output_file);
+    eprintln!("Number of threads: {:?}", threads);
+    eprintln!("Triming size: {:?}", triming_size);
+    //eprintln!("Product size: {:?}", matches.opt_str("c"));
+    eprintln!("Input primers file: {:?}", primer_filename);
+    //eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
+    //eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
 
     /*
     primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
