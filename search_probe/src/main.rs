@@ -97,11 +97,10 @@ fn main() {
     };
 
 
-    eprintln!("input  file: {:?}",  ngsread_input_file);
+    eprintln!("Input  file name: {:?}", ngsread_input_file);
     eprintln!("Output file name: {:?}", output_file);
     eprintln!("Number of threads: {:?}", threads);
     eprintln!("Triming size: {:?}", triming_size);
-    eprintln!("Product size: {:?}", matches.opt_str("c"));
     eprintln!("Input primers file: {:?}", primer_filename);
     eprintln!("Outputs binary file: {:?}", matches.opt_present("b"));
     eprintln!("Outputs only total number: {:?}", matches.opt_present("r"));
