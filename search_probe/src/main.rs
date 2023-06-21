@@ -198,14 +198,14 @@ fn main() {
                             let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
 
                             eprintln!("start calling aggregate_length_between_primer[{}], # of sequence: {}", i, &slice_sequences.len());
-                            /* let cbf: Vec<u8> =  */aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
+                            let cbf: Vec<u8> = aggregate_length_between_primer(&slice_sequences, i, &primer_ref_mine, max_product_size);
                             eprintln!("finish calling aggregate_length_between_primer[{}]", i);
-                            //return cbf
+                            return cbf
                         }
                     )
                 )
             }
-/* 
+
             eprintln!("start  writing to output file: {:?}", &output_file);
             let mut file = File::create(&output_file).unwrap();
             for child in children_1 {
@@ -220,7 +220,7 @@ fn main() {
             }
             eprintln!("finish writing to output file: {:?}", &output_file);
 
- */        }
+        }
     );
     }else{
         thread::scope(|scope|{

@@ -253,7 +253,7 @@ pub fn number_of_high_occurence_kmer(source_table: &Vec<u32>, sequences: &Vec<Dn
 }
 
 
-pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize)/*  -> Vec<u8> */{
+pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) -> Vec<u8>{
     let mut l_window_start: usize;
     let mut l_window_end:   usize;
     let mut r_window_start: usize;
@@ -266,7 +266,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
     let mut mask_r:         u128;
     let mut primer_id:      Vec<u8>;
     let mut loop_cnt:usize = 0;
-    //let mut ret_array: Vec<u8> = Vec::with_capacity(4_000_000_000);
+    let mut ret_array: Vec<u8> = Vec::with_capacity(4_000_000_000);
     let mut lr_hit_counter:usize = 0;
     let mut l_hit_counter:usize  = 0;
     eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
@@ -318,26 +318,7 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                         continue 'each_r_window;
                     }
                     //ここまでで、LとRが一致してる
-                    let length: u32 = (r_window_end - l_window_start) as u32;
-                    let primer_id = &current_primer.0;
-                    let sequence_slice = current_sequence.decode(l_window_start, r_window_end);
-                    let length = r_window_end - l_window_start;
 
-                    // `>`とprimer_idと`_`を追加
-                    print!(">");
-                    print!("{}", String::from_utf8_lossy(primer_id));
-                    print!("_");
-
-                    // lengthを追加
-                    print!("{}", length);
-
-                    // `\n`とsequence_sliceと`\n`を追加
-                    println!();
-                    print!("{}", String::from_utf8_lossy(&sequence_slice));
-                    println!();
-
-
-/*
                     let length: u32 = (r_window_end - l_window_start) as u32;
                     let primer_id = &current_primer.0;
                     let sequence_slice = current_sequence.decode(l_window_start, r_window_end);
@@ -357,7 +338,6 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
                     ret_array.push(b'\n');
                     ret_array.extend(sequence_slice);
                     ret_array.push(b'\n');
- */
                     lr_hit_counter += 1;
                     r_window_start += 1;
                 }
@@ -370,5 +350,5 @@ pub fn aggregate_length_between_primer(sequences: &Vec<DnaSequence>, thread_id: 
         lr_hit_counter = 0;
         l_hit_counter  = 0;
     }
-    //return ret_array;
+    return ret_array;
 }
