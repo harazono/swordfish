@@ -34,17 +34,15 @@ PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
 P3_FILE_FLAG=0
 PRIMER_EXPLAIN_FLAG=1
 PRIMER_OPT_TM=65.0
-PRIMER_MAX_TM=70.0
-", each_seq, sequence_with_internal_n);
-
+PRIMER_MAX_TM=70.0", each_seq, sequence_with_internal_n);
         // Check if library_file_name is Some or None
         match library_file_name {
             Some(file_name) => {
                 // If Some, append the file name to the string
-                primer3_fmt_str.push_str(&format!("SEQUENCE_LIBRARY={}\n=\n", file_name));
+                primer3_fmt_str.push_str(&format!("\nSEQUENCE_LIBRARY={}\n=\n\n", file_name));
             }
             None => {
-                primer3_fmt_str.push_str("=\n");
+                primer3_fmt_str.push_str("\n=\n\n");
             }
         }
         str_vec.push(primer3_fmt_str);
@@ -106,7 +104,7 @@ fn main(){
         4
     };
 
-	let library_file_name: Option<String> = matches.opt_str("l");
+    let library_file_name: Option<String> = matches.opt_str("l");
 
 
 
