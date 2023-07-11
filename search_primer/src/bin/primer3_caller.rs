@@ -13,7 +13,7 @@ use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
 
 
-fn primer3_core_input_sequence(sequences: &Vec<u128>) -> Vec<String>{
+fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option<String>) -> Vec<String>{
     let mut str_vec: Vec<String> = Vec::new();
     let many_n = "N".to_string().repeat(50);
     eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
@@ -24,7 +24,7 @@ fn primer3_core_input_sequence(sequences: &Vec<u128>) -> Vec<String>{
         let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
         let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
         let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
-        let primer3_fmt_str = format!("SEQUENCE_ID={:0x}
+        let mut primer3_fmt_str = format!("SEQUENCE_ID={:0x}
 SEQUENCE_TEMPLATE={}
 PRIMER_TASK=pick_pcr_primers
 PRIMER_OPT_SIZE=27
@@ -35,7 +35,18 @@ P3_FILE_FLAG=0
 PRIMER_EXPLAIN_FLAG=1
 PRIMER_OPT_TM=65.0
 PRIMER_MAX_TM=70.0
-=", each_seq, sequence_with_internal_n);
+", each_seq, sequence_with_internal_n);
+
+        // Check if library_file_name is Some or None
+        match library_file_name {
+            Some(file_name) => {
+                // If Some, append the file name to the string
+                primer3_fmt_str.push_str(&format!("SEQUENCE_LIBRARY={}\n\n=\n", file_name));
+            }
+            None => {
+                primer3_fmt_str.push_str("\n=\n");
+            }
+        }
         str_vec.push(primer3_fmt_str);
     }
     return str_vec;
@@ -77,6 +88,7 @@ fn main(){
     let mut opts = Options::new();
     opts.optflag("h", "help", "print this help menu");
     opts.optopt("t", "thread", "number of thread to use for radix sort. default value is 8.", "THREAD");
+    opts.optopt("l", "library", "library file name which will be used for PRIMER_MISPRIMING_LIBRARY", "LIBRARY");
 
 
     let matches = match opts.parse(&args[1..]) {
@@ -93,6 +105,10 @@ fn main(){
     }else{
         4
     };
+
+	let library_file_name: Option<String> = matches.opt_str("l");
+
+
 
     let input_file = if !matches.free.is_empty() {
         matches.free[0].clone()
@@ -118,7 +134,7 @@ fn main(){
     }
 
     eprintln!("start formatting string");
-    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates);
+    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
 
     let mut chunks_of_input: Vec<String> = Vec::new();
     for _i in 0..thread_number{
