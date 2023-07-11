@@ -41,10 +41,10 @@ PRIMER_MAX_TM=70.0
         match library_file_name {
             Some(file_name) => {
                 // If Some, append the file name to the string
-                primer3_fmt_str.push_str(&format!("SEQUENCE_LIBRARY={}\n\n=\n", file_name));
+                primer3_fmt_str.push_str(&format!("SEQUENCE_LIBRARY={}\n=\n", file_name));
             }
             None => {
-                primer3_fmt_str.push_str("\n=\n");
+                primer3_fmt_str.push_str("=\n");
             }
         }
         str_vec.push(primer3_fmt_str);
