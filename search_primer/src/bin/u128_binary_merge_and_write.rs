@@ -4,16 +4,33 @@ use std::io::{BufReader, BufWriter, Read, Write, BufRead};
 use getopts::Options;
 use std::env;
 
+fn print_usage(program: &str, opts: Options) {
+    let brief = format!("Usage: {} -i INPUT -o OUTPUT -p PREFIX", program);
+    print!("{}", opts.usage(&brief));
+}
+
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
+    let program = args[0].clone();
+
     let mut opts = Options::new();
     opts.optopt("i", "input", "set input file name", "NAME");
     opts.optopt("o", "output", "set output directory", "DIR");
     opts.optopt("p", "prefix", "set output file prefix", "PREFIX");
+    opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
-        Err(f) => panic!("{}", f.to_string()),
+        Err(f) => {
+            eprintln!("{}", f.to_string());
+            print_usage(&program, opts);
+            return Ok(());
+        }
     };
+    if matches.opt_present("h") {
+        print_usage(&program, opts);
+        return Ok(());
+    }
+	
     let input_file_name = matches.opt_str("i").unwrap();
     let output_dir = matches.opt_str("o").unwrap();
     let output_prefix = matches.opt_str("p").unwrap();
