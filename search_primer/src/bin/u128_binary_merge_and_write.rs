@@ -23,9 +23,9 @@ fn main() -> std::io::Result<()> {
     // Read all files
     let file = File::open(input_file_name)?;
     let reader = BufReader::new(file);
-    for line in reader.lines() {
+    for (index, line) in reader.lines().enumerate() {
         let path = line?;
-        let file = File::open(path)?;
+        let file = File::open(&path)?;
         let mut reader = BufReader::new(file);
 
         loop {
@@ -39,6 +39,7 @@ fn main() -> std::io::Result<()> {
                 Err(e) => return Err(e),
             }
         }
+        eprintln!("Finished reading file {}: {}", index + 1, path);
     }
 
     // Write to output files
@@ -47,7 +48,7 @@ fn main() -> std::io::Result<()> {
     let mut values_in_file = 0;
     let mut writer = BufWriter::new(File::create(format!("{}/{}{}.bin", output_dir, output_prefix, file_index))?);
 
-    for value in set {
+    for (index, value) in set.into_iter().enumerate() {
         if values_in_file == values_per_file {
             file_index += 1;
             values_in_file = 0;
@@ -55,6 +56,10 @@ fn main() -> std::io::Result<()> {
         }
         writer.write_all(&value.to_le_bytes())?;
         values_in_file += 1;
+
+        if index % 1000 == 0 {
+            eprintln!("Written {} values...", index);
+        }
     }
 
     Ok(())
