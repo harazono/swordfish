@@ -122,12 +122,15 @@ def tempfmt(primer_pairs_dict):
 
 
 def tsvfmt(primer_pairs_dict):
-	header = "\t".join(["PRIMER_LEFT_SEQUENCE", "PRIMER_INTERNAL_SEQUENCE", "PRIMER_RIGHT_SEQUENCE", "PRIMER_LEFT_TM", "PRIMER_INTERNAL_TM", "PRIMER_RIGHT_TM", "PRIMER_LEFT_GC_PERCENT", "PRIMER_RIGHT_GC_PERCENT", "PRIMER_INTERNAL_GC_PERCENT"])
+	column_list = ["PRIMER_LEFT_SEQUENCE", "PRIMER_INTERNAL_SEQUENCE", "PRIMER_RIGHT_SEQUENCE", "PRIMER_LEFT_TM", "PRIMER_INTERNAL_TM", "PRIMER_RIGHT_TM", "PRIMER_LEFT_GC_PERCENT", "PRIMER_RIGHT_GC_PERCENT", "PRIMER_INTERNAL_GC_PERCENT"]
+	header = "\t".join(column_list)
 	retarray = [header]
 	start_index = 0
 	for k, v in primer_pairs_dict.items():
 		for idx, each_pair in enumerate(v["Primer3_output"]):
-			tmpstr = ""
+			tmpstr = "\t".join([str(each_pair[x]) if each_pair[x] is not None else "" for x in column_list])
+
+			""" 
 			if each_pair['PRIMER_LEFT_SEQUENCE'] is not None:
 				tmpstr += f"{each_pair['PRIMER_LEFT_SEQUENCE'][start_index:]}\t"
 			else:
@@ -140,12 +143,16 @@ def tsvfmt(primer_pairs_dict):
 				tmpstr += f"{each_pair['PRIMER_RIGHT_SEQUENCE'][start_index:]}\t"
 			else:
 				tmpstr += "\t"
+			
 			tmpstr += each_pair['PRIMER_LEFT_TM'] + "\t"
 			tmpstr += each_pair['PRIMER_INTERNAL_TM'] + "\t"
 			tmpstr += each_pair['PRIMER_RIGHT_TM'] + "\t"
 			tmpstr += each_pair['PRIMER_LEFT_GC_PERCENT'] + "\t"
 			tmpstr += each_pair['PRIMER_RIGHT_GC_PERCENT'] + "\t"
 			tmpstr += each_pair['PRIMER_INTERNAL_GC_PERCENT']
+
+			"""
+
 
 			retarray.append(tmpstr)
 	return "\n".join(retarray)
@@ -223,7 +230,8 @@ def primer3_result_parser(filename):
 
 
 			else:
-				leftterm, rightterm = l.strip().split("=")
+				leftterm  = l.strip().split("=")[0]
+				rightterm = "".join(l.strip().split("=")[1:])
 				if leftterm == "SEQUENCE_ID":
 					current_SEQUENCE_ID = rightterm
 				elif leftterm == "SEQUENCE_TEMPLATE":
