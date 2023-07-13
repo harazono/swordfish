@@ -324,7 +324,7 @@ def extract_primer_pairs(primers_candidates):
 def main():
 	parser = argparse.ArgumentParser(description = "primer3 result parser")
 	parser.add_argument("primer3_result", metavar = "primer3_result", type = str, help = "primer3 results file name")
-	parser.add_argument("-o",    metavar = "output_file",    type = str, default = "sys.stdout", help = "output file name (default = sys.stdout)")
+	parser.add_argument("-o",    metavar = "output_file",    type = str, help = "output file name (default = sys.stdout)")
 	parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	parser.add_argument("--trimmed_fasta", action='store_true', help = "output only 19 bases ([-19:]) as fasta")
 	parser.add_argument("--tsv", action='store_true', help = "output as TSV file")
