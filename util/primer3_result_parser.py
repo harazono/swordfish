@@ -335,19 +335,31 @@ def main():
 	primers_candidates = primer3_result_parser(filename)
 	primer_pairs_dict = extract_primer_pairs(primers_candidates)
 
-	output_file = open(args.o, "w") if args.o is not None else sys.stdout
+	output_file = open(args.o, "w") if args.o is not None else None
 	if args.fasta:
-		print(fmt4fasta(primer_pairs_dict), file = output_file)
+		if output_file:
+			print(fmt4fasta(primer_pairs_dict), file = output_file)
+		else:
+			print(fmt4fasta(primer_pairs_dict))
 	elif args.trimmed_fasta:
-		print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file)
+		if output_file:
+			print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file)
+		else:
+			print(fmt4fasta(primer_pairs_dict, trim_flag = True))
 	elif args.tempfmt:
-		print(tempfmt(primer_pairs_dict), file = output_file)
+			if output_file:
+				print(tempfmt(primer_pairs_dict), file = output_file)
+			else:
+				print(tempfmt(primer_pairs_dict))
 	elif args.tsv:
-		print(tsvfmt(primer_pairs_dict), file = output_file)
-
+		if output_file:
+			print(tsvfmt(primer_pairs_dict), file = output_file)
+		else:
+			print(tsvfmt(primer_pairs_dict))
 	else:
-		print(json.dumps(primer_pairs_dict, indent = 2), file = output_file)
-		
-
+		if output_file:
+			print(json.dumps(primer_pairs_dict, indent = 2), file = output_file)
+		else:
+			print(json.dumps(primer_pairs_dict, indent = 2))
 if __name__ == '__main__':
 	main()
