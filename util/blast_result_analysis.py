@@ -104,9 +104,7 @@ def main():
 			except:
 				taxon_id = each_record_Obj.staxid
 			if taxon_id not in overlook_taxon_ids:
-						if "metagenome" not in each_record_Obj.scomname:
-							if "metagenome" not in each_record_Obj.ssciname:
-								blast_results.append(each_record_Obj)
+				blast_results.append(each_record_Obj)
 
 
 	"""
