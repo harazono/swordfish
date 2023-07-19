@@ -162,8 +162,8 @@ def main():
 		else:
 			pass
 
-	print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
-	print(list(survivor)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
+	#print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
+	#print(list(survivor)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
 	if len(survivor_pair) > 0:
 		print(list(survivor_pair)[0], file = sys.stderr) #62baf2cca8e91329bcaba327c863b6b_4
 
