@@ -57,8 +57,40 @@ def main():
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
 
-	rice_family_taxon_ids = [4528, 4529, 4530, 39946, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A", 2509717, 1911570]
-	#rice_family_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
+	overlook_taxon_ids = [
+		4528, #Oryza longistaminata
+		4529, #Oryza rufipogon
+		4530, #Oryza sativa
+		39946, #Oryza sativa Indica Group
+		39947, #Oryza sativa Japonica Group
+		1080340, #Oryza sativa Japonica Group x Oryza sativa Indica Group
+		1736656, #Oryza sativa tropical japonica subgroup
+		1736657, #Oryza sativa temperate japonica subgroup
+		1736658, #Oryza sativa aromatic subgroup
+		1736659, #Oryza sativa aus subgroup
+		1771142, #Oryza sativa indica subgroup
+		2998809, #Oryza sativa f. spontanea
+		1050722, #Oryza sativa Indica Group x Oryza sativa Japonica Group
+		256318, #metagenome
+		408170, #human gut metagenome
+		408172, #marine metagenome
+		410658, #soil metagenome
+		410661, #mouse gut metagenome
+		412755, #marine sediment metagenome
+		496920, #saltern metagenome
+		527639, #wastewater metagenome
+		527640, #microbial mat metagenome
+		652676, #hydrothermal vent metagenome
+		717931, #groundwater metagenome
+		749906, #gut metagenome
+		749907, #sediment metagenome
+		797283, #ant fungus garden metagenome
+		904678, #hypersaline lake metagenome
+		1076179, #bioreactor metagenome
+		1911570, #Mangrovicoccus ximenensis
+		2509717, #Ciceribacter ferrooxidans
+	]
+	#overlook_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
 	#4529はOryza rufipogon, 野生の稲
 	#4528はOryza longistaminata
 	blast_results = []
@@ -71,16 +103,14 @@ def main():
 				taxon_id = int(each_record_Obj.staxid)
 			except:
 				taxon_id = each_record_Obj.staxid
-			if taxon_id not in rice_family_taxon_ids:
-				if "N/A" not in each_record_Obj.scomname:
-					if "N/A" not in each_record_Obj.ssciname:
+			if taxon_id not in overlook_taxon_ids:
 						if "metagenome" not in each_record_Obj.scomname:
 							if "metagenome" not in each_record_Obj.ssciname:
 								blast_results.append(each_record_Obj)
 
 
 	"""
-			if taxon_id in rice_family_taxon_ids:
+			if taxon_id in overlook_taxon_ids:
 				continue
 			if "N/A" in each_record_Obj.scomname:
 				continue

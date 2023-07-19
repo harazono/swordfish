@@ -90,6 +90,7 @@ fn main() -> std::io::Result<()> {
         }
         intermediate_files.push(intermediate_file_name);
     }
+    set.clear(); // Clear the set for the next batch of files
 
     // Now merge the intermediate files
     let mut set = HashSet::new();
