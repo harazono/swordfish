@@ -105,7 +105,7 @@ def main():
 				taxon_id = each_record_Obj.staxid
 			if taxon_id in overlook_taxon_ids:
 				continue
-			if each_record_Obj.evalue >= 0.1:
+			if each_record_Obj.evalue >= 1:
 				continue
 			blast_results.append(each_record_Obj)
 
