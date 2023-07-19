@@ -23,7 +23,7 @@ class BlastResult():
 		self.send     = send
 		self.qseq     = qseq
 		self.sseq     = sseq
-		self.evalue   = evalue
+		self.evalue   = float(evalue)
 		self.length   = length
 		self.staxid   = staxid
 		self.staxids  = staxids
@@ -103,8 +103,11 @@ def main():
 				taxon_id = int(each_record_Obj.staxid)
 			except:
 				taxon_id = each_record_Obj.staxid
-			if taxon_id not in overlook_taxon_ids:
-				blast_results.append(each_record_Obj)
+			if taxon_id in overlook_taxon_ids:
+				continue
+			if each_record_Obj.evalue >= 0.1:
+				continue
+			blast_results.append(each_record_Obj)
 
 
 	"""
