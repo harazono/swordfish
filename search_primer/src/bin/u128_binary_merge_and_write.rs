@@ -14,7 +14,7 @@ fn main() -> std::io::Result<()> {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optopt("i", "input", "set input file name", "NAME");
+    opts.optopt("i", "input", "set list of input file name", "NAME");
     opts.optopt("o", "output", "set output directory", "DIR");
     opts.optopt("p", "prefix", "set output file prefix", "PREFIX");
     opts.optopt("n", "numfiles", "set number of output files", "NUM");

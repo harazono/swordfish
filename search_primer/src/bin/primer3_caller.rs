@@ -143,25 +143,43 @@ fn main(){
         chunks_of_input[index % thread_number] += "\n";
     }
 
-    let arc_chunks_of_input: Arc<Vec<String>> = Arc::new(chunks_of_input);
+    // Split the input into chunks of 5000 elements each
+    let chunks_of_input: Vec<Vec<String>> = chunks_of_input.chunks(5000).map(|chunk| chunk.to_vec()).collect();
+    let arc_chunks_of_input: Arc<Vec<Vec<String>>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
-    for i in 0..thread_number{
-        let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
+
+    for (i, chunk) in arc_chunks_of_input.iter().enumerate() {
         let arc_final_result = Arc::clone(&final_result);
+        let chunk = chunk.clone(); // Clone the chunk for the thread
+        let thread_id = i;
+        let total_chunks = arc_chunks_of_input.len();
         children.push(
             thread::spawn(move|| {
-                eprintln!("start calling primer3_core");
-                let primer3_results: String = execute_primer3((*chunks_of_input[i]).to_string());
-                arc_final_result.lock().unwrap().push(primer3_results);
-                eprintln!("finish calling primer3_core");
-
-        })
+                eprintln!("start calling primer3_core in iteration {} (Thread ID: {}, Chunk: {} of {})", i + 1, thread_id, i + 1, total_chunks);
+                let mut primer3_results = Vec::new();
+                // Process each element in the chunk
+                for (j, input) in chunk.iter().enumerate() {
+                    primer3_results.push(execute_primer3(input.clone()));
+                    let progress = ((j + 1) as f64 / chunk.len() as f64) * 100.0;
+                    eprintln!("Thread ID: {}, Progress: {:.2}%", thread_id, progress);
+                }
+                {
+                    let mut final_result = arc_final_result.lock().unwrap();
+                    for result in primer3_results {
+                        final_result.push(result);
+                    }
+                }
+                eprintln!("finish calling primer3_core in iteration {} (Thread ID: {})", i + 1, thread_id);
+            })
         );
     }
-    for child in children{
+
+    for child in children {
+        // Wait for the thread to finish. Returns a result.
         let _ = child.join();
     }
+    
     for i in final_result.lock().unwrap().iter(){
         println!("{}", i);
     }
