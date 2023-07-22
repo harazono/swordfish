@@ -151,17 +151,19 @@ fn main(){
         let arc_final_result = Arc::clone(&final_result);
         children.push(
             thread::spawn(move|| {
-                eprintln!("Thread{} []: start calling primer3_core", i);
+                eprintln!("Thread[{}]: start  calling primer3_core", i);
                 let total_bunches = chunks_of_input[i].len();
                 for (j, bunch) in chunks_of_input[i].iter().enumerate(){
+                    let start_time = std::time::Instant::now(); // Start timing here
                     let joined_bunch = bunch.join("\n");
                     let primer3_results: String = execute_primer3((joined_bunch).to_string());
                     arc_final_result.lock().unwrap().push(primer3_results);
                     // Calculate progress as a percentage
                     let progress = ((j + 1) as f64 / total_bunches as f64) * 100.0;
-                    eprintln!("Thread{} [{}%]: processed bunch {} of {}", i, progress, j + 1, total_bunches);
+                    let duration = start_time.elapsed(); // Get the time elapsed since start_time
+                    eprintln!("Thread{} [{}%]: processed bunch {} of {} in {:.2?} seconds", i, progress, j + 1, total_bunches, duration);
                 }
-                eprintln!("Thread{}: finish calling primer3_core", i);
+                eprintln!("Thread[{}]: finish calling primer3_core", i);
         })
         );
     }
