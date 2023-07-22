@@ -133,7 +133,7 @@ fn main(){
 
     eprintln!("start formatting string");
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
-    let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(5000).map(|chunk| chunk.to_vec()).collect();
+    let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(500).map(|chunk| chunk.to_vec()).collect();
     let mut chunks_of_input: Vec<Vec<Vec<String>>> = Vec::new();
     for i in 0..thread_number{
         chunks_of_input.push(Vec::new());
@@ -155,7 +155,7 @@ fn main(){
                 let total_bunches = chunks_of_input[i].len();
                 for (j, bunch) in chunks_of_input[i].iter().enumerate(){
                     let start_time = std::time::Instant::now(); // Start timing here
-                    let joined_bunch = bunch.join("\n") + "\n";
+                    let joined_bunch = bunch.join("\n");
                     let primer3_results: String = execute_primer3((joined_bunch).to_string());
                     arc_final_result.lock().unwrap().push(primer3_results);
                     // Calculate progress as a percentage
