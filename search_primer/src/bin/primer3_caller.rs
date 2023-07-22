@@ -45,6 +45,7 @@ PRIMER_MAX_TM=70.0", each_seq, sequence_with_internal_n);
                 primer3_fmt_str.push_str("\n=");
             }
         }
+        eprintln!("{}", primer3_fmt_str);
         str_vec.push(primer3_fmt_str);
     }
     return str_vec;
@@ -155,7 +156,7 @@ fn main(){
                 let total_bunches = chunks_of_input[i].len();
                 for (j, bunch) in chunks_of_input[i].iter().enumerate(){
                     let start_time = std::time::Instant::now(); // Start timing here
-                    let joined_bunch = bunch.join("\n\n");
+                    let joined_bunch = bunch.join("\n");
                     let primer3_results: String = execute_primer3((joined_bunch).to_string());
                     arc_final_result.lock().unwrap().push(primer3_results);
                     // Calculate progress as a percentage
