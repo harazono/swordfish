@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
-
+use std::time::Instant;
 
 
 fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option<String>) -> Vec<String>{
@@ -134,35 +134,35 @@ fn main(){
     eprintln!("start formatting string");
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
 
-    let mut chunks_of_input: Vec<String> = Vec::new();
+    let mut chunks_of_input: Vec<Vec<String>> = Vec::new();
     for _i in 0..thread_number{
-        chunks_of_input.push(String::new());
+        chunks_of_input.push(Vec::new());
     }
     for (index, string) in primer3_fmt_string.iter().enumerate(){
-        chunks_of_input[index % thread_number] += string;
-        chunks_of_input[index % thread_number] += "\n";
+        chunks_of_input[index % thread_number].push(string.clone());
     }
 
-    // Split the input into chunks of 5000 elements each
-    let chunks_of_input: Vec<Vec<String>> = chunks_of_input.chunks(5000).map(|chunk| chunk.to_vec()).collect();
-    let arc_chunks_of_input: Arc<Vec<Vec<String>>> = Arc::new(chunks_of_input);
+    let arc_chunks_of_input: Arc<Vec<Vec<Vec<String>>>> = Arc::new(chunks_of_input.into_iter().map(|v| v.chunks(5000).map(|c| c.to_vec()).collect()).collect());
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
 
-    for (i, chunk) in arc_chunks_of_input.iter().enumerate() {
+    for i in 0..thread_number {
         let arc_final_result = Arc::clone(&final_result);
-        let chunk = chunk.clone(); // Clone the chunk for the thread
+        let chunk = arc_chunks_of_input[i].clone(); // Clone the chunk for the thread
         let thread_id = i;
         let total_chunks = arc_chunks_of_input.len();
         children.push(
             thread::spawn(move|| {
+                let start_time = Instant::now();
                 eprintln!("start calling primer3_core in iteration {} (Thread ID: {}, Chunk: {} of {})", i + 1, thread_id, i + 1, total_chunks);
                 let mut primer3_results = Vec::new();
                 // Process each element in the chunk
-                for (j, input) in chunk.iter().enumerate() {
-                    primer3_results.push(execute_primer3(input.clone()));
-                    let progress = ((j + 1) as f64 / chunk.len() as f64) * 100.0;
-                    eprintln!("Thread ID: {}, Progress: {:.2}%", thread_id, progress);
+                for chunk in chunk {
+                    for (j, input) in chunk.iter().enumerate() {
+                        primer3_results.push(execute_primer3(input.clone()));
+                        let progress = ((j + 1) as f64 / chunk.len() as f64) * 100.0;
+                        eprintln!("Thread ID: {}, Progress: {:.2}%", thread_id, progress);
+                    }
                 }
                 {
                     let mut final_result = arc_final_result.lock().unwrap();
@@ -170,7 +170,8 @@ fn main(){
                         final_result.push(result);
                     }
                 }
-                eprintln!("finish calling primer3_core in iteration {} (Thread ID: {})", i + 1, thread_id);
+                let duration = start_time.elapsed();
+                eprintln!("finish calling primer3_core in iteration {} (Thread ID: {}). Time elapsed: {:.2} seconds", i + 1, thread_id, duration.as_secs_f64());
             })
         );
     }
@@ -179,7 +180,7 @@ fn main(){
         // Wait for the thread to finish. Returns a result.
         let _ = child.join();
     }
-    
+
     for i in final_result.lock().unwrap().iter(){
         println!("{}", i);
     }
