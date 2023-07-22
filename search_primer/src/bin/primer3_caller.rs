@@ -170,6 +170,7 @@ fn main(){
     for child in children{
         let _ = child.join();
     }
+    eprintln!("finish waiting all threads");
     for i in final_result.lock().unwrap().iter(){
         println!("{}", i);
     }
