@@ -34,7 +34,8 @@ PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
 P3_FILE_FLAG=0
 PRIMER_EXPLAIN_FLAG=1
 PRIMER_OPT_TM=65.0
-PRIMER_MAX_TM=70.0", each_seq, sequence_with_internal_n);
+PRIMER_MAX_TM=70.0
+PRIMER_MAX_LIBRARY_MISPRIMING=8", each_seq, sequence_with_internal_n);
         // Check if library_file_name is Some or None
         match library_file_name.as_ref() {
             Some(file_name) => {
@@ -151,20 +152,20 @@ fn main(){
         let arc_final_result = Arc::clone(&final_result);
         children.push(
             thread::spawn(move|| {
-                eprintln!("Thread[{}]: start  calling primer3_core", i);
-                let total_bunches = chunks_of_input[i].len();
+                //eprintln!("Thread[{}]: start  calling primer3_core", i);
+                //let total_bunches = chunks_of_input[i].len();
                 let mut primer3_results = String::new();
-                for (j, bunch) in chunks_of_input[i].iter().enumerate(){
-                    let start_time = std::time::Instant::now(); // Start timing here
+                for (_j, bunch) in chunks_of_input[i].iter().enumerate(){
+                    //let start_time = std::time::Instant::now(); // Start timing here
                     let joined_bunch = bunch.join("\n");
                     primer3_results += &execute_primer3((joined_bunch).to_string());
                     // Calculate progress as a percentage
-                    let progress = ((j + 1) as f64 / total_bunches as f64) * 100.0;
-                    let duration = start_time.elapsed(); // Get the time elapsed since start_time
-                    eprintln!("Thread[{}] [{:.2?}%]: processed bunch {} of {} in {:.2?}", i, progress, j + 1, total_bunches, duration);
+                    //let _progress = ((j + 1) as f64 / total_bunches as f64) * 100.0;
+                    //let _duration = start_time.elapsed(); // Get the time elapsed since start_time
+                    //eprintln!("Thread[{}] [{:.2?}%]: processed bunch {} of {} in {:.2?}", i, progress, j + 1, total_bunches, duration);
                 }
                 arc_final_result.lock().unwrap().push(primer3_results);
-                eprintln!("Thread[{}]: finish calling primer3_core", i);
+                //eprintln!("Thread[{}]: finish calling primer3_core", i);
         })
         );
     }
