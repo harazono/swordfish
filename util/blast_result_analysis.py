@@ -50,13 +50,14 @@ def main():
 	parser.add_argument("-o",        metavar = "output_prefix", type = str, default = "final_result", help = "output file name (default = final_result)")
 	#parser.add_argument("--fasta", action='store_true', help = "output as fasta")
 	args = parser.parse_args()
+	print(args, file = sys.stderr)
 	filename = args.fasta
 	fasta_ids = set()
-
+	print(f"start reading {filename}", file = sys.stderr)
 	with open(filename) as handle:
 		for record in SeqIO.parse(handle, "fasta"):
 			fasta_ids.add(record.id)
-
+	print(f"found {len(fasta_ids)} fasta records", file = sys.stderr)
 	overlook_taxon_ids = [
 		4528, #Oryza longistaminata
 		4529, #Oryza rufipogon
@@ -93,6 +94,7 @@ def main():
 	#overlook_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
 	#4529はOryza rufipogon, 野生の稲
 	#4528はOryza longistaminata
+	print(f"start reading {args.blast}", file = sys.stderr)
 	blast_results = []
 	with open(args.blast) as f:
 		reader = csv.reader(f, delimiter='\t')
@@ -108,7 +110,7 @@ def main():
 			if each_record_Obj.evalue >= 10000:
 				continue
 			blast_results.append(each_record_Obj)
-
+	print(f"found {len(blast_results)} blast results", file = sys.stderr)
 
 	"""
 			if taxon_id in overlook_taxon_ids:

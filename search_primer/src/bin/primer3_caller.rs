@@ -34,7 +34,8 @@ PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
 P3_FILE_FLAG=0
 PRIMER_EXPLAIN_FLAG=1
 PRIMER_OPT_TM=66.0
-PRIMER_MAX_TM=72.0", each_seq, sequence_with_internal_n);
+PRIMER_MAX_TM=72.0
+PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
         // Check if library_file_name is Some or None
         match library_file_name.as_ref() {
             Some(file_name) => {
