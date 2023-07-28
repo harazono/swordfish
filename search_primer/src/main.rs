@@ -109,9 +109,9 @@ fn main() {
                         }else{
                             end_idx = sequences_ref.len() - 1;
                         }
-                        eprintln!("start calling build_counting_bloom_filter[{}]", i);
+                        eprintln!("start calling build_counting_bloom_filter[{}], {}-{}", i, start_idx, end_idx);
                         let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
-                        eprintln!("finish calling build_counting_bloom_filter[{}]", i);
+                        eprintln!("finish calling build_counting_bloom_filter[{}], {}-{}", i, start_idx, end_idx);
                         cbf
                     }
                 )
@@ -185,6 +185,18 @@ fn main() {
                     buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
                     buf_num >>= 8;
                 }
+                let dna_seq                       = String::from_utf8(decode_u128_2_dna_seq(&each_lr_tuple, 64)).unwrap();
+                let dna_seq_spaced: String        = dna_seq.chars().map(|c| format!(" {}", c)).collect();
+                let buf_array_binary: Vec<String> = buf_array.iter().map(|&b| format!("{:08b}", b)).collect();
+                let concatenated_string = buf_array_binary.join("");
+                eprintln!(
+                    "{} is encoded as {}(decimal) and \n{}(binary) in u128 and \n{}\n{:?} as array of u8.\n",
+                    dna_seq_spaced,
+                    &each_lr_tuple,
+                    format!("{:0128b}", each_lr_tuple),
+                    &concatenated_string,
+                    &buf_array_binary
+                );
                 w.write(&buf_array).unwrap();
             }
             previous_lr_tuple = *each_lr_tuple;

@@ -24,6 +24,7 @@ fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option
         let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
         let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
         let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
+        eprintln!("{}", &sequence_with_internal_n);
         let mut primer3_fmt_str = format!("SEQUENCE_ID={:0x}
 SEQUENCE_TEMPLATE={}
 PRIMER_TASK=pick_pcr_primers
@@ -128,7 +129,7 @@ fn main(){
             Ok(_val) => {},
             Err(_err) => break,
         }
-        tmp_seq_as_u128 = u128::from_le_bytes(buffer);
+        tmp_seq_as_u128 = u128::from_be_bytes(buffer);
         candidates.push(tmp_seq_as_u128);
     }
 
