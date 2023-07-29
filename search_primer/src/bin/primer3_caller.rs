@@ -9,7 +9,7 @@ use std::thread;
 use std::sync::Arc;
 use std::sync::Mutex;
 use getopts::Options;
-use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
+use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r, decode_u128_2_dna_seq};
 
 
 
@@ -24,7 +24,7 @@ fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option
         let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
         let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
         let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
-        eprintln!("{}", &sequence_with_internal_n);
+        //eprintln!("{}", &sequence_with_internal_n);
         let mut primer3_fmt_str = format!("SEQUENCE_ID={:0x}
 SEQUENCE_TEMPLATE={}
 PRIMER_TASK=pick_pcr_primers
@@ -130,6 +130,7 @@ fn main(){
             Err(_err) => break,
         }
         tmp_seq_as_u128 = u128::from_be_bytes(buffer);
+        //println!("{:?}", String::from_utf8(decode_u128_2_dna_seq(&tmp_seq_as_u128, 64)).unwrap());
         candidates.push(tmp_seq_as_u128);
     }
 
