@@ -62,6 +62,14 @@ pub struct DnaSequence{
     length:   usize,
     sequence: Vec<u64>
 }
+impl Clone for DnaSequence {
+    fn clone(&self) -> Self {
+        DnaSequence {
+            length:   self.length,
+            sequence: self.sequence.clone(),
+        }
+    }
+}
 
 impl DnaSequence{
     pub fn new(source: &Vec<u8>) -> DnaSequence{

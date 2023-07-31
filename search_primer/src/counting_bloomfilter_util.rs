@@ -191,3 +191,104 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Ve
     }
     return ret_table;
 }
+
+
+pub fn aggregate_length_between_lr_tuple(sequences: &Vec<DnaSequence>, thread_id: usize, primer: &Vec<(Vec<u8>, DnaSequence, DnaSequence)>, product_size_max: usize) -> Vec<u8>{
+    let mut l_window_start: usize;
+    let mut l_window_end:   usize;
+    let mut r_window_start: usize;
+    let mut r_window_end:   usize;
+    let mut primer_l_seq:   u128;
+    let mut primer_l_size:  usize;
+    let mut primer_r_seq:   u128;
+    let mut primer_r_size:  usize;
+    let mut mask_l:         u128;
+    let mut mask_r:         u128;
+    let mut primer_id:      Vec<u8>;
+    let mut loop_cnt:usize = 0;
+    let mut ret_array: Vec<u8> = Vec::with_capacity(4_000_000_000);
+    let mut lr_hit_counter:usize = 0;
+    let mut l_hit_counter:usize  = 0;
+    eprintln!("[{}]primer pairs: {}", thread_id, primer.len());
+
+    let start_time = Instant::now();
+    let mut previous_time = start_time.elapsed();
+    'each_primer: for current_primer in primer.iter() {
+        primer_l_size = current_primer.1.len();
+        primer_l_seq  = current_primer.1.subsequence_as_u128(vec!([0, primer_l_size]));
+        primer_r_size = current_primer.2.len();
+        primer_r_seq  = current_primer.2.subsequence_as_u128(vec!([0, primer_r_size]));
+        mask_l        = u128::MAX >> (64 - primer_l_size) * 2;
+        mask_r        = u128::MAX >> (64 - primer_r_size) * 2;
+        loop_cnt += 1;
+
+
+        'each_read: for current_sequence in sequences.iter() {
+            //eprintln!("{}", current_sequence.len());//見えてる
+            l_window_start = 0;
+            'each_l_window: loop{
+                l_window_end = l_window_start + primer_l_size;
+                if l_window_end >= current_sequence.len() + 1{
+                    break 'each_l_window;
+                }
+                //l_window_cnt += 1;
+                let l_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end]]);
+                if (l_window_as_u128 & mask_l) != primer_l_seq{
+                    l_window_start += 1;
+                    //eprintln!("exit due to l_window mask fail");
+                    continue 'each_l_window;
+                }
+                r_window_start = l_window_end;
+                l_hit_counter += 1;
+                'each_r_window: loop{
+                    r_window_end = r_window_start + primer_r_size;
+                    if r_window_end >= current_sequence.len() + 1{
+                        let end = start_time.elapsed();
+                        //eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+                        previous_time = end;
+                        continue 'each_read;
+                    }
+                    if r_window_end - l_window_start > product_size_max{
+                        break 'each_l_window;
+                    }
+                    let r_window_as_u128: u128 = current_sequence.subsequence_as_u128(vec![[r_window_start, r_window_end]]);
+                    if (r_window_as_u128 & mask_r) != primer_r_seq {
+                        r_window_start += 1;
+                        //eprintln!("exit due to r_window mask fail");//ここまで到達してる
+                        continue 'each_r_window;
+                    }
+                    //ここまでで、LとRが一致してる
+
+                    let length: u32 = (r_window_end - l_window_start) as u32;
+                    let primer_id = &current_primer.0;
+                    let sequence_slice = current_sequence.decode(l_window_start, r_window_end);
+                    let length = r_window_end - l_window_start;
+                    
+                    // `>`とprimer_idと`_`を追加
+                    ret_array.push(b'>');
+                    ret_array.extend(primer_id);
+                    ret_array.push(b'_');
+                    
+                    // lengthを追加
+                    for digit in length.to_string().as_bytes() {
+                        ret_array.push(*digit);
+                    }
+                    
+                    // `\n`とsequence_sliceと`\n`を追加
+                    ret_array.push(b'\n');
+                    ret_array.extend(sequence_slice);
+                    ret_array.push(b'\n');
+                    lr_hit_counter += 1;
+                    r_window_start += 1;
+                }
+                l_window_start += 1;
+            }
+        }
+        let end = start_time.elapsed();
+        eprintln!("loop[{:02?}]: {:06?}\t{:09?}\t{}\t{}\tsec: {}.{:03}",thread_id, primer.len(), loop_cnt, lr_hit_counter, l_hit_counter, end.as_secs() - previous_time.as_secs(), end.subsec_nanos() - previous_time.subsec_nanos());
+        previous_time  = end;
+        lr_hit_counter = 0;
+        l_hit_counter  = 0;
+    }
+    return ret_array;
+}
