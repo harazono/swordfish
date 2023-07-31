@@ -4,7 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io::{Write, BufWriter, Read, BufReader};
 use std::collections::HashSet;
-use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
+use search_primer::sequence_encoder_util::{decode_u128_2_dna_seq};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -53,9 +53,9 @@ fn main() {
 
     let mut w = BufWriter::new(File::create(&output_file).unwrap());
 
-    for each_primer_candidate in &u128_primer_candidate_vec{
-        w.write(&decode_u128_l(each_primer_candidate)).unwrap();
-        w.write(&decode_u128_r(each_primer_candidate)).unwrap();
+    for each_primer_candidate in &u128_primer_candidate_vec {
+        let dna_seq = decode_u128_2_dna_seq(&each_primer_candidate, 64);
+        w.write(&dna_seq).unwrap(); // Vec<u8>から&[u8]への参照を渡す
         w.write(b"\n").unwrap();
     }
 }
