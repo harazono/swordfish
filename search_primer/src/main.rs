@@ -173,7 +173,7 @@ fn main() {
             }
             previous_lr_tuple = *each_lr_tuple;
         }
-        writeln!(&mut w, "k-mer count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &input_file).unwrap();
+        writeln!(&mut w, "lr_tuple count: {}\tthreshold: {}\tinput file {:?}", cnt, threshold, &input_file).unwrap();
     }
     if !matches.opt_present("r") && matches.opt_present("b"){
         eprintln!("matches.opt_present('r'): {}\tmatches.opt_present('b'): {}", matches.opt_present("r"), matches.opt_present("b"));
