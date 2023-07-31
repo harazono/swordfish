@@ -37,7 +37,7 @@ fn main() {
                 Ok(_val) => {},
                 Err(_err) => break,
             }
-            let tmp_val: u128 = u128::from_le_bytes(buffer);
+            let tmp_val: u128 = u128::from_be_bytes(buffer);
             u128_primer_candidates_set.insert(tmp_val);
         }
     }
