@@ -94,6 +94,7 @@ fn main() {
         let left_primer  = DnaSequence::new(l);
         let right_primer = DnaSequence::new(r);
         let hex_string   = format!("0x{:016x}", tmp_val);
+        eprintln!("{:?}, {:?}, {:?}", &hex_string, &left_primer, &right_primer);
         lr_tuple.push((hex_string.into(), left_primer, right_primer));
     }
 

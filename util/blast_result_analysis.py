@@ -90,6 +90,7 @@ def main():
 		1076179, #bioreactor metagenome
 		1911570, #Mangrovicoccus ximenensis
 		2509717, #Ciceribacter ferrooxidans
+		"N/A"
 	]
 	#overlook_taxon_ids = [4530, 39947, 1080340, 1050722, 1736656, 1736657, 1736658, 1736659, 1771142, 2998809, "N/A"]
 	#4529はOryza rufipogon, 野生の稲
@@ -108,6 +109,10 @@ def main():
 			if taxon_id in overlook_taxon_ids:
 				continue
 			if each_record_Obj.evalue >= 10000:
+				continue
+			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length == 0:
+				continue
+			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart == 0:
 				continue
 			blast_results.append(each_record_Obj)
 	print(f"found {len(blast_results)} blast results", file = sys.stderr)
