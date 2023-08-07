@@ -15,16 +15,16 @@ class BlastResult():
 		self.qseqid   = qseqid
 		self.sseqid   = sseqid
 		self.sacc     = sacc
-		self.qlen     = qlen
-		self.qstart   = qstart
-		self.qend     = qend
-		self.slen     = slen
-		self.sstart   = sstart
-		self.send     = send
+		self.qlen     = int(qlen)
+		self.qstart   = int(qstart)
+		self.qend     = int(qend)
+		self.slen     = int(slen)
+		self.sstart   = int(sstart)
+		self.send     = int(send)
 		self.qseq     = qseq
 		self.sseq     = sseq
 		self.evalue   = float(evalue)
-		self.length   = length
+		self.length   = int(length)
 		self.staxid   = staxid
 		self.staxids  = staxids
 		self.ssciname = ssciname
@@ -108,11 +108,9 @@ def main():
 				taxon_id = each_record_Obj.staxid
 			if taxon_id in overlook_taxon_ids:
 				continue
-			if each_record_Obj.evalue >= 10000:
+			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length != 0:
 				continue
-			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length == 0:
-				continue
-			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart == 0:
+			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart != 0:
 				continue
 			blast_results.append(each_record_Obj)
 	print(f"found {len(blast_results)} blast results", file = sys.stderr)
