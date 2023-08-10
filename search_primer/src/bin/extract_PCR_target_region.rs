@@ -91,7 +91,9 @@ fn main() {
     lines.next(); // ヘッダー行をスキップ
 
     lines.for_each(|line| {
-    if let Ok(line) = line {
+    eprintln!("line: {:?}", line);
+        if let Ok(line) = line {
+        eprintln!("line: {:?}", line);
         let columns: Vec<&str>                = line.split('\t').collect();
         let primer_id: &[u8]                  = columns.get(0).unwrap_or(&"").as_bytes();
         let left_primer_seq: &str             = columns.get(1).unwrap_or(&"");
