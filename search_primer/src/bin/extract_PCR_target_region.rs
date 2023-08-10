@@ -78,14 +78,14 @@ fn main() {
     let mut primer_tuple: Vec<(Vec<u8>, DnaSequence, DnaSequence)> = Vec::new();
 
     let f: File = File::open(&primer_filename).unwrap();
-    let mut reader = BufReader::new(f);
+    let reader = BufReader::new(f);
 /* 
     primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
     876d26b46b3b86fce82a6f2813e9a80c_4      CGTCAGCGGTCACGG CCCGCCAATGTTCCTAACGCCC  57.091  66.249  74.8
 
  */
 
-    let file = File::open(primer_filename).unwrap();
+    //let file = File::open(primer_filename).unwrap();
     //let reader = BufReader::new(file);
     let mut lines = reader.lines();
     lines.next(); // ヘッダー行をスキップ
@@ -114,10 +114,11 @@ fn main() {
     eprintln!("Number of primer_tuple: {:?}", &primer_tuple.len());
 
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
+    eprintln!("loading {:?}", &ngsread_input_file);
     let mut reader = faReader::new(ngsread_file);
     let mut record = faRecord::new();
     let mut sequences: Vec<DnaSequence> = Vec::new();
-    eprintln!("loading {:?} done", ngsread_input_file);
+    eprintln!("loading {:?} done", &ngsread_input_file);
     'each_read: loop {
         reader.read(&mut record).unwrap();
         if record.is_empty(){
