@@ -5,11 +5,9 @@ use getopts::Options;
 use std::{env, process};
 use std::thread;
 use std::fs::File;
-use std::io::{BufWriter, Write, Read};
-use std::sync::{Arc};
-use search_primer::counting_bloomfilter_util::{BLOOMFILTER_TABLE_SIZE};
-use search_primer::counting_bloomfilter_util::{aggregate_length_between_lr_tuple};
-use search_primer::sequence_encoder_util::{decode_u128_2_dna_seq};
+use std::io::{Write, Read};
+use std::sync::Arc;
+use search_primer::counting_bloomfilter_util::aggregate_length_between_lr_tuple;
 use search_primer::sequence_encoder_util::DnaSequence;
 use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
@@ -28,7 +26,7 @@ fn main() {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optopt("i", "input", "set input file name", "NAME");
+    opts.optopt("i", "input", "set input file name (u128 binary)", "NAME");
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt("t", "thread", "number of threads to use for radix sort. default value is 8.", "THREAD");
     opts.optflag("h", "help", "print this help menu");
@@ -94,7 +92,6 @@ fn main() {
         let left_primer  = DnaSequence::new(l);
         let right_primer = DnaSequence::new(r);
         let hex_string   = format!("0x{:016x}", tmp_val);
-        eprintln!("{:?}, {:?}, {:?}", &hex_string, &left_primer, &right_primer);
         lr_tuple.push((hex_string.into(), left_primer, right_primer));
     }
 
@@ -117,7 +114,7 @@ fn main() {
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = Arc::new(sequences);
     let lr_tuple_ref    = Arc::new(lr_tuple);
-    let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
+    //let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
 
     //let mut product_size_hashmap = HashMap::<u32, usize>::new();
     thread::scope(|scope|{

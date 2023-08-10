@@ -132,6 +132,42 @@ impl DnaSequence{
         }
         return retval;
     }
+    pub fn complement(&self) -> DnaSequence{
+        let mut retval = Vec::new();
+        let mut buf: u8;
+        for i in 0..self.length{
+            buf = ((self.sequence[i / 32] >> (2 * (31 - i % 32))) & 3).try_into().unwrap();
+            match buf{
+                0 => {retval.push('T' as u8);}
+                1 => {retval.push('G' as u8);}
+                2 => {retval.push('C' as u8);}
+                3 => {retval.push('A' as u8);}
+                _ => {panic!("Never reached!!!buf: {}", buf);}
+            }
+        }
+        return DnaSequence::new(&retval);
+    }
+
+    pub fn reverse(&self) -> DnaSequence{
+        let mut retval = Vec::new();
+        let mut buf: u8;
+        for i in 0..self.length{
+            let j = self.length - i - 1;
+            buf = ((self.sequence[j / 32] >> (2 * (31 - j % 32))) & 3).try_into().unwrap();
+            match buf{
+                0 => {retval.push('A' as u8);}
+                1 => {retval.push('C' as u8);}
+                2 => {retval.push('G' as u8);}
+                3 => {retval.push('T' as u8);}
+                _ => {panic!("Never reached!!!buf: {}", buf);}
+            }
+        }
+        return DnaSequence::new(&retval);
+    }
+
+    pub fn reverse_complement(&self) -> DnaSequence{
+        return self.complement().reverse();
+    }
 
     pub fn subsequence(&self, ranges: Vec<[usize; 2]>) -> DnaSequence{
         let mut buf: u64 = 0;

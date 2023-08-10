@@ -813,6 +813,7 @@ dependencies = [
  "anyhow",
  "bio",
  "bit_reverse",
+ "csv",
  "flate2",
  "function_name",
  "fxhash",
