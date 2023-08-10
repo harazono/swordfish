@@ -115,8 +115,8 @@ fn main() {
 
     eprintln!("Number of primer_tuple: {:?}", &primer_tuple.len());
     for each_primer_tuple in &primer_tuple {
-        eprintln!("primer_tuple: {:?}", &each_primer_tuple.1.decode(0, each_primer_tuple.1.len()));
-        eprintln!("primer_tuple: {:?}", &each_primer_tuple.2.decode(0, each_primer_tuple.2.len()));
+        eprintln!("primer_tuple: {}", String::from_utf8(each_primer_tuple.1.decode(0, each_primer_tuple.1.len())).unwrap());
+        eprintln!("primer_tuple: {}", String::from_utf8(each_primer_tuple.2.decode(0, each_primer_tuple.2.len())).unwrap());
     }
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
     eprintln!("loading {:?}", &ngsread_input_file);
