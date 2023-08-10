@@ -22,16 +22,16 @@ pub fn decode_u128_2_dna_seq(source:&u128, char_size: usize) -> Vec<u8>{
     return result;
 }
 
-pub fn decode_u128_l(source: &u128) -> [u8; L_LEN]{
-    let mut result: [u8; L_LEN] = [b'X'; L_LEN];
+pub fn decode_u128_l(source: &u128) -> Vec<u8>{
+    let mut result: Vec<u8> = Vec::new();
     let mut base;
     for i in 0..L_LEN{
         base = source >> (((L_LEN + R_LEN) - i - 1) * 2) & 3;
         match base{
-            0 => {result[i] = b'A';}
-            1 => {result[i] = b'C';}
-            2 => {result[i] = b'G';}
-            3 => {result[i] = b'T';}
+            0 => {result.push(b'A');}
+            1 => {result.push(b'C');}
+            2 => {result.push(b'G');}
+            3 => {result.push(b'T');}
             _ => {panic!("Never reached!!!base: {}", base);}
         }
     }
@@ -39,16 +39,16 @@ pub fn decode_u128_l(source: &u128) -> [u8; L_LEN]{
 }
 
 
-pub fn decode_u128_r(source: &u128) -> [u8; R_LEN]{
-    let mut result: [u8; R_LEN] = [b'X'; R_LEN];
+pub fn decode_u128_r(source: &u128) -> Vec<u8>{
+    let mut result: Vec<u8> = Vec::new();
     let mut base;
     for i in 0..R_LEN{
         base = source >> ((R_LEN - i - 1) * 2) & 3;
         match base{
-            0 => {result[i] = b'A';}
-            1 => {result[i] = b'C';}
-            2 => {result[i] = b'G';}
-            3 => {result[i] = b'T';}
+            0 => {result.push(b'A');}
+            1 => {result.push(b'C');}
+            2 => {result.push(b'G');}
+            3 => {result.push(b'T');}
             _ => {panic!("Never reached!!!base: {}", base);}
         }
     }
