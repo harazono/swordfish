@@ -97,6 +97,13 @@ fn main() {
 
     eprintln!("Number of lr_tuple: {:?}", &lr_tuple.len());
 
+    for each_lr_tuple in &lr_tuple {
+        eprintln!("lr_tuple: {}", String::from_utf8(each_lr_tuple.1.decode(0, each_lr_tuple.1.len())).unwrap());
+        eprintln!("lr_tuple: {}", String::from_utf8(each_lr_tuple.2.decode(0, each_lr_tuple.2.len())).unwrap());
+    }
+
+
+
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
     let mut reader = faReader::new(ngsread_file);
     let mut record = faRecord::new();
