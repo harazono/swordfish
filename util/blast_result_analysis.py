@@ -29,6 +29,8 @@ class BlastResult():
 		self.staxids  = staxids
 		self.ssciname = ssciname
 		self.scomname = scomname
+	def __str__(self):
+		return "\t".join([f"{k}:{v}" for k, v in self.__dict__.items()])
 
 
 def grep_input_record_name(primer_pairs_dict):
@@ -103,6 +105,7 @@ def main():
 		for each_record in reader:
 			each_record_Obj = BlastResult(*each_record)
 			taxon_id = -1
+			print(each_record_Obj, file = sys.stderr)
 			try:
 				taxon_id = int(each_record_Obj.staxid)
 			except:
@@ -110,7 +113,7 @@ def main():
 			if taxon_id in overlook_taxon_ids:
 				continue
 			#if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length != 0:
-			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qend >= args.offset:
+			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qend >= args.offset:#0だと確定で救済、値を上げるほど救済しづらくなる
 				continue
 			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= args.offset:
 				continue
