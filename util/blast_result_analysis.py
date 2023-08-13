@@ -110,9 +110,9 @@ def main():
 			if taxon_id in overlook_taxon_ids:
 				continue
 			#if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length != 0:
-			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qend >= 2:
+			if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qend >= args.offset:
 				continue
-			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= 2:
+			if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= args.offset:
 				continue
 			blast_results.append(each_record_Obj)
 	print(f"found {len(blast_results)} blast results", file = sys.stderr)
