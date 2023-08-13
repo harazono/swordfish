@@ -49,7 +49,7 @@ def main():
     parser.add_argument("blast",     metavar = "blast",         type = str, help = "blast output file name. outfmt must be '6 qseqid sseqid sacc slen qstart qend sstart send qseq sseq evalue length staxid staxids ssciname scomname'")
     parser.add_argument("primer3",   metavar = "primer3",       type = str, help = "primer3 output file (json)")
     parser.add_argument("--discard", metavar = "namelist",      type = str, nargs="+", help = "list of sequence names to be discarded. one name per line.")
-    parser.add_argument("--offset",  metavar = "offset",        type = int, default = 0, help = "offset value from 3'")
+    parser.add_argument("--offset",  metavar = "offset",        type = int, default = 100, help = "offset value from 3'")
     parser.add_argument("-o",        metavar = "output_prefix", type = str, default = "final_result", help = "output file name (default = final_result)")
     #parser.add_argument("--fasta", action='store_true', help = "output as fasta")
     args = parser.parse_args()
@@ -122,7 +122,7 @@ def main():
             if distance > args.offset:
                 continue#救済
             #if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= args.offset:
-                continue
+                #continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file = sys.stderr)
 
