@@ -123,13 +123,6 @@ def main():
             #print(distance, args.offset, distance > args.offset, each_record_Obj, file = sys.stderr)
             if distance > 1:
                 continue#救済
-
-
-            #if distance >= args.offset:
-            #    continue#救済
-
-            #if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= args.offset:
-                #continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file = sys.stderr)
 
