@@ -117,7 +117,7 @@ def main():
                 distance = each_record_Obj.qlen - each_record_Obj.qend
             if each_record_Obj.qseqid.endswith("R"):
                 distance = each_record_Obj.qstart
-            print(each_record_Obj, distance, file = sys.stderr)
+            print(distance, args.offset, distance > args.offset, each_record_Obj, file = sys.stderr)
 
             if distance > args.offset:
                 continue#救済
