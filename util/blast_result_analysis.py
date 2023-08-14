@@ -114,13 +114,20 @@ def main():
             distance = -1
             #if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length != 0:
             if each_record_Obj.qseqid.endswith("L"):
-                distance = each_record_Obj.qlen - each_record_Obj.qend
-            if each_record_Obj.qseqid.endswith("R"):
+                distance = each_record_Obj.qlen - each_record_Obj.qend + 1
+            elif each_record_Obj.qseqid.endswith("R"):
                 distance = each_record_Obj.qstart
+            else:
+                print("Never reached", file = sys.stderr)
+                sys.exit(1)
             #print(distance, args.offset, distance > args.offset, each_record_Obj, file = sys.stderr)
-
-            if distance > args.offset:
+            if distance > 1:
                 continue#救済
+
+
+            #if distance >= args.offset:
+            #    continue#救済
+
             #if each_record_Obj.qseqid.endswith("R") and each_record_Obj.qstart >= args.offset:
                 #continue
             blast_results.append(each_record_Obj)
