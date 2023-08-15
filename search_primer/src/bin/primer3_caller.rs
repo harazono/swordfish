@@ -13,10 +13,10 @@ use std::mem;
 use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
-/* 
 
-fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option<String>) -> Vec<String>{
-    let mut str_vec: Vec<String> = Vec::new();
+
+fn primer3_core_input_sequences(sequences: &Vec<u128>, library_file_name: &Option<String>) -> String{
+    let mut ret_str: String = String::new();
     let many_n = "N".to_string().repeat(50);
     //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
 
@@ -42,18 +42,16 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
         match library_file_name.as_ref() {
             Some(file_name) => {
                 // If Some, append the file name to the string
-                primer3_fmt_str.push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=", file_name));
+                primer3_fmt_str.push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=\n", file_name));
             }
             None => {
-                primer3_fmt_str.push_str("\n=");
+                primer3_fmt_str.push_str("\n=\n");
             }
         }
-        str_vec.push(primer3_fmt_str);
+        ret_str.push_str(primer3_fmt_str);
     }
-    return str_vec;
+    return ret_str;
 }
-
- */
 
 
 fn primer3_core_input_sequence(sequence: &u128, library_file_name: &Option<String>) -> String{
@@ -205,15 +203,15 @@ fn main(){
             thread::spawn(move|| {
                 let mut primer3_results = String::new();
                 for (_j, bunch) in chunks_of_input[i].iter().enumerate() {
+                    //2000本の処理に30秒かかる
                     primer3_results += &execute_primer3(primer3_core_input_sequence(&bunch, &library_file_name_clone));
     
-                    if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
+                    if mem::size_of_val(&primer3_results) > 8 * 1024 * 1024 * 1024 {
                         let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
                         file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
                         primer3_results.clear();
                     }
                 }
-    
                 // After the loop, write remaining primer3_results to the file
                 if !primer3_results.is_empty() {
                     let mut file = thread_file_mutex.lock().unwrap();
