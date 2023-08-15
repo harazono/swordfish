@@ -140,6 +140,8 @@ fn main(){
     let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
     let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(1).map(|chunk| chunk.to_vec()).collect();
     let mut chunks_of_input: Vec<Vec<Vec<String>>> = Vec::new();
+    eprintln!("finish formatting string");
+
     for i in 0..thread_number{
         chunks_of_input.push(Vec::new());
         chunks_of_input[i].push(Vec::new());
