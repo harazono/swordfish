@@ -3,7 +3,7 @@ extern crate getopts;
 use std::{env, process};
 use std::fs::File;
 use std::io::{Read, BufReader};
-use std::io::prelude::*;
+//use std::io::prelude::*;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::sync::{Arc, Mutex};
@@ -165,7 +165,7 @@ fn main(){
                     let joined_bunch = bunch.join("\n");
                     primer3_results += &execute_primer3((joined_bunch).to_string());
     
-                    if mem::size_of_val(&primer3_results) > 8 * 1024 * 1024 * 1024 {
+                    if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
                         let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
                         file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
                         primer3_results.clear();
