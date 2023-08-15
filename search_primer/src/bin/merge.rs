@@ -4,7 +4,8 @@ use getopts::Options;
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write, BufWriter};
-use std::collections::BTreeSet;
+use std::collections::BinaryHeap;
+use std::cmp::Ordering;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -43,22 +44,46 @@ fn merge_and_uniq(file1_path: &str, file2_path: &str, output_path: &str) {
     let reader1 = BufReader::new(file1);
     let reader2 = BufReader::new(file2);
 
-    let mut numbers = BTreeSet::new();
+    let mut numbers1: Vec<u128> = reader1.lines().map(|l| l.unwrap().parse().unwrap()).collect();
+    let mut numbers2: Vec<u128> = reader2.lines().map(|l| l.unwrap().parse().unwrap()).collect();
 
-    for line in reader1.lines() {
-        let number: u128 = line.unwrap().parse().expect("Failed to parse number from the first file");
-        numbers.insert(number);
+    numbers1.sort();
+    numbers2.sort();
+
+    let mut merged = vec![];
+    let mut i = 0;
+    let mut j = 0;
+
+    while i < numbers1.len() && j < numbers2.len() {
+        if numbers1[i] == numbers2[j] {
+            merged.push(numbers1[i]);
+            i += 1;
+            j += 1;
+        } else if numbers1[i] < numbers2[j] {
+            merged.push(numbers1[i]);
+            i += 1;
+        } else {
+            merged.push(numbers2[j]);
+            j += 1;
+        }
     }
 
-    for line in reader2.lines() {
-        let number: u128 = line.unwrap().parse().expect("Failed to parse number from the second file");
-        numbers.insert(number);
+    while i < numbers1.len() {
+        merged.push(numbers1[i]);
+        i += 1;
     }
+
+    while j < numbers2.len() {
+        merged.push(numbers2[j]);
+        j += 1;
+    }
+
+    merged.dedup();
 
     let output_file = File::create(output_path).expect("Failed to create the output file");
     let mut writer = BufWriter::new(output_file);
 
-    for number in numbers {
+    for number in merged {
         writeln!(writer, "{}", number).expect("Failed to write to the output file");
     }
 }
