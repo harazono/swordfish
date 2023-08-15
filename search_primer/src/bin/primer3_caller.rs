@@ -13,7 +13,7 @@ use std::mem;
 use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
-
+/* 
 
 fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option<String>) -> Vec<String>{
     let mut str_vec: Vec<String> = Vec::new();
@@ -52,6 +52,47 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
     }
     return str_vec;
 }
+
+ */
+
+
+fn primer3_core_input_sequence(sequence: &u128, library_file_name: &Option<String>) -> String{
+    let many_n = "N".to_string().repeat(50);
+    //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
+
+    let l_u8_array = decode_u128_l(&sequence);
+    let r_u8_array = decode_u128_r(&sequence);
+    let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
+    let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
+    let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
+    let mut primer3_fmt_str = format!("SEQUENCE_ID={:0x}
+SEQUENCE_TEMPLATE={}
+PRIMER_TASK=pick_pcr_primers
+PRIMER_OPT_SIZE=27
+PRIMER_MIN_SIZE=15
+PRIMER_MAX_SIZE=31
+PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
+P3_FILE_FLAG=0
+PRIMER_EXPLAIN_FLAG=1
+PRIMER_OPT_TM=66.0
+PRIMER_MAX_TM=72.0
+PRIMER_MAX_LIBRARY_MISPRIMING=11", sequence, sequence_with_internal_n);
+    // Check if library_file_name is Some or None
+    match library_file_name.as_ref() {
+        Some(file_name) => {
+            // If Some, append the file name to the string
+            primer3_fmt_str.push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=", file_name));
+        }
+        None => {
+            primer3_fmt_str.push_str("\n=");
+        }
+    }
+    return primer3_fmt_str;
+}
+
+
+
+
 
 
 fn execute_primer3(formatted_string: String) -> String{
@@ -137,20 +178,19 @@ fn main(){
     }
 
     eprintln!("start formatting string");
-    let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
-    let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(1).map(|chunk| chunk.to_vec()).collect();
-    let mut chunks_of_input: Vec<Vec<Vec<String>>> = Vec::new();
+    //let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
+    //let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(1).map(|chunk| chunk.to_vec()).collect();
+    let mut chunks_of_input: Vec<Vec<u128>> = Vec::new();
     eprintln!("finish formatting string");
 
     for i in 0..thread_number{
         chunks_of_input.push(Vec::new());
-        chunks_of_input[i].push(Vec::new());
     }
-    for (index, bunch) in bunch_of_50000_fmt_string.iter().enumerate(){
-        chunks_of_input[index % thread_number].push(bunch.to_vec());
+    for (index, bunch) in candidates.iter().enumerate(){
+        chunks_of_input[index % thread_number].push(*bunch);
     }
 
-    let arc_chunks_of_input: Arc<Vec<Vec<Vec<String>>>> = Arc::new(chunks_of_input);
+    let arc_chunks_of_input: Arc<Vec<Vec<u128>>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
     let output_file_name = matches.opt_str("o").unwrap_or("default_output.txt".to_string()); // Get output file name
@@ -160,12 +200,12 @@ fn main(){
         let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
         let arc_final_result = Arc::clone(&final_result);
         let thread_file_mutex = Arc::clone(&file_mutex); 
+        let library_file_name_clone = library_file_name.clone(); // Clone the library_file_name
         children.push(
             thread::spawn(move|| {
                 let mut primer3_results = String::new();
                 for (_j, bunch) in chunks_of_input[i].iter().enumerate() {
-                    let joined_bunch = bunch.join("\n");
-                    primer3_results += &execute_primer3((joined_bunch).to_string());
+                    primer3_results += &execute_primer3(primer3_core_input_sequence(&bunch, &library_file_name_clone));
     
                     if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
                         let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
