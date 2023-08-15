@@ -6,8 +6,10 @@ use std::io::{Read, BufReader};
 use std::io::prelude::*;
 use std::process::{Command, Stdio};
 use std::thread;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::mem;
 use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
@@ -88,6 +90,7 @@ fn main(){
     opts.optflag("h", "help", "print this help menu");
     opts.optopt("t", "thread", "number of thread to use for radix sort. default value is 8.", "THREAD");
     opts.optopt("l", "library", "library file name which will be used for PRIMER_MISPRIMING_LIBRARY", "LIBRARY");
+    opts.optopt("o", "output", "output file name for primer3 results", "OUTPUT"); // New option for output file
 
 
     let matches = match opts.parse(&args[1..]) {
@@ -148,28 +151,39 @@ fn main(){
     let arc_chunks_of_input: Arc<Vec<Vec<Vec<String>>>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
     let mut children = Vec::new();
-    for i in 0..thread_number{
+    let output_file_name = matches.opt_str("o").unwrap_or("default_output.txt".to_string()); // Get output file name
+    let file_mutex = Arc::new(Mutex::new(OpenOptions::new().append(true).create(true).open(&output_file_name).expect("Unable to open file")));
+    
+    for i in 0..thread_number {
         let chunks_of_input  = Arc::clone(&arc_chunks_of_input);
         let arc_final_result = Arc::clone(&final_result);
+        let thread_file_mutex = Arc::clone(&file_mutex); 
         children.push(
             thread::spawn(move|| {
-                //eprintln!("Thread[{}]: start  calling primer3_core", i);
-                //let total_bunches = chunks_of_input[i].len();
                 let mut primer3_results = String::new();
-                for (_j, bunch) in chunks_of_input[i].iter().enumerate(){
-                    //let start_time = std::time::Instant::now(); // Start timing here
+                for (_j, bunch) in chunks_of_input[i].iter().enumerate() {
                     let joined_bunch = bunch.join("\n");
                     primer3_results += &execute_primer3((joined_bunch).to_string());
-                    // Calculate progress as a percentage
-                    //let _progress = ((j + 1) as f64 / total_bunches as f64) * 100.0;
-                    //let _duration = start_time.elapsed(); // Get the time elapsed since start_time
-                    //eprintln!("Thread[{}] [{:.2?}%]: processed bunch {} of {} in {:.2?}", i, progress, j + 1, total_bunches, duration);
+    
+                    if mem::size_of_val(&primer3_results) > 8 * 1024 * 1024 * 1024 {
+                        let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
+                        file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
+                        primer3_results.clear();
+                    }
                 }
+    
+                // After the loop, write remaining primer3_results to the file
+                if !primer3_results.is_empty() {
+                    let mut file = thread_file_mutex.lock().unwrap();
+                    file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
+                    primer3_results.clear();
+                }
+    
                 arc_final_result.lock().unwrap().push(primer3_results);
-                //eprintln!("Thread[{}]: finish calling primer3_core", i);
-        })
+            })
         );
     }
+
     for child in children{
         let _ = child.join();
     }
