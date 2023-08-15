@@ -3,8 +3,9 @@ extern crate getopts;
 use getopts::Options;
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write, BufWriter};
-use std::collections::BTreeSet;
+use std::io::{Read, Write, BufWriter};
+use std::collections::BinaryHeap;
+use std::cmp::Ordering;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -37,28 +38,45 @@ fn print_usage(opts: &Options) {
 }
 
 fn merge_and_uniq(file1_path: &str, file2_path: &str, output_path: &str) {
-    let file1 = File::open(file1_path).expect("Failed to open the first file");
-    let file2 = File::open(file2_path).expect("Failed to open the second file");
+    let mut file1 = File::open(file1_path).expect("Failed to open the first file");
+    let mut file2 = File::open(file2_path).expect("Failed to open the second file");
 
-    let reader1 = BufReader::new(file1);
-    let reader2 = BufReader::new(file2);
+    let mut numbers = BinaryHeap::new();
 
-    let mut numbers = BTreeSet::new();
-
-    for line in reader1.lines() {
-        let number: u128 = line.unwrap().parse().expect("Failed to parse number from the first file");
-        numbers.insert(number);
+    loop {
+        let mut buffer = [0u8; 16];
+        match file1.read_exact(&mut buffer) {
+            Ok(_) => {
+                let number = u128::from_le_bytes(buffer);
+                numbers.push(Reverse(number));
+            }
+            Err(_) => break,
+        }
     }
 
-    for line in reader2.lines() {
-        let number: u128 = line.unwrap().parse().expect("Failed to parse number from the second file");
-        numbers.insert(number);
+    loop {
+        let mut buffer = [0u8; 16];
+        match file2.read_exact(&mut buffer) {
+            Ok(_) => {
+                let number = u128::from_le_bytes(buffer);
+                numbers.push(Reverse(number));
+            }
+            Err(_) => break,
+        }
     }
 
     let output_file = File::create(output_path).expect("Failed to create the output file");
     let mut writer = BufWriter::new(output_file);
 
-    for number in numbers {
-        writeln!(writer, "{}", number).expect("Failed to write to the output file");
+    let mut last_written: Option<u128> = None;
+
+    while let Some(Reverse(number)) = numbers.pop() {
+        if last_written.as_ref() != Some(&number) {
+            writer.write_all(&number.to_le_bytes()).expect("Failed to write to the output file");
+            last_written = Some(number);
+        }
     }
 }
+
+#[derive(Eq, PartialEq, Ord, PartialOrd)]
+struct Reverse(u128);
