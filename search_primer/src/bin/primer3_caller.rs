@@ -14,7 +14,7 @@ use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
 
-
+/* 
 fn primer3_core_input_sequences(sequences: &Vec<u128>, library_file_name: &Option<String>) -> String{
     let mut ret_str: String = String::new();
     let many_n = "N".to_string().repeat(50);
@@ -48,12 +48,12 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
                 primer3_fmt_str.push_str("\n=\n");
             }
         }
-        ret_str.push_str(primer3_fmt_str);
+        ret_str.push_str(&primer3_fmt_str);
     }
     return ret_str;
 }
 
-
+ */
 fn primer3_core_input_sequence(sequence: &u128, library_file_name: &Option<String>) -> String{
     let many_n = "N".to_string().repeat(50);
     //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
