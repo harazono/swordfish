@@ -9,14 +9,14 @@ use std::thread;
 use std::sync::Arc;
 use std::sync::Mutex;
 use getopts::Options;
-use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r, decode_u128_2_dna_seq};
+use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 
 
 
 fn primer3_core_input_sequence(sequences: &Vec<u128>, library_file_name: &Option<String>) -> Vec<String>{
     let mut str_vec: Vec<String> = Vec::new();
     let many_n = "N".to_string().repeat(50);
-    eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
+    //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
 
     for each_seq in sequences {
         let l_u8_array = decode_u128_l(&each_seq);
