@@ -1683,6 +1683,20 @@ mod tests {
         );
     }
 
+
+    #[test]
+    #[named]
+    fn has_repeat_10() {
+        let source: String = "TTGATGATTGGCCATTTTGTTTTCTAGAAGGT".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(0, 31) == (true, 14),
+            "{} failed",
+            function_name!()
+        );
+    }
+
     /*
     *
     *Decode test

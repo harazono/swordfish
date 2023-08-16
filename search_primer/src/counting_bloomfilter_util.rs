@@ -44,12 +44,12 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
             }
             l_window_cnt += 1;
             let (l_has_repeat_bool, l_has_repeat_offset) = current_sequence.has_repeat(l_window_start_idx, l_window_end_idx);
+            eprintln!("{} {} {} {} {} {}", l_window_start_idx, l_window_end_idx, l_window_end_idx - l_window_start_idx, String::from_utf8(current_sequence.decode(l_window_start_idx, l_window_end_idx)).unwrap(), l_has_repeat_bool, l_has_repeat_offset);
             if l_has_repeat_bool {
                 //eprintln!("poly base L {} {}", l_window_start_idx, &l_has_repeat_offset);
                 l_window_start_idx += l_has_repeat_offset + 1;
                 continue 'each_l_window;
             }
-            eprintln!("{} {} {} {}", l_window_start_idx, l_window_end_idx, l_window_end_idx - l_window_start_idx, String::from_utf8(current_sequence.decode(l_window_start_idx, l_window_end_idx)).unwrap());
             r_window_start_idx = l_window_end_idx;
             'each_r_window: loop{
                 r_window_end_idx = r_window_start_idx + R_LEN;
