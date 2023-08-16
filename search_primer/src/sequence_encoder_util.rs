@@ -330,7 +330,7 @@ impl DnaSequence {
         let has_two_base_repeat: (bool, usize)   = self.has_two_base_repeat(start, end);
         let has_three_base_repeat: (bool, usize) = self.has_three_base_repeat(start, end);
         eprint!("{}\t", std::str::from_utf8(&self.decode(start, end)).unwrap());
-        eprint!("{}\t{}\t{}\t", start, end, end - start + 1);
+        eprint!("{}\t{}\t{}\t", start, end, end - start);
         eprint!("{:?}\t", has_one_base_repeat);
         eprint!("{:?}\t", has_two_base_repeat);
         eprintln!("{:?}\t", has_three_base_repeat);
@@ -1291,6 +1291,8 @@ mod tests {
     }
 
 
+
+
     /*
     *
     *has_three_base_repeat
@@ -1755,6 +1757,21 @@ mod tests {
             function_name!()
         );
     }
+
+    #[test]
+    #[named]
+    fn has_repeat_14() {
+        let source: String = "AAAAAAAAAAAAAAAAAAAATAATTGCTACAGTGCTTAAAGATTTTGTATAA".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(20, 51) == (true, 22),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+
 
 
 
