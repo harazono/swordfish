@@ -326,13 +326,13 @@ impl DnaSequence {
     }
 
     pub fn has_repeat(&self, start: usize, end: usize) -> (bool, usize) {
-        let has_one_base_repeat: (bool, usize) = self.has_one_base_repeat(start, end);
-        let has_two_base_repeat: (bool, usize) = self.has_two_base_repeat(start, end);
+        let has_one_base_repeat: (bool, usize)   = self.has_one_base_repeat(start, end);
+        let has_two_base_repeat: (bool, usize)   = self.has_two_base_repeat(start, end);
         let has_three_base_repeat: (bool, usize) = self.has_three_base_repeat(start, end);
-        //eprintln!("{:?}, has_one_base_repeat.0: {}, has_two_base_repeat.0: {}, has_three_base_repeat.0: {},{}",&String::from_utf8(self.decode(start, end)), has_one_base_repeat.0, has_two_base_repeat.0, has_three_base_repeat.0, has_three_base_repeat.1);
+          //eprintln!("{:?}, has_one_base_repeat.0: {}, has_two_base_repeat.0: {}, has_three_base_repeat.0: {},{}",&String::from_utf8(self.decode(start, end)), has_one_base_repeat.0, has_two_base_repeat.0, has_three_base_repeat.0, has_three_base_repeat.1);
         let retval_bool: bool =
             has_one_base_repeat.0 | has_two_base_repeat.0 | has_three_base_repeat.0;
-        let retval_base: usize = cmp::max(
+        let retval_base:  usize = cmp::max(
             has_one_base_repeat.1,
             cmp::max(has_two_base_repeat.1, has_three_base_repeat.1),
         );
@@ -633,6 +633,7 @@ impl DnaSequence {
 
 #[cfg(test)]
 mod tests {
+    use crate::sequence_encoder_util::decode_u128_2_dna_seq;
     use crate::sequence_encoder_util::DnaSequence;
     use ::function_name::named;
     /*
@@ -1258,6 +1259,21 @@ mod tests {
     }
 
 
+    #[test]
+    #[named]
+    fn has_one_base_repeat_test_27N_21() {
+        let source: String = "AAACTAATTGTTGTTTTTTTTAATAATAATTA".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_one_base_repeat(0, 31) == (true, 13),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+    
+
     /*
     *
     *has_three_base_repeat
@@ -1752,4 +1768,67 @@ mod tests {
         let ret2 = obj2.subsequence_as_u128(vec![[0, 47]]);
         assert!(ret1 == ret2, "{} failed", function_name!());
     }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_1() {
+        let source: u128 = 0xFFFFFFFFFFFFFFFF;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());        
+    }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_2() {
+        let source: u128 = 0x0000000000000000;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());        
+    }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_3() {
+        let source: u128 = 0x5555555555555555;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());
+    }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_4() {
+        let source: u128 = 0xAAAAAAAAAAAAAAAA;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());
+    }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_5() {
+        let source: u128 = 0x00000000AAAAAAAA;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "AAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());
+    }
+
+    #[test]
+    #[named]
+    fn decode_u128_2_dna_seq_test_6() {
+        let source: u128 = 0x000000AAAAAAAAAA;
+        let v1: Vec<u8> = decode_u128_2_dna_seq(&source, 32);
+        let v2 = String::from_utf8(v1).unwrap();
+        let answer: String = "AAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGG".to_string();
+        assert!(v2 == answer, "{} failed", function_name!());
+    }
+
+
+
 }

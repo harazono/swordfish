@@ -3,7 +3,7 @@ pub const R_LEN: usize = 32;
 pub const HASHSET_SIZE: usize = (u32::MAX >> 3) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 const DUPPLICATION: u32 = 1;
-use crate::sequence_encoder_util::{DnaSequence};
+use crate::sequence_encoder_util::{DnaSequence, decode_u128_2_dna_seq, decode_u128_l};
 use std::time::{Instant};
 use std::collections::HashSet;
 use sha2::Sha256;
@@ -49,6 +49,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                 l_window_start_idx += l_has_repeat_offset + 1;
                 continue 'each_l_window;
             }
+            eprintln!("{:?}", current_sequence.decode(l_window_start_idx, l_window_end_idx));
             r_window_start_idx = l_window_end_idx;
             'each_r_window: loop{
                 r_window_end_idx = r_window_start_idx + R_LEN;
