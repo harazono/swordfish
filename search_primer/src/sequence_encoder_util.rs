@@ -1697,6 +1697,50 @@ mod tests {
         );
     }
 
+
+
+    #[test]
+    #[named]
+    fn has_repeat_11() {
+        let source: String = "TTGATGATTGGCCATTTTGTTTTCTAGAAGGT".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(0, 31) == (true, 14),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+
+    #[test]
+    #[named]
+    fn has_repeat_12() {
+        let source: String = "AAATTGATGATTGGCCATTTTGTTTTCTAGAA".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(0, 31) == (true, 17),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+    #[test]
+    #[named]
+    fn has_repeat_13() {
+        let source: String = "AATTGATGATTGGCCATTTTGTTTTCTAGAAG".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(10, 31) == (true, 6),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+
+
     /*
     *
     *Decode test
