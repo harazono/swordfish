@@ -372,18 +372,18 @@ impl DnaSequence {
         let original = left_bits + right_bits;
         let mask: u64 = (1 << (2 * (end - start))) - 1;
         let zero_ichi: u64 = 0x5555_5555_5555_5554 & !63 & mask;
-        if original != 0 && original & 0xFF == 0{return (true, end - 5);}
-        let val1 = original as u64;
-        let val2 = val1 << 2;
-        let val3 = val1 ^ val2;
-        let val4 = val3 >> 1;
-        let val5 = val3 | val4;
-        let val6 = !val5;
-        let val7 = val6 & zero_ichi; //下位1bitだけ0にする。
-        let val8 = val7 << 2;
-        let val9 = val7 << 4;
-        let val10 = val7 & val8 & val9;
-        let val11 = (val10 << (2 * (32 + start - end))).leading_zeros() / 2;
+        if original != 0 && original & 0xFF == 0{return (true, end - start - 4);}
+        let val1:u64 = original as u64;
+        let val2:u64 = val1 << 2;
+        let val3:u64 = val1 ^ val2;
+        let val4:u64 = val3 >> 1;
+        let val5:u64 = val3 | val4;
+        let val6:u64 = !val5;
+        let val7:u64 = val6 & zero_ichi; //下位1bitだけ0にする。
+        let val8:u64 = val7 << 2;
+        let val9:u64 = val7 << 4;
+        let val10:u64 = val7 & val8 & val9;
+        let val11:u32 = (val10 << (2 * (32 + start - end))).leading_zeros() / 2;
 
         #[cfg(test)]
         {
@@ -1124,7 +1124,7 @@ mod tests {
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_one_base_repeat(0, 27) == (true, 22),
+            obj.has_one_base_repeat(0, 27) == (true, 23),
             "{} failed, {:?}",
             function_name!(),
             obj.has_one_base_repeat(0, 27)
