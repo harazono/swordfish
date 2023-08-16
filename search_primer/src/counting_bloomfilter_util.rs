@@ -204,7 +204,7 @@ pub fn aggregate_length_between_lr_tuple(sequences: &Vec<DnaSequence>, thread_id
     let mut primer_r_size:  usize;
     let mut mask_l:         u128;
     let mut mask_r:         u128;
-    let mut primer_id:      Vec<u8>;
+    //let mut primer_id:      Vec<u8>;
     let mut loop_cnt:usize = 0;
     let mut ret_array: Vec<u8> = Vec::with_capacity(4_000_000_000);
     let mut lr_hit_counter:usize = 0;
@@ -213,7 +213,7 @@ pub fn aggregate_length_between_lr_tuple(sequences: &Vec<DnaSequence>, thread_id
 
     let start_time = Instant::now();
     let mut previous_time = start_time.elapsed();
-    'each_primer: for current_primer in primer.iter() {
+    '_each_primer: for current_primer in primer.iter() {
         primer_l_size = current_primer.1.len();
         primer_l_seq  = current_primer.1.subsequence_as_u128(vec!([0, primer_l_size]));
         primer_r_size = current_primer.2.len();
@@ -259,7 +259,7 @@ pub fn aggregate_length_between_lr_tuple(sequences: &Vec<DnaSequence>, thread_id
                     }
                     //ここまでで、LとRが一致してる
 
-                    let length: u32 = (r_window_end - l_window_start) as u32;
+                    //let length: u32 = (r_window_end - l_window_start) as u32;
                     let primer_id = &current_primer.0;
                     let sequence_slice = current_sequence.decode(l_window_start, r_window_end);
                     let length = r_window_end - l_window_start;

@@ -47,7 +47,7 @@ fn merge_and_uniq(file1_path: &str, file2_path: &str, output_path: &str) {
         let mut buffer = [0u8; 16];
         match file1.read_exact(&mut buffer) {
             Ok(_) => {
-                let number = u128::from_le_bytes(buffer);
+                let number = u128::from_be_bytes(buffer);
                 numbers.push(Reverse(number));
             }
             Err(_) => break,
@@ -58,7 +58,7 @@ fn merge_and_uniq(file1_path: &str, file2_path: &str, output_path: &str) {
         let mut buffer = [0u8; 16];
         match file2.read_exact(&mut buffer) {
             Ok(_) => {
-                let number = u128::from_le_bytes(buffer);
+                let number = u128::from_be_bytes(buffer);
                 numbers.push(Reverse(number));
             }
             Err(_) => break,
