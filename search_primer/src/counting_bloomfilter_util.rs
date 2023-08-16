@@ -49,7 +49,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                 l_window_start_idx += l_has_repeat_offset + 1;
                 continue 'each_l_window;
             }
-            eprintln!("{:?}", current_sequence.decode(l_window_start_idx, l_window_end_idx));
+            eprintln!("{:?}", String::from_utf8(current_sequence.decode(l_window_start_idx, l_window_end_idx)).unwrap());
             r_window_start_idx = l_window_end_idx;
             'each_r_window: loop{
                 r_window_end_idx = r_window_start_idx + R_LEN;
