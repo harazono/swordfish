@@ -386,14 +386,38 @@ impl DnaSequence {
         let val10:u64 = val7 & val8 & val9;
         let val11:u32 = (val10 << (2 * (32 + start - end))).leading_zeros() / 2;
 
+
+        println!("has_one_base_repeat");
+        println!("start:    {}, {}", start, start / 32);
+        println!("end:      {}, {}", end, (end - 1) / 32);
+        println!(" mask: {:064b}", mask & zero_ichi);
+        println!("original: {:0128b}", original);
+        println!("{}", std::str::from_utf8(&self.decode(start, end)).unwrap());
+        println!("{}", std::str::from_utf8(&decode_u128_2_dna_seq(&original, 64)).unwrap());
+        println!("{}", std::str::from_utf8(&decode_u128_l(&original)).unwrap());
+        println!("{}", std::str::from_utf8(&decode_u128_r(&original)).unwrap());
+        println!(" val1: {:064b}", val1);
+        println!(" val2: {:064b}", val2);
+        println!(" val3: {:064b}", val3);
+        println!(" val4: {:064b}", val4);
+        println!(" val5: {:064b}", val5);
+        println!(" val6: {:064b}", val6);
+        println!(" val7: {:064b}", val7);
+        println!(" val8: {:064b}", val8);
+        println!(" val9: {:064b}", val9);
+        println!("val10: {:064b}", val10);
+        println!("val11: {}", val11);
+
+
+
+
         #[cfg(test)]
         {
-            println!("start:    {}", start);
-            println!("end:      {}", end);
             println!("has_one_base_repeat");
-            println!(" 0101: {:064b}", zero_ichi);
-            println!(" mask: {:064b}", mask);
+            println!("start:    {}, {}", start, start / 32);
+            println!("end:      {}, {}", end, (end - 1) / 32);
             println!(" mask: {:064b}", mask & zero_ichi);
+
             println!("{}", std::str::from_utf8(&self.decode(start, end)).unwrap());
             println!(" val1: {:064b}", val1);
             println!(" val2: {:064b}", val2);
@@ -407,6 +431,7 @@ impl DnaSequence {
             println!("val10: {:064b}", val10);
             println!("val11: {}", val11);
         }
+
         if val11 == 32 {
             return (false, 0);
         } else {
@@ -1270,7 +1295,7 @@ mod tests {
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_one_base_repeat(0, 31) == (true, 13),
+            obj.has_one_base_repeat(0, 31) == (true, 130),
             "{} failed",
             function_name!()
         );
