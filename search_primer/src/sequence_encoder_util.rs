@@ -1614,9 +1614,6 @@ mod tests {
             );
         }
     }
-
-
-
     #[test]
     #[named]
     fn has_repeat_5() {
@@ -1673,6 +1670,18 @@ mod tests {
         );
     }
 
+    #[test]
+    #[named]
+    fn has_repeat_9() {
+        let source: String = "AATCACTAAAATAATTCAATAGAAATTTTGGC".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_repeat(0, 31) == (true, 7),
+            "{} failed",
+            function_name!()
+        );
+    }
 
     /*
     *
