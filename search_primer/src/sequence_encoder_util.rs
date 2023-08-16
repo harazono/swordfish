@@ -371,7 +371,7 @@ impl DnaSequence {
         right_bits &= lower_mask;
         right_bits >>= 64;
         let original = left_bits + right_bits;
-        let mask: u64 = (1 << (2 * (end - start))) - 1;
+        let mask: u64 = (1u64 << (2 * (end - start)) - 1) - 1;
         let zero_ichi: u64 = 0x5555_5555_5555_5554 & !63 & mask;
         if original != 0 && original & 0xFF == 0{return (true, end - start - 4);}
         let val1:u64 = original as u64;
