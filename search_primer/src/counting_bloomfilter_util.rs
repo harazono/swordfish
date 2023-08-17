@@ -2,9 +2,9 @@ pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 const CHUNK_MAX: usize = 200;
 
-pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
+pub const HASHSET_SIZE: usize = (u32::MAX >> 5) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 2) as usize;
-const DUPPLICATION: u32 = 1;
+const DUPPLICATION: u16 = 1;
 use crate::sequence_encoder_util::{DnaSequence, decode_u128_2_dna_seq, decode_u128_l};
 use std::time::{Instant};
 use std::collections::HashSet;
@@ -15,17 +15,17 @@ use sha2::Digest;
 
 //全てのL, Rと、hash値を出力する
 //部分配列のdecoderを書き、テストする
-pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize) -> Vec<u32>{
+pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize) -> Vec<u16>{
     let mut l_window_start_idx: usize;
     let mut l_window_end_idx:   usize;
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx:   usize;
 
     let mut loop_cnt:usize = 0;
-    eprintln!("Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", BLOOMFILTER_TABLE_SIZE);
-    //let mut ret_array: Vec<u32> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
-    let mut ret_array: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
-    eprintln!("Filling Vec<u32; {}> with 0", BLOOMFILTER_TABLE_SIZE);
+    eprintln!("Allocating Vec<u16> where BLOOMFILTER_TABLE_SIZE = {}", BLOOMFILTER_TABLE_SIZE);
+    //let mut ret_array: Vec<u16> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
+    let mut ret_array: Vec<u16> = vec![0u16;BLOOMFILTER_TABLE_SIZE];
+    eprintln!("Filling Vec<u16; {}> with 0", BLOOMFILTER_TABLE_SIZE);
     eprintln!("finish allocating");
 
     let start_time = Instant::now();
@@ -75,7 +75,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                 let table_indice:[u32;8] = hash_from_u128(lmr_string);//u128を受けてhashを返す関数
                 for i in 0..8{
                     let idx: usize = table_indice[i] as usize;
-                    if ret_array[idx] == u32::MAX{
+                    if ret_array[idx] == u16::MAX{
                         eprintln!("index {} reaches u32::MAX", idx);
                     }else{
                         ret_array[idx] += 1;
@@ -115,8 +115,8 @@ fn hash_from_u128(source: u128) -> [u32; 8]{
     return ret_val;
 }
 
-fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &Vec<u32>, indice: [u32; 8]) -> u32{
-    let mut retval: u32 = u32::MAX;
+fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &Vec<u16>, indice: [u32; 8]) -> u16{
+    let mut retval: u16 = u16::MAX;
     for index in indice{
         if counting_bloomfilter_table[index as usize] < retval{
             retval = counting_bloomfilter_table[index as usize];
@@ -126,7 +126,7 @@ fn count_occurence_from_counting_bloomfilter_table(counting_bloomfilter_table: &
 }
 
 
-pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u32, thread_id: usize) -> HashSet<u128>{
+pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u16>, sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, threshold: u16, thread_id: usize) -> HashSet<u128>{
     let mut ret_table: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
     let mut l_window_start_idx: usize;
     let mut l_window_end_idx:   usize;
@@ -177,7 +177,7 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Ve
             add_bloom_filter_cnt += 1;
                 let lmr_string:u128 = current_sequence.subsequence_as_u128(vec![[l_window_start_idx, l_window_end_idx], [r_window_start_idx, r_window_end_idx]]);
                 let table_indice:[u32;8] = hash_from_u128(lmr_string);//u128を受けてhashを返す関数
-                let occurence: u32 = count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
+                let occurence: u16 = count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold * DUPPLICATION{
                     ret_table.insert(lmr_string);
                     ho_lmr += 1;

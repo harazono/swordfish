@@ -61,8 +61,8 @@ fn main() {
         8
     };
 
-    let threshold:u32 = if matches.opt_present("a") {
-        matches.opt_str("a").unwrap().parse::<u32>().unwrap()
+    let threshold:u16 = if matches.opt_present("a") {
+        matches.opt_str("a").unwrap().parse::<u16>().unwrap()
     }else{
         8
     };
@@ -94,7 +94,7 @@ fn main() {
 
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = &sequences;
-    let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
+    let mut cbf_oyadama: Vec<u16> = vec![0;BLOOMFILTER_TABLE_SIZE];
 
     thread::scope(|scope|{
         let mut children_1 = Vec::new();
@@ -110,7 +110,7 @@ fn main() {
                             end_idx = sequences_ref.len() - 1;
                         }
                         eprintln!("start calling build_counting_bloom_filter[{}], {}-{}", i, start_idx, end_idx);
-                        let cbf: Vec<u32> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
+                        let cbf: Vec<u16> = build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
                         eprintln!("finish calling build_counting_bloom_filter[{}], {}-{}", i, start_idx, end_idx);
                         cbf
                     }
@@ -119,7 +119,7 @@ fn main() {
         }
         for child in children_1{
             let cbf = child.join().unwrap();
-            zip(cbf_oyadama.iter_mut(), cbf).for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u32::MAX));
+            zip(cbf_oyadama.iter_mut(), cbf).for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u16::MAX));
         }
     });
     let h_cbf_h_oyadama: Arc<Mutex<HashSet<u128>>> = Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
