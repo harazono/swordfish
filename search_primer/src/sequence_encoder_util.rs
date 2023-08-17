@@ -329,13 +329,13 @@ impl DnaSequence {
         let has_one_base_repeat: (bool, usize)   = self.has_one_base_repeat(start, end);
         let has_two_base_repeat: (bool, usize)   = self.has_two_base_repeat(start, end);
         let has_three_base_repeat: (bool, usize) = self.has_three_base_repeat(start, end);
-/* 
+
         eprint!("{}\t", std::str::from_utf8(&self.decode(start, end)).unwrap());
         eprint!("{}\t{}\t{}\t", start, end, end - start);
         eprint!("{:?}\t", has_one_base_repeat);
         eprint!("{:?}\t", has_two_base_repeat);
         eprintln!("{:?}\t", has_three_base_repeat);
- */
+
         let retval_bool: bool =
             has_one_base_repeat.0 | has_two_base_repeat.0 | has_three_base_repeat.0;
         let retval_base:  usize = cmp::max(
