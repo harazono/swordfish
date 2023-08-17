@@ -57,7 +57,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len(){
                     let end = start_time.elapsed();
-                    eprintln!("1st loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
+                    eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
                     previous_time = end;
                     continue 'each_read;
                 }
@@ -86,7 +86,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
             l_window_start_idx += 1;
         }
         let end = start_time.elapsed();
-        eprintln!("1st loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
+        eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
         previous_time = end;
     }
     return ret_array;
@@ -162,7 +162,7 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u16>, sequences: &Ve
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx >= current_sequence.len() + 1{
                     let end = start.elapsed();
-                    eprintln!("2nd loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
+                    eprintln!("2nd loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
                     previous_time = end;
                     continue 'each_read;
                 }
@@ -188,7 +188,7 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u16>, sequences: &Ve
             l_window_start_idx += 1;
         }
         let end = start.elapsed();
-        eprintln!("2nd loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
+        eprintln!("2nd loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
         previous_time = end;
     }
     return ret_table;
@@ -246,7 +246,7 @@ pub fn aggregate_length_between_lr_tuple(sequences: &Vec<DnaSequence>, thread_id
                     r_window_end = r_window_start + primer_r_size;
                     if r_window_end >= current_sequence.len() + 1{
                         let end = start_time.elapsed();
-                        //eprintln!("loop[{:02?}]({}-{}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+                        //eprintln!("loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
                         previous_time = end;
                         continue 'each_read;
                     }

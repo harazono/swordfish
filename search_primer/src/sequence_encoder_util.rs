@@ -341,10 +341,10 @@ impl DnaSequence {
 
  */
         let retval_bool: bool =
-            has_one_base_repeat.0 | has_two_base_repeat.0 | has_three_base_repeat.0;
+            has_one_base_repeat.0 | has_two_base_repeat.0 | has_three_base_repeat.0 | has_gc_or_at_consequence_region.0;
         let retval_base:  usize = cmp::max(
-            has_one_base_repeat.1,
-            cmp::max(has_two_base_repeat.1, has_three_base_repeat.1),
+            cmp::max(has_one_base_repeat.1, has_two_base_repeat.1),
+            cmp::max(has_three_base_repeat.1, has_gc_or_at_consequence_region.1)
         );
         return (retval_bool, retval_base);
     }
