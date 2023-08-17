@@ -1,6 +1,6 @@
 pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
-pub const HASHSET_SIZE: usize = (u32::MAX >> 3) as usize;
+pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 const DUPPLICATION: u32 = 1;
 use crate::sequence_encoder_util::{DnaSequence, decode_u128_2_dna_seq, decode_u128_l};
