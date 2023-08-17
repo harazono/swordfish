@@ -326,15 +326,16 @@ impl DnaSequence {
     }
 
     pub fn has_repeat(&self, start: usize, end: usize) -> (bool, usize) {
-        let has_one_base_repeat: (bool, usize)   = self.has_one_base_repeat(start, end);
-        let has_two_base_repeat: (bool, usize)   = self.has_two_base_repeat(start, end);
-        let has_three_base_repeat: (bool, usize) = self.has_three_base_repeat(start, end);
-
+        let has_one_base_repeat: (bool, usize)             = self.has_one_base_repeat(start, end);
+        let has_two_base_repeat: (bool, usize)             = self.has_two_base_repeat(start, end);
+        let has_three_base_repeat: (bool, usize)           = self.has_three_base_repeat(start, end);
+        let has_gc_or_at_consequence_region: (bool, usize) = self.has_gc_or_at_consequence_region(start, end);
         eprint!("{}\t", std::str::from_utf8(&self.decode(start, end)).unwrap());
         eprint!("{}\t{}\t{}\t", start, end, end - start);
         eprint!("{:?}\t", has_one_base_repeat);
         eprint!("{:?}\t", has_two_base_repeat);
-        eprintln!("{:?}\t", has_three_base_repeat);
+        eprint!("{:?}\t", has_three_base_repeat);
+        eprintln!("{:?}", has_gc_or_at_consequence_region);
 
         let retval_bool: bool =
             has_one_base_repeat.0 | has_two_base_repeat.0 | has_three_base_repeat.0;
@@ -468,8 +469,11 @@ impl DnaSequence {
         right_bits &= lower_mask;
         right_bits >>= 64;
         let original = left_bits + right_bits;
-        let mask: u64 = (1 << (2 * (end - start))) - 1;
-        let zero_ichi: u64 = 0x5555_5555_5555_5554 & !63 & mask;
+        let mask: u64 = (1u64 << (2 * (end - start)) - 1) - 1;
+        if original != 0 && original & 0xFF == 0{return (true, end - start - 4);}
+        let zero_ichi: u64 = 0x5555_5555_5555_5555 /* & !63 */ & mask;//末尾がAAAの時の偽陽性には目をつぶる
+
+
         //ここまでで、originalに右詰で対象の領域がコピーされる。
         let val1 = original as u64;
         let val2 = (original as u64) << 4;
@@ -539,7 +543,7 @@ impl DnaSequence {
         right_bits &= lower_mask;
         right_bits >>= 64;
         let original = left_bits + right_bits;
-        let mask: u64 = (1 << (2 * (end - start))) - 1;
+        let mask: u64 = (1u64 << (2 * (end - start)) - 1) - 1;
         let zero_ichi: u64 = 0x5555_5555_5555_5554 & !63 & mask;
         //ここまでで、originalに右詰で対象の領域がコピーされる。
         let val1 = original as u64;
@@ -584,23 +588,22 @@ impl DnaSequence {
             return (true, leading0.try_into().unwrap());
         }
     }
-
-/*     pub fn has_four_base_repeat(&self, start: usize, end: usize) -> (bool, usize) {
-        //eprintln!("has_three_base_repeat start: {}, end: {}", start, end);
+    pub fn has_gc_or_at_consequence_region(&self, start: usize, end: usize) -> (bool, usize) {
+        //eprintln!("has_gc_or_at_consequence_region start: {}, end: {}", start, end);
         assert!(
             start < end,
-            "DnaSequence::has_four_base_repeat assertion failed: {} !< {}",
+            "DnaSequence::has_gc_or_at_consequence_region assertion failed: {} !< {}",
             start,
             end
         );
         assert!(
             end - start > 3,
-            "DnaSequence::has_four_base_repeat assertion failed: {} - {} < 4",
+            "DnaSequence::has_gc_or_at_consequence_region assertion failed: {} - {} < 4",
             end,
             start
         );
-        assert!(end - start <= 32, "DnaSequence::has_four_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
-        assert!(end <= self.length, "DnaSequence::has_four_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
+        assert!(end - start <= 32, "DnaSequence::has_gc_or_at_consequence_region assertion failed: length of the evaluation subject must be shorter than 32");
+        assert!(end <= self.length, "DnaSequence::has_gc_or_at_consequence_region assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let upper_mask: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
         let lower_mask: u128 = 0xFFFFFFFFFFFFFFFF0000000000000000;
         let mut left_bits: u128 = self.sequence[start / 32] as u128;
@@ -613,24 +616,25 @@ impl DnaSequence {
         right_bits &= lower_mask;
         right_bits >>= 64;
         let original = left_bits + right_bits;
-        let mask: u64 = (1 << (2 * (end - start))) - 1;
+        let mask: u64 = (1u64 << (2 * (end - start)) - 1) - 1;
         let zero_ichi: u64 = 0x5555_5555_5555_5554 & !63 & mask;
-
         //ここまでで、originalに右詰で対象の領域がコピーされる。
-        let val1 = original as u64;
-        let val2 = (original as u64) << 8;
-        let val3 = val1 ^ val2;
-        let val4 = val3 >> 1;
-        let val5 = val3 | val4;
-        let val6 = !val5;
-        let val7 = val6 & zero_ichi;
-        let val8 = val7 << 2;
-        let val9 = val7 << 4;
-        let val10 = val7 << 6;
-        let val11 = val7 << 8;
-        let val12 = val7 << 10;
-        let last = val7 & val8 & val9 & val10 & val11 & val12;
-        let leading0 = (last << (2 * (32 + start - end + 1))).leading_zeros() / 2;
+        let val1:u64 = original as u64;
+        let val2:u64 = val1 >> 1;
+        let val3:u64 = val1 ^ val2;
+        let val4:u64 = val3 & zero_ichi;
+        let val5:u64 = val4 << 2;
+        let val6:u64 = val4 << 4;
+        let val7:u64 = val4 << 6;
+        let val8:u64 = val4 & val5 & val6 & val7;
+        let val9:u64 = (val3 ^ u64::MAX) & zero_ichi;
+        let val10:u64 = val9 << 2;
+        let val11:u64 = val9 << 4;
+        let val12:u64 = val9 << 6;
+        let val13:u64 = val9 & val10 & val11 & val12;
+        
+        let leading0_gc = (val8  << (2 * (32 + start - end))).leading_zeros() / 2;
+        let leading0_at = (val13 << (2 * (32 + start - end))).leading_zeros() / 2;
 
         #[cfg(test)]
         {
@@ -647,19 +651,22 @@ impl DnaSequence {
             println!("val6:  {:064b}", val6);
             println!("val7:  {:064b}", val7);
             println!("val8:  {:064b}", val8);
+            println!("{}", leading0_gc);
             println!("val9:  {:064b}", val9);
             println!("val10: {:064b}", val10);
             println!("val11: {:064b}", val11);
             println!("val12: {:064b}", val12);
-            println!("last:  {:064b}", last);
+            println!("val13: {:064b}", val13);
+            println!("{}", leading0_at);
+
         }
-        if leading0 == 32 {
+        if leading0_gc == 32 && leading0_at == 32{
             return (false, 0);
         } else {
-            return (true, leading0.try_into().unwrap());
+            return (true, cmp::min(leading0_gc, leading0_at).try_into().unwrap());
         }
     }
- */
+
 }
 
 #[cfg(test)]
@@ -1536,7 +1543,7 @@ mod tests {
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_two_base_repeat(0, 27) == (false, 0),
+            obj.has_two_base_repeat(0, 27) == (true, 18),
             "{} failed",
             function_name!()
         );
@@ -1590,6 +1597,7 @@ mod tests {
         );
     }
 
+
     #[test]
     #[named]
     fn has_two_base_repeat_27N_8() {
@@ -1617,6 +1625,71 @@ mod tests {
             obj.has_two_base_repeat(0, 27)
         );
     }
+
+    #[test]
+    #[named]
+    fn has_two_base_repeat_27N_10() {
+        let source: String = "GACTGGATCTCTCTTGTTTGTTCCTGCACTAG".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_two_base_repeat(0, 32) == (false, 0),
+            "{} failed",
+            function_name!()
+        );
+    }
+
+
+    /*
+    has_gc_or_at_consequence_region test
+    */
+
+
+    #[test]
+    #[named]
+    fn has_gc_or_at_consequence_region_32N_1() {
+        let source: String = "TTTCTGAGATGCTAATTTGTTAATAGTGCCAT".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_gc_or_at_consequence_region(0, 32) == (true, 12),
+            "{} failed, {:?}",
+            function_name!(),
+            obj.has_gc_or_at_consequence_region(0, 32)
+        );
+    }
+
+
+
+    #[test]
+    #[named]
+    fn has_gc_or_at_consequence_region_32N_2() {
+        let source: String = "GTTTGTTCCTGCACTAGATCACAGACATATCC".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_gc_or_at_consequence_region(0, 32) == (false, 0),
+            "{} failed, {:?}",
+            function_name!(),
+            obj.has_gc_or_at_consequence_region(0, 32)
+        );
+    }
+
+    #[test]
+    #[named]
+    fn has_gc_or_at_consequence_region_32N_3() {
+        let source: String = "CATCCCGGGAGATATGAAGAAGAGATAGATCC".to_string();
+        let v: Vec<u8> = source.into_bytes();
+        let obj = DnaSequence::new(&v);
+        assert!(
+            obj.has_gc_or_at_consequence_region(0, 32) == (true, 3),
+            "{} failed, {:?}",
+            function_name!(),
+            obj.has_gc_or_at_consequence_region(0, 32)
+        );
+    }
+
+
 
 
     /*
