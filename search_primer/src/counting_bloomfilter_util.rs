@@ -1,5 +1,7 @@
 pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
+const CHUNK_MAX: usize = 200;
+
 pub const HASHSET_SIZE: usize = (u32::MAX >> 4) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = (u32::MAX >> 1) as usize;
 const DUPPLICATION: u32 = 1;
@@ -10,6 +12,7 @@ use sha2::Sha256;
 use sha2::Digest;
 
 
+
 //全てのL, Rと、hash値を出力する
 //部分配列のdecoderを書き、テストする
 pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usize, end_idx: usize, thread_id: usize) -> Vec<u32>{
@@ -17,7 +20,6 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
     let mut l_window_end_idx:   usize;
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx:   usize;
-    let chunk_max: usize = 500;
 
     let mut loop_cnt:usize = 0;
     eprintln!("Allocating Vec<u32> where BLOOMFILTER_TABLE_SIZE = {}", BLOOMFILTER_TABLE_SIZE);
@@ -59,7 +61,7 @@ pub fn build_counting_bloom_filter(sequences: &Vec<DnaSequence>, start_idx: usiz
                     previous_time = end;
                     continue 'each_read;
                 }
-                if r_window_end_idx - l_window_start_idx > chunk_max - R_LEN{
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN{
                     break 'each_r_window;
                 }
                 let (r_has_repeat_bool, r_has_repeat_offset) = current_sequence.has_repeat(r_window_start_idx, r_window_end_idx);
@@ -130,7 +132,6 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Ve
     let mut l_window_end_idx:   usize;
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx:   usize;
-    let chunk_max: usize = 141;
     let mut ho_lmr: usize = 0;
 
 
@@ -165,7 +166,7 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u32>, sequences: &Ve
                     previous_time = end;
                     continue 'each_read;
                 }
-                if r_window_end_idx - l_window_start_idx > chunk_max - R_LEN{
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN{
                     break 'each_r_window;
                 }
                 let (r_has_repeat_bool, r_has_repeat_offset) = current_sequence.has_repeat(r_window_start_idx, r_window_end_idx);
