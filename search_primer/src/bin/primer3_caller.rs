@@ -206,7 +206,7 @@ fn main(){
                     //2000本の処理に30秒かかる
                     primer3_results += &execute_primer3(primer3_core_input_sequence(&bunch, &library_file_name_clone));
     
-                    if mem::size_of_val(&primer3_results) > 8 * 1024 * 1024 * 1024 {
+                    if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
                         let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
                         file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
                         primer3_results.clear();
