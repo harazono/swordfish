@@ -101,7 +101,7 @@ fn execute_primer3(formatted_string: String) -> String{
         Err(why) => panic!("couldn't spawn primer3: {}", why),
         Ok(process) => process,
     };
-
+    eprintln!("primer3_core_input_string: {}", formatted_string);
     match process.stdin.as_ref().unwrap().write_all(formatted_string.as_bytes()) {
         Err(why) => panic!("couldn't write to primer3_core stdin: {}", why),
         Ok(_) => eprintln!("sent pangram to primer3_core"),
@@ -175,11 +175,11 @@ fn main(){
         candidates.push(tmp_seq_as_u128);
     }
 
-    eprintln!("start formatting string");
+    //eprintln!("start formatting string");
     //let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
     //let bunch_of_50000_fmt_string: Vec<Vec<String>> = primer3_fmt_string.chunks(1).map(|chunk| chunk.to_vec()).collect();
+    //eprintln!("finish formatting string");
     let mut chunks_of_input: Vec<Vec<u128>> = Vec::new();
-    eprintln!("finish formatting string");
 
     for i in 0..thread_number{
         chunks_of_input.push(Vec::new());
