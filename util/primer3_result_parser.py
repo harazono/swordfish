@@ -102,8 +102,10 @@ def fmt4fasta(primer_pairs_dict, trim_flag = False):
 			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
 				tmpstr += f">{k}_{idx}_R\n{each_pair['PRIMER_RIGHT_SEQUENCE'][start_index:]}\n"
 			retarray.append(tmpstr)
-	return "\n".join(retarray)
-
+	if len(retarray) != 0:
+		return "\n".join(retarray)
+	else:
+		return ""
 
 
 def tempfmt(primer_pairs_dict):
@@ -338,14 +340,14 @@ def main():
 	output_file = open(args.o, "w") if args.o is not None else None
 	if args.fasta:
 		if output_file:
-			print(fmt4fasta(primer_pairs_dict), file = output_file)
+			print(fmt4fasta(primer_pairs_dict), file = output_file, end = "")
 		else:
-			print(fmt4fasta(primer_pairs_dict))
+			print(fmt4fasta(primer_pairs_dict), end = "")
 	elif args.trimmed_fasta:
 		if output_file:
-			print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file)
+			print(fmt4fasta(primer_pairs_dict, trim_flag = True), file = output_file, end = "")
 		else:
-			print(fmt4fasta(primer_pairs_dict, trim_flag = True))
+			print(fmt4fasta(primer_pairs_dict, trim_flag = True), end = "")
 	elif args.tempfmt:
 			if output_file:
 				print(tempfmt(primer_pairs_dict), file = output_file)
