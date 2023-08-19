@@ -101,7 +101,7 @@ fn execute_primer3(formatted_string: String) -> String{
         Err(why) => panic!("couldn't spawn primer3: {}", why),
         Ok(process) => process,
     };
-    eprintln!("primer3_core_input_string: {}", formatted_string);
+    //eprintln!("primer3_core_input_string: {}", formatted_string);
     match process.stdin.as_ref().unwrap().write_all(formatted_string.as_bytes()) {
         Err(why) => panic!("couldn't write to primer3_core stdin: {}", why),
         Ok(_) => eprintln!("sent pangram to primer3_core"),
