@@ -626,22 +626,33 @@ impl DnaSequence {
         let val2:u64 = val1 >> 1;
         let val3:u64 = val1 ^ val2;
         let val4:u64 = val3 & zero_ichi;
-        let val5:u64 = val4 << 2;
-        let val6:u64 = val4 << 4;
-        let val7:u64 = val4 << 6;
-        let val8:u64 = val4 & val5 & val6 & val7;
-        let val9:u64 = (val3 ^ u64::MAX) & zero_ichi;
-        let val10:u64 = val9 << 2;
+        let val5:u64 = val4 << 2
+        & val4 << 4
+        & val4 << 6
+        & val4 << 8
+        & val4 << 10
+        & val4 << 12
+        & val4 << 14;
+        let val6:u64 = (val3 ^ u64::MAX) & zero_ichi;
+        let val7:u64 = val6 << 2
+        & val6 << 4
+        & val6 << 6
+        & val6 << 8
+        & val6 << 10
+        & val6 << 12
+        & val6 << 14;
+/* 
         let val11:u64 = val9 << 4;
         let val12:u64 = val9 << 6;
         let val13:u64 = val9 & val10 & val11 & val12;
         
-        let leading0_gc = (val8  << (2 * (32 + start - end))).leading_zeros() / 2;
-        let leading0_at = (val13 << (2 * (32 + start - end))).leading_zeros() / 2;
+ */
+        let leading0_gc = (val5 << (2 * (32 + start - end))).leading_zeros() / 2;
+        let leading0_at = (val7 << (2 * (32 + start - end))).leading_zeros() / 2;
 
         #[cfg(test)]
         {
-            println!("has_three_base_repeat");
+            println!("has_gc_or_at_consequence_region");
             println!("{}", std::str::from_utf8(&self.decode(start, end)).unwrap());
             println!("start: {}", start);
             println!("end:   {}", end);
@@ -653,13 +664,7 @@ impl DnaSequence {
             println!("val5:  {:064b}", val5);
             println!("val6:  {:064b}", val6);
             println!("val7:  {:064b}", val7);
-            println!("val8:  {:064b}", val8);
             println!("{}", leading0_gc);
-            println!("val9:  {:064b}", val9);
-            println!("val10: {:064b}", val10);
-            println!("val11: {:064b}", val11);
-            println!("val12: {:064b}", val12);
-            println!("val13: {:064b}", val13);
             println!("{}", leading0_at);
 
         }
@@ -1651,11 +1656,11 @@ mod tests {
     #[test]
     #[named]
     fn has_gc_or_at_consequence_region_32N_1() {
-        let source: String = "TTTCTGAGATGCTAATTTGTTAATAGTGCCAT".to_string();
+        let source: String = "TTTCTGTGCTAATTTTAATTTGTTAATAGTGCCAT".to_string();
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_gc_or_at_consequence_region(0, 32) == (true, 12),
+            obj.has_gc_or_at_consequence_region(0, 32) == (true, 8),
             "{} failed, {:?}",
             function_name!(),
             obj.has_gc_or_at_consequence_region(0, 32)
@@ -1685,7 +1690,7 @@ mod tests {
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_gc_or_at_consequence_region(0, 32) == (true, 3),
+            obj.has_gc_or_at_consequence_region(0, 32) == (false, 0),
             "{} failed, {:?}",
             function_name!(),
             obj.has_gc_or_at_consequence_region(0, 32)
@@ -1717,7 +1722,7 @@ mod tests {
         let v: Vec<u8> = source.into_bytes();
         let obj = DnaSequence::new(&v);
         assert!(
-            obj.has_repeat(0, 26).0 == false,
+            obj.has_repeat(0, 26) == (true, 6),
             "{} failed",
             function_name!()
         );
