@@ -179,6 +179,9 @@ pub fn number_of_high_occurence_lr_tuple(source_table: &Vec<u16>, sequences: &Ve
                 let table_indice:[u32;8] = hash_from_u128(lmr_string);//u128を受けてhashを返す関数
                 let occurence: u16 = count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold * DUPPLICATION{
+                    if ret_table.len() >= (ret_table.capacity() as f64 * 0.9) as usize {
+                        break 'each_read; // 再アロケーションが発生する場合、ループを終了
+                    }
                     ret_table.insert(lmr_string);
                     ho_lmr += 1;
                 }
