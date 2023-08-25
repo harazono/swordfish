@@ -50,10 +50,12 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
         }
         ret_str.push_str(&primer3_fmt_str);
     }
-    eprintln!("mem::size_ov_val(&ret_str): {}", mem::size_of_val(&ret_str));
+    //eprintln!("mem::size_of_val(&ret_str): {}", mem::size_of_val(&ret_str));//これだとVecのアタマの24byteしか表示されない
+    eprintln!("(&ret_str).len(): {}", (&ret_str).len());
     return ret_str;
 }
 
+/* 
 fn primer3_core_input_sequence(sequence: &u128, library_file_name: &Option<String>) -> String{
     let many_n = "N".to_string().repeat(50);
     //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
@@ -88,8 +90,10 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", sequence, sequence_with_internal_n);
     return primer3_fmt_str;
 }
 
+*/
 
 fn execute_primer3(formatted_string: String) -> String{
+    eprintln!("function execute_primer3: formatted_string.len(): {}", formatted_string.len());
     let process = match Command::new("primer3_core")
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
@@ -97,7 +101,8 @@ fn execute_primer3(formatted_string: String) -> String{
         Err(why) => panic!("couldn't spawn primer3: {}", why),
         Ok(process) => process,
     };
-    //eprintln!("primer3_core_input_string: {}", formatted_string);
+    eprintln!("function execute_primer3: about to send String to stdin");
+
     match process.stdin.as_ref().unwrap().write_all(formatted_string.as_bytes()) {
         Err(why) => panic!("couldn't write to primer3_core stdin: {}", why),
         Ok(_) => eprintln!("sent pangram to primer3_core"),
