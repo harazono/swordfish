@@ -113,6 +113,7 @@ fn execute_primer3(formatted_string: String) -> String{
     */
     // /tmpに中間ファイルを書き込む
     let temporary_file_name = format!("/tmp/primer3_core_input_{}.txt", generate_random_string(10));
+    eprintln!("temporary_file_name: {}", temporary_file_name);
     {
         let mut file = OpenOptions::new().write(true).create(true).open(&temporary_file_name).unwrap();
         file.write_all(formatted_string.as_bytes()).unwrap();
@@ -120,12 +121,19 @@ fn execute_primer3(formatted_string: String) -> String{
     } // ファイルをクローズする
 
     // ファイルを再度開き、Command::new("primer3_core")の標準入力として利用する
+    eprintln!("start opening {}", temporary_file_name);
     let output = Command::new("primer3_core")
     .stdin(Stdio::from(OpenOptions::new().read(true).open(&temporary_file_name).unwrap()))
     .output()
     .expect("Failed to execute command");
 
-    return String::from_utf8(output.stdout).unwrap()
+    // ファイルを削除する
+    eprintln!("start removing {}", temporary_file_name);
+    let _ = std::fs::remove_file(temporary_file_name);
+
+    // 結果を返す
+    String::from_utf8(output.stdout).unwrap()
+}
 
 /* 
     let output: Output    = Command::new("primer3-core").arg("/tmp/primer3_core_input.txt").output().unwrap();
