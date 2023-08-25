@@ -4,7 +4,7 @@ use std::{env, process};
 use std::fs::File;
 use std::io::{Read, BufReader};
 //use std::io::prelude::*;
-use std::process::{Command, Stdio};
+use std::process::{Command, Stdio, Output};
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::fs::OpenOptions;
@@ -12,6 +12,11 @@ use std::io::Write;
 use std::mem;
 use getopts::Options;
 use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
+
+extern crate rand;
+
+use rand::Rng;
+use rand::distributions::Alphanumeric;
 
 
 
@@ -51,7 +56,7 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", each_seq, sequence_with_internal_n);
         ret_str.push_str(&primer3_fmt_str);
     }
     //eprintln!("mem::size_of_val(&ret_str): {}", mem::size_of_val(&ret_str));//これだとVecのアタマの24byteしか表示されない
-    eprintln!("(&ret_str).len(): {}", (&ret_str).len());
+    eprintln!("(&ret_str).len(): {}", (&ret_str).len());//function execute_primer3: formatted_string.len(): 483000
     return ret_str;
 }
 
@@ -92,7 +97,39 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11", sequence, sequence_with_internal_n);
 
 */
 
+fn generate_random_string(length: usize) -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(length)
+        .map(char::from)
+        .collect()}
+
 fn execute_primer3(formatted_string: String) -> String{
+    /*
+    /tmpなどに中間ファイルを書き込む
+    let mut file = OpenOptions::new().write(true).create(true).open("/tmp/primer3_core_input.txt").unwrap();
+    ファイルをクローズして、再び開ける
+    Command::newにファイルオブジェクトを渡す（stdinは使わない）
+    */
+    // /tmpに中間ファイルを書き込む
+    let temporary_file_name = format!("/tmp/primer3_core_input_{}.txt", generate_random_string(10));
+    {
+        let mut file = OpenOptions::new().write(true).create(true).open(&temporary_file_name).unwrap();
+        file.write_all(formatted_string.as_bytes()).unwrap();
+        file.flush().unwrap();
+    } // ファイルをクローズする
+
+    // ファイルを再度開き、Command::new("primer3_core")の標準入力として利用する
+    let output = Command::new("primer3_core")
+    .stdin(Stdio::from(OpenOptions::new().read(true).open(&temporary_file_name).unwrap()))
+    .output()
+    .expect("Failed to execute command");
+
+    return String::from_utf8(output.stdout).unwrap()
+
+/* 
+    let output: Output    = Command::new("primer3-core").arg("/tmp/primer3_core_input.txt").output().unwrap();
+    let output_str:String = String::from_utf8(output.stdout).unwrap();
     eprintln!("function execute_primer3: formatted_string.len(): {}", formatted_string.len());
     let process = match Command::new("primer3_core")
     .stdin(Stdio::piped())
@@ -102,7 +139,6 @@ fn execute_primer3(formatted_string: String) -> String{
         Ok(process) => process,
     };
     eprintln!("function execute_primer3: about to send String to stdin");
-
     match process.stdin.as_ref().unwrap().write_all(formatted_string.as_bytes()) {
         Err(why) => panic!("couldn't write to primer3_core stdin: {}", why),
         Ok(_) => eprintln!("sent pangram to primer3_core"),
@@ -112,6 +148,8 @@ fn execute_primer3(formatted_string: String) -> String{
     let result = String::from_utf8(output.stdout).unwrap();
     //println!("{}", result);
     return result;
+*/
+
 }
 
 

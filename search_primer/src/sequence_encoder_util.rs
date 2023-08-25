@@ -362,6 +362,7 @@ impl DnaSequence {
             end,
             start
         );
+        assert!(end - start >8, "DnaSequence::has_one_base_repeat assertion failed: length of the evaluation subject must be longer than 8");
         assert!(end - start <= 32, "DnaSequence::has_one_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_one_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. start: {}, end: {}, self.lngth: {}", start, end, self.length);
 
@@ -458,6 +459,7 @@ impl DnaSequence {
             end,
             start
         );
+        assert!(end - start >8, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be longer than 8");
         assert!(end - start <= 32, "DnaSequence::has_two_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_two_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let upper_mask: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
@@ -532,6 +534,7 @@ impl DnaSequence {
             end,
             start
         );
+        assert!(end - start >8, "DnaSequence::has_three_base_repeat assertion failed: length of the evaluation subject must be longer than 8");
         assert!(end - start <= 32, "DnaSequence::has_three_base_repeat assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_three_base_repeat assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let upper_mask: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
@@ -605,6 +608,7 @@ impl DnaSequence {
             end,
             start
         );
+        assert!(end - start >8, "DnaSequence::has_gc_or_at_consequence_region assertion failed: length of the evaluation subject must be longer than 8");
         assert!(end - start <= 32, "DnaSequence::has_gc_or_at_consequence_region assertion failed: length of the evaluation subject must be shorter than 32");
         assert!(end <= self.length, "DnaSequence::has_gc_or_at_consequence_region assertion failed: end coordinate must be smaller than length of the sequence. end: {}, self.lngth: {}", end, self.length);
         let upper_mask: u128 = 0x0000000000000000FFFFFFFFFFFFFFFF;
