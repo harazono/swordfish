@@ -133,7 +133,6 @@ fn execute_primer3(formatted_string: String) -> String{
 
     // 結果を返す
     String::from_utf8(output.stdout).unwrap()
-}
 
 /* 
     let output: Output    = Command::new("primer3-core").arg("/tmp/primer3_core_input.txt").output().unwrap();
