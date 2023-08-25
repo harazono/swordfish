@@ -199,7 +199,7 @@ fn main(){
             thread::spawn(move|| {
                 let mut primer3_results = String::new();
                 // chunks_of_input[i]を5000個の要素ごとのチャンクに分割
-                for bunch in chunks_of_input[i].chunks(5000) {
+                for bunch in chunks_of_input[i].chunks(1000) {
                     let sequences: Vec<_> = bunch.iter().collect();
                     primer3_results += &execute_primer3(primer3_core_input_sequences(&sequences, &library_file_name_clone));
                     //eprintln!("{}", &primer3_results);
