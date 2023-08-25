@@ -201,7 +201,8 @@ fn main(){
                 // chunks_of_input[i]を5000個の要素ごとのチャンクに分割
                 for bunch in chunks_of_input[i].chunks(5000) {
                     let sequences: Vec<_> = bunch.iter().collect();
-                    primer3_results += &primer3_core_input_sequences(&sequences, &library_file_name_clone);
+                    primer3_results += &execute_primer3(primer3_core_input_sequences(&sequences, &library_file_name_clone));
+                    eprintln!("{}", &primer3_results);
                     if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
                         let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
                         file.write_all(primer3_results.as_bytes()).expect("Unable to write to file");
