@@ -112,7 +112,7 @@ fn execute_primer3(formatted_string: String) -> String{
     Command::newにファイルオブジェクトを渡す（stdinは使わない）
     */
     // /tmpに中間ファイルを書き込む
-    let temporary_file_name = format!("/tmp/primer3_core_input_{}.txt", generate_random_string(10));
+    let temporary_file_name = format!("/work/primer3_core_input_{}.txt", generate_random_string(10));
     eprintln!("temporary_file_name: {}", temporary_file_name);
     {
         let mut file = OpenOptions::new().write(true).create(true).open(&temporary_file_name).unwrap();
@@ -249,8 +249,8 @@ fn main(){
         children.push(
             thread::spawn(move|| {
                 let mut primer3_results = String::new();
-                // chunks_of_input[i]を5000個の要素ごとのチャンクに分割
-                for bunch in chunks_of_input[i].chunks(1000) {
+                // chunks_of_input[i]を500個の要素ごとのチャンクに分割
+                for bunch in chunks_of_input[i].chunks(500) {
                     let sequences: Vec<_> = bunch.iter().collect();
                     primer3_results += &execute_primer3(primer3_core_input_sequences(&sequences, &library_file_name_clone));
                     //eprintln!("{}", &primer3_results);
