@@ -101,6 +101,7 @@ def fmt4fasta(primer_pairs_dict):
 			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
 				tmpstr += f">{k}_{idx}_R\n{each_pair['PRIMER_RIGHT_SEQUENCE']}\n"
 			retarray.append(tmpstr)
+	print(f"len(retarray): {len(retarray)}", file = sys.stderr)
 	if len(retarray) != 0:
 		return "\n".join(retarray)
 	else:
