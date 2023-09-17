@@ -50,8 +50,10 @@ class PrimerPairReport():
 		self.PRIMER_LEFT_NUM_RETURNED     = PRIMER_LEFT_NUM_RETURNED
 		self.PRIMER_RIGHT_NUM_RETURNED    = PRIMER_RIGHT_NUM_RETURNED
 		self.PRIMER_INTERNAL_NUM_RETURNED = PRIMER_INTERNAL_NUM_RETURNED
-		self.PRIMER_PAIR_NUM_RETURNED     = PRIMER_PAIR_NUM_RETURNED
+		self.PRIMER_PAIR_NUM_RETURNED     = int(PRIMER_PAIR_NUM_RETURNED)
 		self.Primer_Pairs                 = PrimerPairs
+	def __str__(self):
+		return "\n".join([f"{k}:{v}" for k, v in self.__dict__.items()])
 		
 
 class PrimerPair():
@@ -90,22 +92,18 @@ class PrimerPair():
 
 
 def fmt4fasta(primer_pairs_dict):
-	retarray = []
+	retstr = ""
 	for k, v in primer_pairs_dict.items():
+		print(k, v)
 		for idx, each_pair in enumerate(v["Primer3_output"]):
-			tmpstr = ""
+			print(idx, each_pair)
 			if each_pair['PRIMER_LEFT_SEQUENCE'] is not None:
-				tmpstr += f">{k}_{idx}_L\n{each_pair['PRIMER_LEFT_SEQUENCE']}\n"
+				retstr += f">{k}_{idx}_L\n{each_pair['PRIMER_LEFT_SEQUENCE']}\n"
 			if each_pair['PRIMER_INTERNAL_SEQUENCE'] is not None:
-				tmpstr += f">{k}_{idx}_M\n{each_pair['PRIMER_INTERNAL_SEQUENCE']}\n"
+				retstr += f">{k}_{idx}_M\n{each_pair['PRIMER_INTERNAL_SEQUENCE']}\n"
 			if each_pair['PRIMER_RIGHT_SEQUENCE'] is not None:
-				tmpstr += f">{k}_{idx}_R\n{each_pair['PRIMER_RIGHT_SEQUENCE']}\n"
-			retarray.append(tmpstr)
-	print(f"len(retarray): {len(retarray)}", file = sys.stderr)
-	if len(retarray) != 0:
-		return "\n".join(retarray)
-	else:
-		return ""
+				retstr += f">{k}_{idx}_R\n{each_pair['PRIMER_RIGHT_SEQUENCE']}\n"
+	return retstr
 
 
 def tempfmt(primer_pairs_dict):
@@ -276,12 +274,10 @@ def primer3_result_parser(filename):
 def extract_primer_pairs(primers_candidates):
 	retdict = {}
 	for each_primer in primers_candidates:
-		if len(each_primer.Primer_Pairs) != 0:
+		if each_primer.PRIMER_PAIR_NUM_RETURNED != 0:#primerが設計できないときはPrimer_Pairsが空であると期待してたが、'PRIMER_OPT_TM': '66.0'とかが入ってた。
 			each_pairs = []
-			i = 0
-			while True:
-				if each_primer.Primer_Pairs.get(f"PRIMER_PAIR_{i}_PENALTY") == None:
-					break
+			#print(each_primer.PRIMER_PAIR_NUM_RETURNED)
+			for i in range(each_primer.PRIMER_PAIR_NUM_RETURNED):
 				current_PRIMER_PAIR_PENALTY         = each_primer.Primer_Pairs.get(f"PRIMER_PAIR_{i}_PENALTY")
 				current_PRIMER_LEFT_PENALTY         = each_primer.Primer_Pairs.get(f"PRIMER_LEFT_{i}_PENALTY")
 				current_PRIMER_RIGHT_PENALTY        = each_primer.Primer_Pairs.get(f"PRIMER_RIGHT_{i}_PENALTY")
@@ -315,8 +311,12 @@ def extract_primer_pairs(primers_candidates):
 				current_PRIMER_PAIR_PRODUCT_TM      = each_primer.Primer_Pairs.get(f"PRIMER_PAIR_{i}_PRODUCT_TM")
 				tmp_PrimerPair = PrimerPair(current_PRIMER_PAIR_PENALTY, current_PRIMER_LEFT_PENALTY, current_PRIMER_RIGHT_PENALTY, current_PRIMER_INTERNAL_PENALTY, current_PRIMER_LEFT_SEQUENCE, current_PRIMER_RIGHT_SEQUENCE, current_PRIMER_INTERNAL_SEQUENCE, current_PRIMER_LEFT, current_PRIMER_RIGHT, current_PRIMER_INTERNAL, current_PRIMER_LEFT_TM, current_PRIMER_RIGHT_TM, current_PRIMER_INTERNAL_TM, current_PRIMER_LEFT_GC_PERCENT, current_PRIMER_RIGHT_GC_PERCENT, current_PRIMER_INTERNAL_GC_PERCENT, current_PRIMER_INTERNAL_SELF_ANY_TH, current_PRIMER_LEFT_SELF_ANY_TH, current_PRIMER_RIGHT_SELF_ANY_TH, current_PRIMER_INTERNAL_SELF_END_TH, current_PRIMER_LEFT_SELF_END_TH, current_PRIMER_RIGHT_SELF_END_TH, current_PRIMER_LEFT_HAIRPIN_TH, current_PRIMER_RIGHT_HAIRPIN_TH, current_PRIMER_INTERNAL_HAIRPIN_TH, current_PRIMER_LEFT_END_STABILITY, current_PRIMER_RIGHT_END_STABILITY, current_PRIMER_PAIR_COMPL_ANY_TH, current_PRIMER_PAIR_COMPL_END_TH, current_PRIMER_PAIR_PRODUCT_SIZE, current_PRIMER_PAIR_PRODUCT_TM)
 				each_pairs.append(tmp_PrimerPair.__dict__)
-				i = i + 1
+			#print(f"{i}\r", file = sys.stderr)
+			#assert i == int(each_primer.PRIMER_PAIR_NUM_RETURNED), f"{i}, {each_primer.PRIMER_PAIR_NUM_RETURNED}"
+			assert i == len(each_pairs) - 1, f"{i}, {len(each_pairs)}"
 			retdict[each_primer.SEQUENCE_ID] = {"Primer3_input": each_primer.__dict__, "Primer3_output": each_pairs}
+			#print(each_primer.SEQUENCE_ID)
+			#each_primer.SEQUENCE_IDをkeyにしてるのが問題では？ee0a9e9db9251516bb989ee0a9e8672aとなってる。問題だった。
 	return retdict
 
 
@@ -332,10 +332,15 @@ def main():
 
 	filename           = args.primer3_result
 	primers_candidates = primer3_result_parser(filename)
-	print(f"len(primers_candidates): {len(primers_candidates)}", file = sys.stderr)
+	#print(f"len(primers_candidates): {len(primers_candidates)}", file = sys.stderr)
 	primer_pairs_dict  = extract_primer_pairs(primers_candidates)
-	print(f"len(primer_pairs_dict):  {len(primer_pairs_dict)}", file = sys.stderr)
+	#print(sum([len(x["Primer3_output"]) for x in primer_pairs_dict.values()]), file = sys.stderr)
+	#print(f"len(primer_pairs_dict):  {len(primer_pairs_dict)}", file = sys.stderr)
 
+	for each_primer in primer_pairs_dict.values():
+		PRIMER_PAIR_NUM_RETURNED = each_primer["Primer3_input"]["PRIMER_PAIR_NUM_RETURNED"]
+		primers_len              = len(each_primer["Primer3_output"])
+		assert PRIMER_PAIR_NUM_RETURNED == primers_len, f"{PRIMER_PAIR_NUM_RETURNED}, {primers_len}"
 
 	output_file = open(args.o, "w") if args.o is not None else None
 	if args.fasta:
