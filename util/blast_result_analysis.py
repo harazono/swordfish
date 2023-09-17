@@ -135,7 +135,7 @@ def main():
 
     primer_blasthit_dict = {k: set() for k in fasta_ids}
     for each_hit in blast_results:
-        primer_blasthit_dict[each_hit.qseqid].add(f"{each_hit.sseqid};{each_hit.staxid};{each_hit.scomname};{each_hit.ssciname}")
+        primer_blasthit_dict[each_hit.qseqid].add((each_hit.sseqid, each_hit.staxid, each_hit.scomname, each_hit.ssciname))
 
     blast_trapped_seq_ids = set()
     for each_hit in blast_results:
@@ -192,8 +192,8 @@ def main():
         survivor_info = survivor_info_raw["Primer3_output"][survivor_index]
         partner = "L" if primer_side == "R" else "R"
         primer_pair = each_survivor[:-1] + partner
-        blast_hits = json.dumps(primer_blasthit_dict[primer_pair])
-        print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, "L" if primer_side == "R" else "R", blast_hits]]), file=survivor_tsv_file)
+        blast_hits = json.dumps(list(primer_blasthit_dict[primer_pair]))
+        print("\t".join([str(x) for x in [each_survivor.split("_")[0], survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"], primer_side, partner, blast_hits]]), file=survivor_tsv_file)
         print(each_survivor, file=survivor_namelist_file)
 
     print("\t".join(["primer id", "left primer", "right primer", "primer left Tm",
