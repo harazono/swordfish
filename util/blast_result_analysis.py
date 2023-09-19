@@ -175,7 +175,6 @@ def main():
     survivor_tsv_file = open(args.o + ".survivor.tsv", mode="w")
     survivor_pair_tsv_file = open(args.o + ".survivor_pair.tsv", mode="w")
     survivor_namelist_file = open(args.o + ".survivor_name.txt", mode="w")
-    survivor_combination_file = open(args.o + ".survivor_combination.tsv", mode="w")
 
     print(f"total count of input sequence                  : {len(fasta_ids)}", file=report_file)
     print(f"total count of blast hits                      : {len(blast_results)}", file=report_file)
@@ -203,36 +202,6 @@ def main():
         survivor_index = int(each_survivor_pair.split("_")[1])
         survivor_info = survivor_info_raw["Primer3_output"][survivor_index]
         print("\t".join([str(x) for x in [each_survivor_pair, survivor_info["PRIMER_LEFT_SEQUENCE"], survivor_info["PRIMER_RIGHT_SEQUENCE"], survivor_info["PRIMER_LEFT_TM"], survivor_info["PRIMER_RIGHT_TM"], survivor_info["PRIMER_PAIR_PRODUCT_TM"]]]), file=survivor_pair_tsv_file)
-
-    return None
-
-    for each_pair in combinations(survivor, 2):
-        primer1, primer2 = each_pair
-        if primer1.split("_")[0] == primer2.split("_")[0]:
-            # continue
-            pass
-        # 1st primer
-        # survivor_info_raw1 = primer3_info[primer1.split("_")[0]]
-        # survivor_index1 = int(primer1.split("_")[1])
-        # survivor_info1 = survivor_info_raw1["Primer3_output"][survivor_index1]
-        primer_side1 = primer1.split("_")[2]
-        partner1_side = "L" if primer_side1 == "R" else "R"
-        partner1 = primer1[:-1] + partner1_side
-        blast_hits_1 = primer_blasthit_dict[partner1]
-
-        # 2nd primer
-        # survivor_info_raw2 = primer3_info[primer2.split("_")[0]]
-        # survivor_index2 = int(primer2.split("_")[1])
-        # survivor_info2 = survivor_info_raw2["Primer3_output"][survivor_index2]
-        primer_side2 = primer2.split("_")[2]
-        partner2_side = "L" if primer_side2 == "R" else "R"
-        partner2 = primer2[:-1] + partner2_side
-        blast_hits_2 = primer_blasthit_dict[partner2]
-
-        intersection_hits = set(blast_hits_1).intersection(blast_hits_2)
-        intersection_hits_str = ";".join([x for x in intersection_hits])
-        column_msg = "\t".join([primer1, primer2, str(len(intersection_hits)), intersection_hits_str])
-        print(column_msg, file=survivor_combination_file)
 
 
 if __name__ == '__main__':
