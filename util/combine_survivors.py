@@ -52,7 +52,10 @@ def main():
     args = parser.parse_args()
     print(args, file=sys.stderr)
     input_data_as_dict = file_parser(args.input)
+    # print(f"{len(input_data_as_dict)} primer pairs to be considered")
+    # print(f"total number of combination is {len(list(combinations(input_data_as_dict, 2)))}")
     no_intersection_primer_pairs_sorted = analysis_combination_of_primers(input_data_as_dict)
+    # print(f"{len(no_intersection_primer_pairs_sorted)} primer pairs have no intersection")
     print(json.dumps(no_intersection_primer_pairs_sorted, indent=2))
 
 

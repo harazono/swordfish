@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 # from primer3_result_parser import primer3_result_parser, extract_primer_pairs
-from itertools import combinations
+# from itertools import combinations
 import sys
 import argparse
 import pprint
@@ -126,6 +126,11 @@ def main():
             # print(distance, args.offset, distance > args.offset, each_record_Obj, file = sys.stderr)
             if distance > 1:
                 continue  # 救済
+            # metagenomeという文字列がscomnameやscinameに入っていればcontinue
+            if each_record_Obj.scomname is not None and "metagenome" in each_record_Obj.scomname:
+                continue
+            if each_record_Obj.ssciname is not None and "metagenome" in each_record_Obj.ssciname:
+                continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
 
