@@ -33,6 +33,8 @@ fn main() {
         "number of threads to use for radix sort. default value is 8.",
         "THREAD",
     );
+    opts.optopt("l", "length", "maximam size of target region", "LENGTH");
+
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -64,6 +66,12 @@ fn main() {
         matches.opt_str("t").unwrap().parse::<usize>().unwrap()
     } else {
         8
+    };
+
+    let max_offtarget_region_length: usize = if matches.opt_present("l") {
+        matches.opt_str("l").unwrap().parse::<usize>().unwrap()
+    } else {
+        200
     };
 
     let output_file = if matches.opt_present("o") {
@@ -179,7 +187,7 @@ fn main() {
                     &slice_sequences,
                     i,
                     &primer_tuple_ref_mine,
-                    usize::MAX,
+                    max_offtarget_region_length,
                 );
                 eprintln!(
                     "finish calling aggregate_length_between_primer_tuple[{}]",

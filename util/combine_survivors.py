@@ -9,6 +9,15 @@ import json
 import csv
 pp = pprint.PrettyPrinter(indent=2)
 
+black_list = [
+    "153a4bc2856bd9a83f36c7c510949ba9",
+    "2644d8ad5c07efcf7e5c6c11946e0638",
+    "453a4bc286bd9a397cdb1f1442526ea4",
+    "513b41702859ac85a7e476e80519a716",
+    "b41702859ac858b19a9e446e80519a71",
+    "cca8e9132c6f2ae827c863b6bb4266d8",
+    "f2cca8ea44ca1bcac9f218edaed099b6",
+]
 
 def file_parser(input_file_name: str) -> list:
     csv.field_size_limit(int(1e6))
@@ -26,7 +35,7 @@ def analysis_combination_of_primers(input_data_as_dict: list) -> list:
         primer1, primer2 = each_pair
         primer1_id = primer1["primer id"]
         primer2_id = primer2["primer id"]
-        if primer1_id == primer2_id or (primer1_id, primer2_id) in considered_pair_set:
+        if primer1_id == primer2_id or (primer1_id, primer2_id) in considered_pair_set or primer1_id in black_list or primer2_id in black_list:
             continue
         primer1_blast_hit = set(map(lambda x: ";".join(x), primer1["blast hits"]))
         primer2_blast_hit = set(map(lambda x: ";".join(x), primer2["blast hits"]))
