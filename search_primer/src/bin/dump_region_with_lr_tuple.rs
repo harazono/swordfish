@@ -108,10 +108,15 @@ fn main() {
                 [&primer_id, &b"_LeftPrimerRevcomp_RightPrimerForward"[..]].concat();
             let id_2: Vec<u8> =
                 [&primer_id, &b"_LeftPrimerForward_RightPrimerRevcomp"[..]].concat();
+            let id_3: Vec<u8> =
+                [&primer_id, &b"_RightPrimerRevcomp_LeftPrimerForward"[..]].concat();
+            let id_4: Vec<u8> =
+                [&primer_id, &b"_RightPrimerForward_LeftPrimerRevcomp"[..]].concat();
+
             primer_tuple.push((id_1, left_primer_revcomp.clone(), right_primer.clone()));
             primer_tuple.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
-            // primer_tuple.push((id_3, left_primer_revcomp.clone(), right_primer_revcomp.clone()));
-            // primer_tuple.push((id_4, right_primer_revcomp.clone(), right_primer.clone()));
+            primer_tuple.push((id_3, right_primer_revcomp.clone(), left_primer.clone()));
+            primer_tuple.push((id_4, right_primer.clone(), left_primer_revcomp.clone()));
         }
     });
 
