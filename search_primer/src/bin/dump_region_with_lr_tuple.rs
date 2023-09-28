@@ -121,7 +121,6 @@ fn main() {
     });
 
     eprintln!("Number of primer_tuple: {:?}", &primer_tuple.len());
-    /*
     for each_primer_tuple in &primer_tuple {
         eprintln!(
             "primer_tuple: {}",
@@ -132,7 +131,6 @@ fn main() {
             String::from_utf8(each_primer_tuple.2.decode(0, each_primer_tuple.2.len())).unwrap()
         );
     }
-    */
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
     eprintln!("loading {:?}", &ngsread_input_file);
     let mut reader = faReader::new(ngsread_file);
@@ -188,7 +186,7 @@ fn main() {
                 return cbf;
             }))
         }
-        eprintln!("start  writing to output file: {:?}", &output_file);
+        eprintln!("start writing to output file: {:?}", &output_file);
         let mut file = File::create(&output_file).unwrap();
         for child in children_1 {
             let result = child.join(); // Resultを返さず、直接戻り値を取得
