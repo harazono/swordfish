@@ -275,19 +275,8 @@ pub fn aggregate_length_between_lr_tuple(
                     l_window_start += 1;
                     continue 'each_l_window;
                 }
-                /*
-                eprintln!(
-                    "{} {:0128b}\n{} {:0128b}\n",
-                    String::from_utf8(decode_u128_2_dna_seq(&primer_l_seq, primer_l_size)).unwrap(),
-                    &primer_l_seq,
-                    String::from_utf8(decode_u128_2_dna_seq(
-                        &(l_window_as_u128 & mask_l),
-                        primer_l_size
-                    ))
-                    .unwrap(),
-                    l_window_as_u128 & mask_l
-                );
-                */
+                //eprintln!("l pass");
+
                 r_window_start = l_window_end;
                 l_hit_counter += 1;
                 'each_r_window: loop {
@@ -305,10 +294,10 @@ pub fn aggregate_length_between_lr_tuple(
                         current_sequence.subsequence_as_u128(vec![[r_window_start, r_window_end]]);
                     if (r_window_as_u128 & mask_r) != primer_r_seq {
                         r_window_start += 1;
-                        //eprintln!("exit due to r_window mask fail");//ここまで到達してる
                         continue 'each_r_window;
                     }
                     //ここまでで、LとRが一致してる
+                    //eprintln!("r pass");
 
                     //let length: u32 = (r_window_end - l_window_start) as u32;
                     let primer_id = &current_primer.0;
