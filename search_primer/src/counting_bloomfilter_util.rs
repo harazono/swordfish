@@ -259,8 +259,8 @@ pub fn aggregate_length_between_lr_tuple(
         mask_l = u128::MAX >> (64 - primer_l_size) * 2;
         mask_r = u128::MAX >> (64 - primer_r_size) * 2;
         loop_cnt += 1;
-        eprintln!("{:0128b}", primer_l_seq);
-        eprintln!("{:0128b}", mask_l);
+        // eprintln!("{:0128b}", primer_l_seq);
+        // eprintln!("{:0128b}", mask_l);
 
         'each_read: for current_sequence in sequences.iter() {
             //eprintln!("{}", current_sequence.len());//見えてる

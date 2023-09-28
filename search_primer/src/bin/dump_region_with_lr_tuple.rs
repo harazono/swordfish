@@ -96,7 +96,7 @@ fn main() {
         if let Ok(line) = line {
             // eprintln!("line: {:?}", line);
             let columns: Vec<&str> = line.split('\t').collect();
-            assert!(columns.len() > 3, "column length is {}", columns.len());
+            assert!(columns.len() > 2, "column length is {}", columns.len());
             let primer_id: &[u8] = columns.get(0).unwrap_or(&"").as_bytes();
             let left_primer_seq: &str = columns.get(1).unwrap_or(&"");
             let right_primer_seq: &str = columns.get(2).unwrap_or(&"");
