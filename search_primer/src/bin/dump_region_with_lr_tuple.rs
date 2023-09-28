@@ -102,13 +102,13 @@ fn main() {
             let right_primer_seq: &str = columns.get(2).unwrap_or(&"");
             let left_primer: DnaSequence = DnaSequence::new(&left_primer_seq.into());
             let right_primer: DnaSequence = DnaSequence::new(&right_primer_seq.into());
-            // let left_primer_revcomp: DnaSequence = left_primer.reverse_complement();
+            let left_primer_revcomp: DnaSequence = left_primer.reverse_complement();
             let right_primer_revcomp: DnaSequence = right_primer.reverse_complement();
-            // let id_1: Vec<u8> = [&primer_id, &b"LeftPrimerForward_LeftPrimerRevcomp"[..]].concat();
-            let id_2: Vec<u8> = [&primer_id, &b"LeftPrimerForward_RightPrimerRevcomp"[..]].concat();
-            // let id_3: Vec<u8> = [&primer_id, &b"LeftPrimerRevcomp_RightPrimerRevcomp"[..]].concat();
-            // let id_4: Vec<u8> = [&primer_id, &b"RightPrimerRevcomp_RightPrimerForward"[..]].concat();
-            // primer_tuple.push((id_1, left_primer.clone(), left_primer_revcomp.clone()));
+            let id_1: Vec<u8> =
+                [&primer_id, &b"_LeftPrimerRevcomp_RightPrimerForward"[..]].concat();
+            let id_2: Vec<u8> =
+                [&primer_id, &b"_LeftPrimerForward_RightPrimerRevcomp"[..]].concat();
+            primer_tuple.push((id_1, left_primer_revcomp.clone(), right_primer.clone()));
             primer_tuple.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
             // primer_tuple.push((id_3, left_primer_revcomp.clone(), right_primer_revcomp.clone()));
             // primer_tuple.push((id_4, right_primer_revcomp.clone(), right_primer.clone()));

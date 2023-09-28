@@ -1,10 +1,10 @@
 extern crate search_primer;
 use getopts::Options;
+use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
+use std::collections::HashSet;
 use std::env;
 use std::fs::File;
-use std::io::{Write, BufWriter, Read, BufReader};
-use std::collections::HashSet;
-use search_primer::sequence_encoder_util::{decode_u128_2_dna_seq};
+use std::io::{BufReader, BufWriter, Read, Write};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -15,8 +15,10 @@ fn main() {
     opts.optopt("o", "outputfile", "set output file name", "NAME");
 
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m }
-        Err(f) => { panic!("{}", f.to_string()) }
+        Ok(m) => m,
+        Err(f) => {
+            panic!("{}", f.to_string())
+        }
     };
 
     if matches.opt_present("h") {
@@ -34,7 +36,7 @@ fn main() {
         loop {
             let result = reader.by_ref().take(16).read_exact(&mut buffer);
             match result {
-                Ok(_val) => {},
+                Ok(_val) => {}
                 Err(_err) => break,
             }
             let tmp_val: u128 = u128::from_be_bytes(buffer);
@@ -44,10 +46,9 @@ fn main() {
     let mut u128_primer_candidate_vec: Vec<u128> = u128_primer_candidates_set.into_iter().collect();
     u128_primer_candidate_vec.sort();
 
-
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
-    }else{
+    } else {
         "u128_binary_merge_out.bin".to_string()
     };
 
