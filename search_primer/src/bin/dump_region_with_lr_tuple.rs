@@ -7,10 +7,9 @@ use bio::io::fasta::Record as faRecord;
 use getopts::Options;
 use search_primer::counting_bloomfilter_util::aggregate_length_between_lr_tuple;
 use search_primer::sequence_encoder_util::DnaSequence;
-use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 use std::fs::File;
 use std::io::BufReader;
-use std::io::{Read, Write};
+use std::io::{BufRead, Write};
 use std::sync::Arc;
 use std::thread;
 use std::{env, process};
@@ -79,7 +78,7 @@ fn main() {
 
     let mut lr_tuple: Vec<(Vec<u8>, DnaSequence, DnaSequence)> = Vec::new();
 
-    let f: File = File::open(&primer_filename).unwrap();
+    let f: File = File::open(&lr_tuple_filename).unwrap();
     let reader = BufReader::new(f);
     let mut lines = reader.lines();
     lines.next(); // ヘッダー行をスキップ
