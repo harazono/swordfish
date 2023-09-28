@@ -272,20 +272,20 @@ pub fn aggregate_length_between_lr_tuple(
                 let l_window_as_u128: u128 =
                     current_sequence.subsequence_as_u128(vec![[l_window_start, l_window_end]]);
                 eprintln!(
-                    "{}\n{}\n{}\n",
+                    "{} {:0128b}\n{} {:0128b}\n",
                     String::from_utf8(decode_u128_2_dna_seq(&primer_l_seq, primer_l_size)).unwrap(),
-                    String::from_utf8(current_sequence.decode(l_window_start, l_window_end))
-                        .unwrap(),
+                    &primer_l_seq,
                     String::from_utf8(decode_u128_2_dna_seq(
                         &(l_window_as_u128 & mask_l),
                         primer_l_size
                     ))
-                    .unwrap()
+                    .unwrap(),
+                    l_window_as_u128 & mask_l
                 );
 
                 if (l_window_as_u128 & mask_l) != primer_l_seq {
                     l_window_start += 1;
-                    //eprintln!("exit due to l_window mask fail");
+                    eprintln!("(l_window_as_u128 & mask_l) != primer_l_seq");
                     continue 'each_l_window;
                 }
                 r_window_start = l_window_end;
