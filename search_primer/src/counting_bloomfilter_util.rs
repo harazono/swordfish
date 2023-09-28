@@ -275,6 +275,7 @@ pub fn aggregate_length_between_lr_tuple(
                     l_window_start += 1;
                     continue 'each_l_window;
                 }
+                /*
                 eprintln!(
                     "{} {:0128b}\n{} {:0128b}\n",
                     String::from_utf8(decode_u128_2_dna_seq(&primer_l_seq, primer_l_size)).unwrap(),
@@ -286,7 +287,7 @@ pub fn aggregate_length_between_lr_tuple(
                     .unwrap(),
                     l_window_as_u128 & mask_l
                 );
-
+                */
                 r_window_start = l_window_end;
                 l_hit_counter += 1;
                 'each_r_window: loop {
