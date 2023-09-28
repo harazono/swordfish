@@ -45,8 +45,10 @@ def analysis_combination_of_primers(input_data_as_dict: list) -> list:
         # print_msg = f"{primer1['primer id']} and {primer2['primer id']} have {len(intersection)} BLAST hits in common\t{'/'.join(list(intersection))}"
         # print(print_msg)
         if len(intersection) == 0:
-            primer1_blast_hit_count = len(primer1_blast_hit)
-            primer2_blast_hit_count = len(primer2_blast_hit)
+            # primer1_blast_hit_count = len(primer1_blast_hit)
+            # primer2_blast_hit_count = len(primer2_blast_hit)
+            primer1_blast_hit_count = len(set([x[3] for x in primer1["blast hits"]]))
+            primer2_blast_hit_count = len(set([x[3] for x in primer2["blast hits"]]))
             total_count = primer1_blast_hit_count + primer2_blast_hit_count
             no_intersection_primer_pairs.append((total_count, primer1, primer2))
 
@@ -61,11 +63,12 @@ def main():
     args = parser.parse_args()
     print(args, file=sys.stderr)
     input_data_as_dict = file_parser(args.input)
-    print(f"{len(input_data_as_dict)} primer pairs to be considered")
-    print(f"total number of combination is {len(list(combinations(input_data_as_dict, 2)))}")
+    # print(f"{len(input_data_as_dict)} primer pairs to be considered")
+    # print(f"total number of combination is {len(list(combinations(input_data_as_dict, 2)))}")
     no_intersection_primer_pairs_sorted = analysis_combination_of_primers(input_data_as_dict)
-    print(f"{len(no_intersection_primer_pairs_sorted)} primer pairs have no intersection")
-    # print(json.dumps(no_intersection_primer_pairs_sorted, indent=2))
+    # print(f"{len(no_intersection_primer_pairs_sorted)} primer pairs have no intersection")
+    print(json.dumps(no_intersection_primer_pairs_sorted, indent=2))
+    # print("\n".join([str(x[0]) for x in no_intersection_primer_pairs_sorted]))
 
 
 if __name__ == "__main__":
