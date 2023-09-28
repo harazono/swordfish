@@ -88,14 +88,6 @@ fn main() {
 
     let f: File = File::open(&primer_filename).unwrap();
     let reader = BufReader::new(f);
-    /*
-    primer id       left primer     right primer    primer left Tm  primer right Tm primer pair product Tm
-    876d26b46b3b86fce82a6f2813e9a80c_4      CGTCAGCGGTCACGG CCCGCCAATGTTCCTAACGCCC  57.091  66.249  74.8
-
-    */
-
-    //let file = File::open(primer_filename).unwrap();
-    //let reader = BufReader::new(file);
     let mut lines = reader.lines();
     lines.next(); // ヘッダー行をスキップ
 

@@ -25,7 +25,7 @@ fn main() {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optopt("i", "input", "set input file name (u128 binary)", "NAME");
+    opts.optopt("i", "input", "set input file name (TSV)", "NAME");
     opts.optopt("o", "output", "set output file name", "NAME");
     opts.optopt(
         "t",
@@ -33,6 +33,8 @@ fn main() {
         "number of threads to use for radix sort. default value is 8.",
         "THREAD",
     );
+    opts.optopt("l", "length", "maximam size of target region", "LENGTH");
+
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -46,7 +48,7 @@ fn main() {
         return;
     }
 
-    let lr_tuple_filename = if matches.opt_present("i") {
+    let primer_filename: String = if matches.opt_present("i") {
         matches.opt_str("i").unwrap()
     } else {
         print_usage(&program, &opts);
@@ -66,6 +68,12 @@ fn main() {
         8
     };
 
+    let max_offtarget_region_length: usize = if matches.opt_present("l") {
+        matches.opt_str("l").unwrap().parse::<usize>().unwrap()
+    } else {
+        200
+    };
+
     let output_file = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     } else {
@@ -76,15 +84,17 @@ fn main() {
     eprintln!("Output file name: {:?}", output_file);
     eprintln!("Number of threads: {:?}", threads);
 
-    let mut lr_tuple: Vec<(Vec<u8>, DnaSequence, DnaSequence)> = Vec::new();
+    let mut primer_tuple: Vec<(Vec<u8>, DnaSequence, DnaSequence)> = Vec::new();
 
-    let f: File = File::open(&lr_tuple_filename).unwrap();
+    let f: File = File::open(&primer_filename).unwrap();
     let reader = BufReader::new(f);
     let mut lines = reader.lines();
     lines.next(); // ヘッダー行をスキップ
 
     lines.for_each(|line| {
+        //eprintln!("line: {:?}", line);
         if let Ok(line) = line {
+            // eprintln!("line: {:?}", line);
             let columns: Vec<&str> = line.split('\t').collect();
             let primer_id: &[u8] = columns.get(0).unwrap_or(&"").as_bytes();
             let left_primer_seq: &str = columns.get(1).unwrap_or(&"");
@@ -94,27 +104,41 @@ fn main() {
             let left_primer_revcomp: DnaSequence = left_primer.reverse_complement();
             let right_primer_revcomp: DnaSequence = right_primer.reverse_complement();
             let id_1: Vec<u8> = [&primer_id, &b"LeftPrimerForward_LeftPrimerRevcomp"[..]].concat();
-            lr_tuple.push((id_1, left_primer.clone(), left_primer_revcomp.clone()));
+            /* let id_2: Vec<u8> = [&primer_id, &b"LeftPrimerForward_RightPrimerRevcomp"[..]].concat();
+            let id_3: Vec<u8> = [&primer_id, &b"LeftPrimerRevcomp_RightPrimerRevcomp"[..]].concat();
+            let id_4: Vec<u8> =
+                [&primer_id, &b"RightPrimerRevcomp_RightPrimerForward"[..]].concat();
+            */
+            primer_tuple.push((id_1, left_primer.clone(), left_primer_revcomp.clone()));
+            /* primer_tuple.push((id_2, left_primer.clone(), right_primer_revcomp.clone()));
+            primer_tuple.push((
+                id_3,
+                left_primer_revcomp.clone(),
+                right_primer_revcomp.clone(),
+            ));
+            primer_tuple.push((id_4, right_primer_revcomp.clone(), right_primer.clone())); */
         }
     });
-    eprintln!("Number of lr_tuple: {:?}", &lr_tuple.len());
 
-    for each_lr_tuple in &lr_tuple {
+    eprintln!("Number of primer_tuple: {:?}", &primer_tuple.len());
+    /*
+    for each_primer_tuple in &primer_tuple {
         eprintln!(
-            "lr_tuple: {}",
-            String::from_utf8(each_lr_tuple.1.decode(0, each_lr_tuple.1.len())).unwrap()
+            "primer_tuple: {}",
+            String::from_utf8(each_primer_tuple.1.decode(0, each_primer_tuple.1.len())).unwrap()
         );
         eprintln!(
-            "lr_tuple: {}",
-            String::from_utf8(each_lr_tuple.2.decode(0, each_lr_tuple.2.len())).unwrap()
+            "primer_tuple: {}",
+            String::from_utf8(each_primer_tuple.2.decode(0, each_primer_tuple.2.len())).unwrap()
         );
     }
-
+    */
     let ngsread_file = File::open(&ngsread_input_file).expect("Error during opening the file");
+    eprintln!("loading {:?}", &ngsread_input_file);
     let mut reader = faReader::new(ngsread_file);
     let mut record = faRecord::new();
     let mut sequences: Vec<DnaSequence> = Vec::new();
-    eprintln!("loading {:?} done", ngsread_input_file);
+    eprintln!("loading {:?} done", &ngsread_input_file);
     'each_read: loop {
         reader.read(&mut record).unwrap();
         if record.is_empty() {
@@ -126,7 +150,7 @@ fn main() {
     }
     let chunk_size: usize = sequences.len() / (threads - 1);
     let sequences_ref = Arc::new(sequences);
-    let lr_tuple_ref = Arc::new(lr_tuple);
+    let primer_tuple_ref = Arc::new(primer_tuple);
     //let mut cbf_oyadama: Vec<u32> = vec![0;BLOOMFILTER_TABLE_SIZE];
 
     //let mut product_size_hashmap = HashMap::<u32, usize>::new();
@@ -134,7 +158,7 @@ fn main() {
         let mut children_1 = Vec::new();
         for i in 1..threads {
             let sequences_ref = Arc::clone(&sequences_ref);
-            let lr_tuple_ref = Arc::clone(&lr_tuple_ref);
+            let primer_tuple_ref = Arc::clone(&primer_tuple_ref);
             children_1.push(scope.spawn(move || {
                 let start_idx: usize = (i - 1) * chunk_size;
                 let end_idx: usize;
@@ -143,21 +167,24 @@ fn main() {
                 } else {
                     end_idx = sequences_ref.len() - 1;
                 }
-                let lr_tuple_ref_mine = (*lr_tuple_ref).clone();
+                let primer_tuple_ref_mine = (*primer_tuple_ref).clone();
                 let slice_sequences = Vec::from(sequences_ref[start_idx..end_idx].to_vec());
 
                 eprintln!(
-                    "start calling aggregate_length_between_lr_tuple[{}], # of sequence: {}",
+                    "start calling aggregate_length_between_primer_tuple[{}], # of sequence: {}",
                     i,
                     &slice_sequences.len()
                 );
                 let cbf: Vec<u8> = aggregate_length_between_lr_tuple(
                     &slice_sequences,
                     i,
-                    &lr_tuple_ref_mine,
-                    usize::MAX,
+                    &primer_tuple_ref_mine,
+                    max_offtarget_region_length,
                 );
-                eprintln!("finish calling aggregate_length_between_lr_tuple[{}]", i);
+                eprintln!(
+                    "finish calling aggregate_length_between_primer_tuple[{}]",
+                    i
+                );
                 return cbf;
             }))
         }
