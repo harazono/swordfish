@@ -4,7 +4,6 @@ const CHUNK_MAX: usize = 200;
 
 pub const HASHSET_SIZE: usize = (u32::MAX >> 5) as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = 1 << 30 as usize;
-const DUPPLICATION: u16 = 1;
 use crate::sequence_encoder_util::DnaSequence;
 use sha2::Digest;
 use sha2::Sha256;
@@ -224,7 +223,7 @@ pub fn number_of_high_occurence_lr_tuple(
                 let table_indice: [u32; 8] = hash_from_u128(lmr_string); //u128を受けてhashを返す関数
                 let occurence: u16 =
                     count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
-                if occurence >= threshold * DUPPLICATION {
+                if occurence >= threshold {
                     if ret_table.len() >= (ret_table.capacity() as f64 * 0.9) as usize {
                         break 'each_read; // 再アロケーションが発生する場合、ループを終了
                     }
@@ -287,7 +286,7 @@ pub fn aggregate_length_between_lr_tuple(
             'each_l_window: loop {
                 l_window_end = l_window_start + primer_l_size;
                 if l_window_end >= current_sequence.len() + 1 {
-                    break 'each_l_window;
+                    continue 'each_read;
                 }
                 //l_window_cnt += 1;
                 let l_window_as_u128: u128 =
@@ -429,7 +428,7 @@ pub fn count_lr_tuple_with_hashtable(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
-                lr_tuple_hashmap.entry(lmr_string).or_insert(0);
+                *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
                 if lr_tuple_hashmap[&lmr_string] >= threshold {
                     ret_set.insert(lmr_string);
                 }
