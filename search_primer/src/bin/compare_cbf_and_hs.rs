@@ -119,7 +119,7 @@ fn main() {
     ここにマルチスレッド処理を書く
     */
 
-    let chunk_size: usize = max(sequences.len() / (threads - 1), 1);
+    let chunk_size: usize = max(sequences.len() / (threads - 1), 2);
     let sequences_ref = &sequences;
     let number_of_threads: usize = min(threads, sequences.len());
     let mut cbf_oyadama: Vec<u16> = vec![0; BLOOMFILTER_TABLE_SIZE];
