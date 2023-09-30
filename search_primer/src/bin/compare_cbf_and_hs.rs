@@ -12,6 +12,7 @@ use search_primer::counting_bloomfilter_util::{
 use search_primer::counting_bloomfilter_util::{HASHSET_SIZE, L_LEN, R_LEN};
 use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
+use std::cmp::{max, min};
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
@@ -118,17 +119,17 @@ fn main() {
     ここにマルチスレッド処理を書く
     */
 
-    let chunk_size: usize = sequences.len() / (threads - 1);
+    let chunk_size: usize = max(sequences.len() / (threads - 1), 1);
     let sequences_ref = &sequences;
+    let number_of_threads: usize = min(threads, sequences.len());
     let mut cbf_oyadama: Vec<u16> = vec![0; BLOOMFILTER_TABLE_SIZE];
-
     thread::scope(|scope| {
         let mut children_1 = Vec::new();
-        for i in 1..threads {
+        for i in 1..number_of_threads {
             children_1.push(scope.spawn(move || {
                 let start_idx: usize = (i - 1) * chunk_size;
                 let end_idx: usize;
-                if i != threads - 1 {
+                if i != number_of_threads - 1 {
                     end_idx = i * chunk_size;
                 } else {
                     end_idx = sequences_ref.len() - 1;
@@ -159,11 +160,11 @@ fn main() {
 
     thread::scope(|scope| {
         let mut children_2 = Vec::new();
-        for i in 1..threads {
+        for i in 1..number_of_threads {
             children_2.push(scope.spawn(move || {
                 let start_idx: usize = (i - 1) * chunk_size;
                 let end_idx: usize;
-                if i != threads - 1 {
+                if i != number_of_threads - 1 {
                     end_idx = i * chunk_size;
                 } else {
                     end_idx = sequences_ref.len() - 1;
