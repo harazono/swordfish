@@ -221,6 +221,7 @@ fn main() {
                     "finish calling count_lr_tuple_with_hashtable[{}], {}-{}",
                     i, start_idx, end_idx
                 );
+                eprintln!("length of hs: {}", hs.len());
                 hs
             }))
         }
