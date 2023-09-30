@@ -32,8 +32,8 @@ fn main() {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optopt("", "output1", "set output file name(by CBF)", "NAME");
-    opts.optopt("", "output2", "set output file name(by HS)", "NAME");
+    opts.optopt("x", "output1", "set output file name(by CBF)", "NAME");
+    opts.optopt("y", "output2", "set output file name(by HS)", "NAME");
     opts.optopt(
         "t",
         "thread",
