@@ -80,8 +80,8 @@ fn main() {
         8
     };
 
-    let output_file_1 = if matches.opt_present("o1") {
-        matches.opt_str("o1").unwrap()
+    let output_file_1 = if matches.opt_present("output1") {
+        matches.opt_str("output1").unwrap()
     } else {
         format!(
             "{:?}_threshold{}_threads{}_CBF.out",
@@ -89,8 +89,8 @@ fn main() {
         )
     };
 
-    let output_file_2 = if matches.opt_present("o2") {
-        matches.opt_str("o2").unwrap()
+    let output_file_2 = if matches.opt_present("output2") {
+        matches.opt_str("output2").unwrap()
     } else {
         format!(
             "{:?}_threshold{}_threads{}_HS.out",
