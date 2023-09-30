@@ -386,7 +386,7 @@ pub fn count_lr_tuple_with_hashtable(
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
                     let end = start_time.elapsed();
-                    eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt);
+                    eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt);
                     previous_time = end;
                     continue 'each_read; //ここ、continue each_l_windowでは？
                 }
@@ -413,7 +413,7 @@ pub fn count_lr_tuple_with_hashtable(
             l_window_start_idx += 1;
         }
         let end = start_time.elapsed();
-        eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt);
+        eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt);
         previous_time = end;
     }
     return ret_set;

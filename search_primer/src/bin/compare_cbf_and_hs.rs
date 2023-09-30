@@ -314,12 +314,8 @@ fn main() {
 
     eprintln!("finish writing to output file: {:?}", &output_file_1);
     eprint!(
-        "L: {}\tR: {}\tthreshold:{}({}x63)\tcardinarity: {}\t",
-        L_LEN,
-        R_LEN,
-        threshold,
-        threshold / 63,
-        cnt
+        "L: {}\tR: {}\tthreshold:{}\tcardinarity: {}\t",
+        L_LEN, R_LEN, threshold, cnt
     );
     eprintln!("threads: {}\tinput file {:?}", threads, &input_file);
 }
