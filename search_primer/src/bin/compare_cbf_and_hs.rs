@@ -132,7 +132,7 @@ fn main() {
                 if i != number_of_threads - 1 {
                     end_idx = i * chunk_size;
                 } else {
-                    end_idx = sequences_ref.len() - 1;
+                    end_idx = sequences_ref.len();
                 }
                 eprintln!(
                     "start calling build_counting_bloom_filter[{}], {}-{}",
@@ -167,7 +167,7 @@ fn main() {
                 if i != number_of_threads - 1 {
                     end_idx = i * chunk_size;
                 } else {
-                    end_idx = sequences_ref.len() - 1;
+                    end_idx = sequences_ref.len();
                 }
                 eprintln!(
                     "thread [{}]: start calling number_of_high_occurence_lr_tuple",
