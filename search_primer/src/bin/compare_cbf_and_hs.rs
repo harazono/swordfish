@@ -196,47 +196,12 @@ fn main() {
         Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
     high_occurence_lr_tuple.sort();
 
-    // let mut hs_oyadama: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
-    let hs_oyadama: Arc<Mutex<HashSet<u128>>> =
-        Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
+    let hashtable_count_result: HashSet<u128> =
+        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), threshold, 0);
 
-    thread::scope(|scope| {
-        let mut children_3 = Vec::new();
-        for i in 1..threads {
-            children_3.push(scope.spawn(move || {
-                let start_idx: usize = (i - 1) * chunk_size;
-                let end_idx: usize;
-                if i != threads - 1 {
-                    end_idx = i * chunk_size;
-                } else {
-                    end_idx = sequences_ref.len() - 1;
-                }
-                eprintln!(
-                    "start calling count_lr_tuple_with_hashtable[{}], {}-{}",
-                    i, start_idx, end_idx
-                );
-                let hs: HashSet<u128> =
-                    count_lr_tuple_with_hashtable(sequences_ref, start_idx, end_idx, threshold, i);
-                eprintln!(
-                    "finish calling count_lr_tuple_with_hashtable[{}], {}-{}",
-                    i, start_idx, end_idx
-                );
-                eprintln!("length of hs: {}", hs.len());
-                hs
-            }))
-        }
-        for child in children_3 {
-            let hs = child.join().unwrap();
-            let mut oyadama_guard = hs_oyadama.lock().unwrap();
-            for value in hs {
-                oyadama_guard.insert(value);
-            }
-        }
-    });
-
-    let oyadama_guard = hs_oyadama.lock().unwrap();
-    let mut sorted_hs_list: Vec<u128> = oyadama_guard.iter().cloned().collect();
+    let mut sorted_hs_list: Vec<u128> = Vec::from_iter(hashtable_count_result);
     sorted_hs_list.sort();
+
     eprintln!("length of sorted_hs_list: {}", sorted_hs_list.len());
 
     let mut w1 = BufWriter::new(fs::File::create(&output_file_1).unwrap());
