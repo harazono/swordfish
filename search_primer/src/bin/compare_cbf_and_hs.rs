@@ -154,9 +154,9 @@ fn main() {
     });
     let h_cbf_h_oyadama: Arc<Mutex<HashSet<u128>>> =
         Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
-
     let cbf_oyadama_ref = &cbf_oyadama;
     let h_cbf_h_oyadama_ref = &h_cbf_h_oyadama;
+
     thread::scope(|scope| {
         let mut children_2 = Vec::new();
         for i in 1..threads {
@@ -236,6 +236,7 @@ fn main() {
     let oyadama_guard = hs_oyadama.lock().unwrap();
     let mut sorted_hs_list: Vec<u128> = oyadama_guard.iter().cloned().collect();
     sorted_hs_list.sort();
+    eprintln!("length of sorted_hs_list: {}", sorted_hs_list.len());
 
     let mut w1 = BufWriter::new(fs::File::create(&output_file_1).unwrap());
     let mut w2 = BufWriter::new(fs::File::create(&output_file_2).unwrap());
@@ -282,8 +283,8 @@ fn main() {
             }
             previous_lr_tuple = *each_lr_tuple;
         }
-        for eachsorted_hs_list in &sorted_hs_list {
-            buf_num = *eachsorted_hs_list;
+        for each_sorted_hs_list in &sorted_hs_list {
+            buf_num = *each_sorted_hs_list;
             for i in 0..16 {
                 buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
                 buf_num >>= 8;
