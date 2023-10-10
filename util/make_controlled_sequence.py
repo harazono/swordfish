@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 import random
 import itertools
-import sys
 
 sequence_pool = "ACGT"
 sequence_permutations = ["".join(x) for x in list(itertools.permutations(sequence_pool, 4))]
