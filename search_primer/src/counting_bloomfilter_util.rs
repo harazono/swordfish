@@ -48,6 +48,21 @@ pub fn build_counting_bloom_filter(
         'each_l_window: loop {
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
+                let end = start_time.elapsed();
+                eprintln!("1st loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+                    thread_id,
+                    start_idx,
+                    end_idx,
+                    end_idx - start_idx,
+                    loop_cnt,
+                    loop_cnt as f64 / (end_idx - start_idx) as f64,
+                    current_sequence.len(),
+                    end.as_secs() - previous_time.as_secs(),
+                    end.subsec_nanos() - previous_time.subsec_nanos(),
+                    add_bloom_filter_cnt,
+                    l_window_cnt
+                );
+                previous_time = end;
                 break 'each_l_window;
             }
             l_window_cnt += 1;
@@ -63,10 +78,7 @@ pub fn build_counting_bloom_filter(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
-                    let end = start_time.elapsed();
-                    eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
-                    previous_time = end;
-                    continue 'each_read; //ここ、continue each_l_windowでは？
+                    continue 'each_l_window; //ここ、continue each_l_windowでは？
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
                     break 'each_r_window;
@@ -74,7 +86,6 @@ pub fn build_counting_bloom_filter(
                 let (r_has_repeat_bool, r_has_repeat_offset) =
                     current_sequence.has_repeat(r_window_start_idx, r_window_end_idx);
                 if r_has_repeat_bool {
-                    //eprintln!("poly base R, {}", &r_has_repeat_offset);
                     r_window_start_idx += r_has_repeat_offset + 1;
                     continue 'each_r_window;
                 }
@@ -97,7 +108,19 @@ pub fn build_counting_bloom_filter(
             l_window_start_idx += 1;
         }
         let end = start_time.elapsed();
-        eprintln!("1st loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt);
+        eprintln!("1st loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+        thread_id,
+        start_idx,
+        end_idx,
+        end_idx - start_idx,
+        loop_cnt,
+        loop_cnt as f64 / (end_idx - start_idx) as f64,
+        current_sequence.len(),
+        end.as_secs() - previous_time.as_secs(),
+        end.subsec_nanos() - previous_time.subsec_nanos(),
+        add_bloom_filter_cnt,
+        l_window_cnt
+    );
         previous_time = end;
     }
     return ret_array;
@@ -188,6 +211,21 @@ pub fn number_of_high_occurence_lr_tuple(
         'each_l_window: loop {
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
+                let end = start.elapsed();
+                eprintln!("2nd loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+                    thread_id,
+                    start_idx,
+                    end_idx,
+                    end_idx - start_idx,
+                    loop_cnt,
+                    loop_cnt as f64 / (end_idx - start_idx) as f64,
+                    current_sequence.len(),
+                    end.as_secs() - previous_time.as_secs(),
+                    end.subsec_nanos() - previous_time.subsec_nanos(),
+                    add_bloom_filter_cnt,
+                    l_window_cnt
+                );
+                previous_time = end;
                 break 'each_l_window;
             }
             l_window_cnt += 1;
@@ -201,10 +239,7 @@ pub fn number_of_high_occurence_lr_tuple(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx >= current_sequence.len() + 1 {
-                    let end = start.elapsed();
-                    eprintln!("2nd loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
-                    previous_time = end;
-                    continue 'each_read;
+                    continue 'each_l_window;
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
                     break 'each_r_window;
@@ -236,7 +271,19 @@ pub fn number_of_high_occurence_lr_tuple(
             l_window_start_idx += 1;
         }
         let end = start.elapsed();
-        eprintln!("2nd loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}\tho_lmr: {}", thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_bloom_filter_cnt, l_window_cnt, ho_lmr);
+        eprintln!("2nd loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+            thread_id,
+            start_idx,
+            end_idx,
+            end_idx - start_idx,
+            loop_cnt,
+            loop_cnt as f64 / (end_idx - start_idx) as f64,
+            current_sequence.len(),
+            end.as_secs() - previous_time.as_secs(),
+            end.subsec_nanos() - previous_time.subsec_nanos(),
+            add_bloom_filter_cnt,
+            l_window_cnt
+        );
         previous_time = end;
     }
     return ret_table;
@@ -307,7 +354,7 @@ pub fn aggregate_length_between_lr_tuple(
                     r_window_end = r_window_start + primer_r_size;
                     if r_window_end >= current_sequence.len() + 1 {
                         // let end = start_time.elapsed();
-                        // eprintln!("loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
+                        // eprintln!("loop[{:02}]({:04}-{:04},length is {}): {:09?}\tlength: {}\tsec: {}.{:03}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos());
                         // previous_time = end;
                         l_window_start += 1;
                         continue 'each_l_window;
@@ -413,7 +460,20 @@ pub fn count_lr_tuple_with_hashtable(
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
                 let end = start_time.elapsed();
-                eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt, ret_set.len());
+                eprintln!("hs loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",
+                    thread_id,
+                    start_idx,
+                    end_idx,
+                    end_idx - start_idx,
+                    loop_cnt,
+                    loop_cnt as f64 / (end_idx - start_idx) as f64,
+                    current_sequence.len(),
+                    end.as_secs() - previous_time.as_secs(),
+                    end.subsec_nanos() - previous_time.subsec_nanos(),
+                    add_hashmap_cnt,
+                    l_window_cnt,
+                    ret_set.len()
+                );
                 previous_time = end;
                 break 'each_l_window;
             }
@@ -456,7 +516,20 @@ pub fn count_lr_tuple_with_hashtable(
             l_window_start_idx += 1;
         }
         let end = start_time.elapsed();
-        eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt, ret_set.len());
+        eprintln!("hs loop[{:02}]({:04}-{:04},length is {}): {:05?}({:.4})\tlength: {}\tsec: {}.{:.3}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",
+            thread_id,
+            start_idx,
+            end_idx,
+            end_idx - start_idx,
+            loop_cnt,
+            loop_cnt as f64 / (end_idx - start_idx) as f64,
+            current_sequence.len(),
+            end.as_secs() - previous_time.as_secs(),
+            end.subsec_nanos() - previous_time.subsec_nanos(),
+            add_hashmap_cnt,
+            l_window_cnt,
+            ret_set.len()
+        );
         previous_time = end;
     }
     return ret_set;
