@@ -379,13 +379,19 @@ pub fn count_lr_tuple_with_hashtable(
         thread_id, HASHSET_SIZE
     );
     let mut lr_tuple_hashmap: HashMap<u128, u16> = HashMap::with_capacity(HASHSET_SIZE);
-    eprintln!("finish allocating");
+    eprintln!(
+        "thread [{:02}] finish Allocating HashMap<u128, u16> where HASHSET_SIZE = {}",
+        thread_id, HASHSET_SIZE
+    );
     eprintln!(
         "thread [{:02}] Allocating HashSet<u128> where HASHSET_SIZE = {}",
         thread_id, HASHSET_SIZE
     );
     let mut ret_set: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
-    eprintln!("finish allocating");
+    eprintln!(
+        "thread [{:02}] finish Allocating HashSet<u128> where HASHSET_SIZE = {}",
+        thread_id, HASHSET_SIZE
+    );
     let mut l_window_start_idx: usize;
     let mut l_window_end_idx: usize;
     let mut r_window_start_idx: usize;
@@ -406,6 +412,9 @@ pub fn count_lr_tuple_with_hashtable(
         'each_l_window: loop {
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
+                let end = start_time.elapsed();
+                eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt, ret_set.len());
+                previous_time = end;
                 break 'each_l_window;
             }
             l_window_cnt += 1;
@@ -419,9 +428,6 @@ pub fn count_lr_tuple_with_hashtable(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
-                    // let end = start_time.elapsed();
-                    // eprintln!("hs loop[{:02}]({:04}-{:04}, length is {}): {:09?}\tlength: {}\tsec: {}.{:03}\t add_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",thread_id, start_idx, end_idx, end_idx - start_idx, loop_cnt, current_sequence.len(), end.as_secs() - previous_time.as_secs(),end.subsec_nanos() - previous_time.subsec_nanos(),  add_hashmap_cnt, l_window_cnt, ret_set.len());
-                    // previous_time = end;
                     continue 'each_l_window;
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
