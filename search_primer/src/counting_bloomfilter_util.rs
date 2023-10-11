@@ -438,6 +438,9 @@ pub fn count_lr_tuple_with_hashtable(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
+                if lr_tuple_hashmap.len() > (HASHSET_SIZE as f32 * 0.9).round() as usize {
+                    break 'each_read;
+                }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
                 if lr_tuple_hashmap[&lmr_string] >= threshold {
                     ret_set.insert(lmr_string);
