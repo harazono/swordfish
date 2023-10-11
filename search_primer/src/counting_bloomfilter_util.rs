@@ -2,7 +2,7 @@ pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 const CHUNK_MAX: usize = 200;
 
-pub const HASHSET_SIZE: usize = 1 << 28 as usize;
+pub const HASHSET_SIZE: usize = 1 << 27 as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = 1 << 30 as usize;
 use crate::sequence_encoder_util::DnaSequence;
 use sha2::Digest;
@@ -375,14 +375,14 @@ pub fn count_lr_tuple_with_hashtable(
     thread_id: usize,
 ) -> HashSet<u128> {
     eprintln!(
-        "Allocating HashMap<u128, u16> where HASHSET_SIZE = {}",
-        HASHSET_SIZE
+        "thread [{:02}] Allocating HashMap<u128, u16> where HASHSET_SIZE = {}",
+        thread_id, HASHSET_SIZE
     );
     let mut lr_tuple_hashmap: HashMap<u128, u16> = HashMap::with_capacity(HASHSET_SIZE);
     eprintln!("finish allocating");
     eprintln!(
-        "Allocating HashSet<u128> where HASHSET_SIZE = {}",
-        HASHSET_SIZE
+        "thread [{:02}] Allocating HashSet<u128> where HASHSET_SIZE = {}",
+        thread_id, HASHSET_SIZE
     );
     let mut ret_set: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
     eprintln!("finish allocating");
