@@ -153,11 +153,13 @@ fn main() {
                 .for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u16::MAX));
         }
     });
+    eprintln!("finish building counting bloom filter");
     let h_cbf_h_oyadama: Arc<Mutex<HashSet<u128>>> =
         Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
     let cbf_oyadama_ref = &cbf_oyadama;
     let h_cbf_h_oyadama_ref = &h_cbf_h_oyadama;
 
+    eprintln!("start calling number_of_high_occurence_lr_tuple");
     thread::scope(|scope| {
         let mut children_2 = Vec::new();
         for i in 1..number_of_threads {
@@ -198,7 +200,7 @@ fn main() {
     high_occurence_lr_tuple.sort();
 
     let hashtable_count_result: HashSet<u128> =
-        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), threshold, 0);
+        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), threshold, 1);
 
     let mut sorted_hs_list: Vec<u128> = Vec::from_iter(hashtable_count_result);
     sorted_hs_list.sort();
