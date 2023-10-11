@@ -75,7 +75,7 @@ fn main() {
     };
 
     let threshold: u16 = if matches.opt_present("a") {
-        matches.opt_str("a").unwrap().parse::<u16>().unwrap() / (threads - 1) as u16
+        matches.opt_str("a").unwrap().parse::<u16>().unwrap()
     } else {
         1000
     };

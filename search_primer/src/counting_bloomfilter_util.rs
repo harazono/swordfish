@@ -78,7 +78,7 @@ pub fn build_counting_bloom_filter(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
-                    continue 'each_l_window; //ここ、continue each_l_windowでは？
+                    break 'each_r_window;
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
                     break 'each_r_window;
@@ -98,7 +98,7 @@ pub fn build_counting_bloom_filter(
                 for i in 0..8 {
                     let idx: usize = table_indice[i] as usize;
                     if ret_array[idx] == u16::MAX {
-                        eprintln!("index {} reaches u32::MAX", idx);
+                        eprintln!("index {} reaches u16::MAX", idx);
                     } else {
                         ret_array[idx] += 1;
                     }
@@ -195,7 +195,6 @@ pub fn number_of_high_occurence_lr_tuple(
     let mut l_window_end_idx: usize;
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx: usize;
-    let mut ho_lmr: usize = 0;
 
     let start = Instant::now();
     let mut previous_time = start.elapsed();
@@ -239,7 +238,7 @@ pub fn number_of_high_occurence_lr_tuple(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx >= current_sequence.len() + 1 {
-                    continue 'each_l_window;
+                    break 'each_r_window;
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
                     break 'each_r_window;
@@ -263,7 +262,6 @@ pub fn number_of_high_occurence_lr_tuple(
                         break 'each_read; // 再アロケーションが発生する場合、ループを終了
                     }
                     ret_table.insert(lmr_string);
-                    ho_lmr += 1;
                 }
 
                 r_window_start_idx += 1;
