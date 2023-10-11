@@ -69,15 +69,15 @@ fn main() {
     };
 
     let threads: usize = if matches.opt_present("t") {
-        matches.opt_str("t").unwrap().parse::<usize>().unwrap()
+        std::cmp::max(matches.opt_str("t").unwrap().parse::<usize>().unwrap(), 2)
     } else {
         8
     };
 
     let threshold: u16 = if matches.opt_present("a") {
-        matches.opt_str("a").unwrap().parse::<u16>().unwrap()
+        matches.opt_str("a").unwrap().parse::<u16>().unwrap() / (threads - 1) as u16
     } else {
-        8
+        1000
     };
 
     let output_file = if matches.opt_present("o") {
@@ -143,10 +143,10 @@ fn main() {
         Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
 
     //CBFを用いて高頻度のLR-tupleをマルチスレッドで列挙する
-    let cbf_oyadama_ref = &cbf_oyadama;
+    let cbf_oyadama_ref: &Vec<u16> = &cbf_oyadama;
     let h_cbf_h_oyadama_ref: &Arc<Mutex<HashSet<u128>>> = &h_cbf_h_oyadama;
-    thread::scope(|scope| {
-        let mut children_2 = Vec::new();
+    thread::scope(|scope: &thread::Scope<'_, '_>| {
+        let mut children_2: Vec<thread::ScopedJoinHandle<'_, ()>> = Vec::new();
         for i in 1..threads {
             children_2.push(scope.spawn(move || {
                 let start_idx: usize = (i - 1) * chunk_size;
