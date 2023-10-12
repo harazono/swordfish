@@ -183,16 +183,20 @@ fn main() {
         }
     });
     //高頻度のLR-tupleをマージする
-    let mut high_occurence_lr_tuple: Vec<u128> =
-        Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
-    high_occurence_lr_tuple.sort();
+    /*
+        let mut high_occurence_lr_tuple: Vec<u128> =
+            Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
+        high_occurence_lr_tuple.sort();
 
+    */
     //高頻度のLR-tupleをハッシュテーブルを用いて数え直し、偽陽性を除去する
     let hashtable_count_result_oyadama: Arc<Mutex<HashMap<u128, u16>>> =
         Arc::new(Mutex::new(HashMap::with_capacity(HASHSET_SIZE)));
     let hashtable_count_result_ref: &Arc<Mutex<HashMap<u128, u16>>> =
         &hashtable_count_result_oyadama;
-    let high_occurence_lr_tuple_ref: &HashSet<u128> = &HashSet::from_iter(high_occurence_lr_tuple);
+
+    let high_occurence_lr_tuple: &HashSet<u128> = &*h_cbf_h_oyadama.lock().unwrap();
+    // let high_occurence_lr_tuple_ref: &HashSet<u128> = &HashSet::from_iter(high_occurence_lr_tuple);
 
     thread::scope(|scope| {
         let mut children_3 = Vec::new();
@@ -213,7 +217,7 @@ fn main() {
                     &sequences_ref,
                     start_idx,
                     end_idx,
-                    high_occurence_lr_tuple_ref,
+                    &high_occurence_lr_tuple,
                     i,
                 );
                 let mut hashtable_count_result: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
