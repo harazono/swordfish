@@ -486,6 +486,7 @@ pub fn count_lr_tuple_with_hashtable(
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
+                    l_window_start_idx += 1;
                     continue 'each_l_window;
                 }
                 if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
