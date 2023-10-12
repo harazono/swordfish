@@ -512,6 +512,10 @@ pub fn count_lr_tuple_with_hashtable(
                     break 'each_read;
                 }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
+                eprintln!(
+                    "lr_tuple_hashmap.entry(lmr_string):{}\tthreshold: {}",
+                    lr_tuple_hashmap[&lmr_string], threshold
+                );
                 if lr_tuple_hashmap[&lmr_string] >= threshold {
                     ret_set.insert(lmr_string);
                 }
