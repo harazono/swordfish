@@ -187,10 +187,11 @@ pub fn number_of_high_occurence_lr_tuple(
     sequences: &Vec<DnaSequence>,
     start_idx: usize,
     end_idx: usize,
+    hash_size: usize,
     threshold: u16,
     thread_id: usize,
 ) -> HashSet<u128> {
-    let mut ret_table: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
+    let mut ret_table: HashSet<u128> = HashSet::with_capacity(hash_size);
     let mut l_window_start_idx: usize;
     let mut l_window_end_idx: usize;
     let mut r_window_start_idx: usize;
@@ -416,26 +417,28 @@ pub fn count_lr_tuple_with_hashtable(
     sequences: &Vec<DnaSequence>,
     start_idx: usize,
     end_idx: usize,
+    hash_size: usize,
     threshold: u16,
     thread_id: usize,
 ) -> HashSet<u128> {
+    let hash_size_to_allocate: usize = hash_size * 1.5 as usize;
     eprintln!(
-        "thread [{:02}] Allocating HashMap<u128, u16> where HASHSET_SIZE = {}",
-        thread_id, HASHSET_SIZE
+        "thread [{:02}] Allocating HashMap<u128, u16> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
     );
-    let mut lr_tuple_hashmap: HashMap<u128, u16> = HashMap::with_capacity(HASHSET_SIZE);
+    let mut lr_tuple_hashmap: HashMap<u128, u16> = HashMap::with_capacity(hash_size_to_allocate);
     eprintln!(
-        "thread [{:02}] finish Allocating HashMap<u128, u16> where HASHSET_SIZE = {}",
-        thread_id, HASHSET_SIZE
+        "thread [{:02}] finish Allocating HashMap<u128, u16> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
     );
     eprintln!(
-        "thread [{:02}] Allocating HashSet<u128> where HASHSET_SIZE = {}",
-        thread_id, HASHSET_SIZE
+        "thread [{:02}] Allocating HashSet<u128> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
     );
-    let mut ret_set: HashSet<u128> = HashSet::with_capacity(HASHSET_SIZE);
+    let mut ret_set: HashSet<u128> = HashSet::with_capacity(hash_size_to_allocate);
     eprintln!(
-        "thread [{:02}] finish Allocating HashSet<u128> where HASHSET_SIZE = {}",
-        thread_id, HASHSET_SIZE
+        "thread [{:02}] finish Allocating HashSet<u128> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
     );
     let mut l_window_start_idx: usize;
     let mut l_window_end_idx: usize;
@@ -509,7 +512,7 @@ pub fn count_lr_tuple_with_hashtable(
                                    (HASHSET_SIZE as f32 * 0.9).round() as usize
                                );
                 */
-                if lr_tuple_hashmap.len() > (HASHSET_SIZE as f32 * 0.9).round() as usize {
+                if lr_tuple_hashmap.len() > hash_size {
                     break 'each_read;
                 }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;

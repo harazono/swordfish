@@ -180,6 +180,7 @@ fn main() {
                     sequences_ref,
                     start_idx,
                     end_idx,
+                    HASHSET_SIZE,
                     threshold,
                     i,
                 );
@@ -200,7 +201,7 @@ fn main() {
     high_occurence_lr_tuple.sort();
 
     let hashtable_count_result: HashSet<u128> =
-        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), threshold, 1);
+        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), HASHSET_SIZE, threshold, 1);
 
     let mut sorted_hs_list: Vec<u128> = Vec::from_iter(hashtable_count_result);
     sorted_hs_list.sort();

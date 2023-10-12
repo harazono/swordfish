@@ -165,6 +165,7 @@ fn main() {
                     sequences_ref,
                     start_idx,
                     end_idx,
+                    HASHSET_SIZE,
                     threshold,
                     i,
                 );
@@ -188,6 +189,7 @@ fn main() {
     let hashtable_count_result_oyadama: Arc<Mutex<HashSet<u128>>> =
         Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
     let hashtable_count_result_ref: &Arc<Mutex<HashSet<u128>>> = &hashtable_count_result_oyadama;
+    let hash_size = high_occurence_lr_tuple.len();
 
     thread::scope(|scope| {
         let mut children_3 = Vec::new();
@@ -204,8 +206,14 @@ fn main() {
                     "thread [{}]: start calling count_lr_tuple_with_hashtable",
                     i
                 );
-                let high_freq_ht: HashSet<u128> =
-                    count_lr_tuple_with_hashtable(&sequences_ref, start_idx, end_idx, threshold, i);
+                let high_freq_ht: HashSet<u128> = count_lr_tuple_with_hashtable(
+                    &sequences_ref,
+                    start_idx,
+                    end_idx,
+                    hash_size,
+                    threshold,
+                    i,
+                );
                 hashtable_count_result_ref
                     .lock()
                     .unwrap()
