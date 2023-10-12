@@ -2,7 +2,7 @@ pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 const CHUNK_MAX: usize = 200;
 
-pub const HASHSET_SIZE: usize = 1 << 27 as usize;
+pub const HASHSET_SIZE: usize = 1 << 28 as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = 1 << 30 as usize;
 use crate::sequence_encoder_util::DnaSequence;
 use sha2::Digest;
@@ -417,10 +417,10 @@ pub fn count_lr_tuple_with_hashtable(
     sequences: &Vec<DnaSequence>,
     start_idx: usize,
     end_idx: usize,
-    hash_size: usize,
+    high_occurence_lr_tuple: &Vec<u128>,
     thread_id: usize,
 ) -> HashMap<u128, u16> {
-    let hash_size_to_allocate: usize = hash_size * 1.5 as usize;
+    let hash_size_to_allocate: usize = high_occurence_lr_tuple.len() * 1.2 as usize;
     eprintln!(
         "thread [{:02}] Allocating HashMap<u128, u16> where hash_size_to_allocate = {}",
         thread_id, hash_size_to_allocate
@@ -502,7 +502,7 @@ pub fn count_lr_tuple_with_hashtable(
                                    (HASHSET_SIZE as f32 * 0.9).round() as usize
                                 );
                 */
-                if lr_tuple_hashmap.len() > hash_size {
+                if lr_tuple_hashmap.len() > high_occurence_lr_tuple.len() {
                     break 'each_read;
                 }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;

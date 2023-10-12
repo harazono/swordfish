@@ -202,7 +202,7 @@ fn main() {
     high_occurence_lr_tuple.sort();
 
     let hashtable_count_result: HashMap<u128, u16> =
-        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), HASHSET_SIZE, 1);
+        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), &high_occurence_lr_tuple, 1);
 
     let mut sorted_hs_list: Vec<u128> = hashtable_count_result
         .iter()

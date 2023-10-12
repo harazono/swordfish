@@ -45,7 +45,7 @@ fn main() {
     opts.optopt(
         "a",
         "threshold",
-        "threshold for hyper log counter. default value is 8.",
+        "threshold of occurence. default value is 1000.",
         "THRESHOLD",
     );
     opts.optflag("b", "binary", "outputs binary file");
@@ -192,7 +192,7 @@ fn main() {
         Arc::new(Mutex::new(HashMap::with_capacity(HASHSET_SIZE)));
     let hashtable_count_result_ref: &Arc<Mutex<HashMap<u128, u16>>> =
         &hashtable_count_result_oyadama;
-    let hash_size = high_occurence_lr_tuple.len();
+    let high_occurence_lr_tuple_ref: &Vec<u128> = &high_occurence_lr_tuple;
 
     thread::scope(|scope| {
         let mut children_3 = Vec::new();
@@ -209,8 +209,13 @@ fn main() {
                     "thread [{}]: start calling count_lr_tuple_with_hashtable",
                     i
                 );
-                let high_freq_ht: HashMap<u128, u16> =
-                    count_lr_tuple_with_hashtable(&sequences_ref, start_idx, end_idx, hash_size, i);
+                let high_freq_ht: HashMap<u128, u16> = count_lr_tuple_with_hashtable(
+                    &sequences_ref,
+                    start_idx,
+                    end_idx,
+                    high_occurence_lr_tuple_ref,
+                    i,
+                );
                 let mut hashtable_count_result: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
                     hashtable_count_result_ref.lock().unwrap();
                 for (key, &value) in &high_freq_ht {
