@@ -200,9 +200,15 @@ fn main() {
     let mut high_occurence_lr_tuple: Vec<u128> =
         Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
     high_occurence_lr_tuple.sort();
-
-    let hashtable_count_result: HashMap<u128, u16> =
-        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), &high_occurence_lr_tuple, 1);
+    let high_occurence_lr_tuple_ref: &HashSet<u128> =
+        &HashSet::from_iter(high_occurence_lr_tuple.clone());
+    let hashtable_count_result: HashMap<u128, u16> = count_lr_tuple_with_hashtable(
+        &sequences,
+        0,
+        sequences.len(),
+        high_occurence_lr_tuple_ref,
+        1,
+    );
 
     let mut sorted_hs_list: Vec<u128> = hashtable_count_result
         .iter()

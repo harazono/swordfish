@@ -192,7 +192,7 @@ fn main() {
         Arc::new(Mutex::new(HashMap::with_capacity(HASHSET_SIZE)));
     let hashtable_count_result_ref: &Arc<Mutex<HashMap<u128, u16>>> =
         &hashtable_count_result_oyadama;
-    let high_occurence_lr_tuple_ref: &Vec<u128> = &high_occurence_lr_tuple;
+    let high_occurence_lr_tuple_ref: &HashSet<u128> = &HashSet::from_iter(high_occurence_lr_tuple);
 
     thread::scope(|scope| {
         let mut children_3 = Vec::new();

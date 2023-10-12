@@ -417,7 +417,7 @@ pub fn count_lr_tuple_with_hashtable(
     sequences: &Vec<DnaSequence>,
     start_idx: usize,
     end_idx: usize,
-    high_occurence_lr_tuple: &Vec<u128>,
+    high_occurence_lr_tuple: &HashSet<u128>,
     thread_id: usize,
 ) -> HashMap<u128, u16> {
     let hash_size_to_allocate: usize = high_occurence_lr_tuple.len() * 1.2 as usize;
@@ -505,7 +505,9 @@ pub fn count_lr_tuple_with_hashtable(
                 if lr_tuple_hashmap.len() > high_occurence_lr_tuple.len() {
                     break 'each_read;
                 }
-                *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
+                if high_occurence_lr_tuple.contains(&lmr_string) {
+                    *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
+                }
                 /*                 eprintln!(
                                     "lr_tuple_hashmap.entry(lmr_string):{}\tthreshold: {}",
                                     lr_tuple_hashmap[&lmr_string], threshold
