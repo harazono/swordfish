@@ -168,7 +168,7 @@ fn main() {
                     start_idx,
                     end_idx,
                     HASHSET_SIZE,
-                    (threshold / (threads as u16 - 1)) as u16,
+                    threshold,
                     i,
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);

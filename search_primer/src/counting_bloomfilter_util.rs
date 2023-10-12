@@ -260,7 +260,7 @@ pub fn number_of_high_occurence_lr_tuple(
                     count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold {
                     if ret_table.len() >= (ret_table.capacity() as f64 * 0.9) as usize {
-                        break 'each_read; // 再アロケーションが発生する場合、ループを終了
+                        break 'each_read; // 再アロケーションが発生する場合、ループを終了<-全体の15%まで処理してとまっちゃった
                     }
                     ret_table.insert(lmr_string);
                 }
