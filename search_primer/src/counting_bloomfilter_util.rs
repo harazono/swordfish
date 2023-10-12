@@ -109,18 +109,18 @@ pub fn build_counting_bloom_filter(
         }
         let end = start_time.elapsed();
         eprintln!("1st loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",
-        thread_id,
-        start_idx,
-        end_idx,
-        end_idx - start_idx,
-        loop_cnt,
-        loop_cnt as f64 / (end_idx - start_idx) as f64 * 100f64,
-        current_sequence.len(),
-        end.as_secs() - previous_time.as_secs(),
-        end.subsec_millis() - previous_time.subsec_millis(),
-        add_bloom_filter_cnt,
-        l_window_cnt
-    );
+            thread_id,
+            start_idx,
+            end_idx,
+            end_idx - start_idx,
+            loop_cnt,
+            loop_cnt as f64 / (end_idx - start_idx) as f64 * 100f64,
+            current_sequence.len(),
+            end.as_secs() - previous_time.as_secs(),
+            end.subsec_millis() - previous_time.subsec_millis(),
+            add_bloom_filter_cnt,
+            l_window_cnt
+        );
         previous_time = end;
     }
     return ret_array;
@@ -442,8 +442,8 @@ pub fn count_lr_tuple_with_hashtable(
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx: usize;
 
-    let start_time = Instant::now();
-    let mut previous_time = start_time.elapsed();
+    let start_time: Instant = Instant::now();
+    let mut previous_time: std::time::Duration = start_time.elapsed();
     let mut loop_cnt: usize = 0;
 
     'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
@@ -457,7 +457,7 @@ pub fn count_lr_tuple_with_hashtable(
         'each_l_window: loop {
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
-                let end = start_time.elapsed();
+                let end: std::time::Duration = start_time.elapsed();
                 eprintln!("hs loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",
                     thread_id,
                     start_idx,
@@ -473,7 +473,7 @@ pub fn count_lr_tuple_with_hashtable(
                     ret_set.len()
                 );
                 previous_time = end;
-                break 'each_l_window;
+                continue 'each_read;
             }
             l_window_cnt += 1;
             let (l_has_repeat_bool, l_has_repeat_offset) =
@@ -513,7 +513,7 @@ pub fn count_lr_tuple_with_hashtable(
             }
             l_window_start_idx += 1;
         }
-        let end = start_time.elapsed();
+        let end: std::time::Duration = start_time.elapsed();
         eprintln!("hs loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, ret_set.len():{}",
             thread_id,
             start_idx,
