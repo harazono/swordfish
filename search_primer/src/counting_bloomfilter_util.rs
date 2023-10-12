@@ -504,6 +504,7 @@ pub fn count_lr_tuple_with_hashtable(
                     [r_window_start_idx, r_window_end_idx],
                 ]);
                 if lr_tuple_hashmap.len() > (HASHSET_SIZE as f32 * 0.9).round() as usize {
+                    eprintln!("lr_tuple_hashmap.len(): {}\t(HASHSET_SIZE as f32 * 0.9).round() as usize: {}", lr_tuple_hashmap.len(), (HASHSET_SIZE as f32 * 0.9).round() as usize);
                     break 'each_read;
                 }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
