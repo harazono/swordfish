@@ -503,19 +503,21 @@ pub fn count_lr_tuple_with_hashtable(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
-                eprintln!(
-                    "lr_tuple_hashmap.len(): {}\t(HASHSET_SIZE as f32 * 0.9).round() as usize: {}",
-                    lr_tuple_hashmap.len(),
-                    (HASHSET_SIZE as f32 * 0.9).round() as usize
-                );
+                /*                 eprintln!(
+                                   "lr_tuple_hashmap.len(): {}\t(HASHSET_SIZE as f32 * 0.9).round() as usize: {}",
+                                   lr_tuple_hashmap.len(),
+                                   (HASHSET_SIZE as f32 * 0.9).round() as usize
+                               );
+                */
                 if lr_tuple_hashmap.len() > (HASHSET_SIZE as f32 * 0.9).round() as usize {
                     break 'each_read;
                 }
                 *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
-                eprintln!(
-                    "lr_tuple_hashmap.entry(lmr_string):{}\tthreshold: {}",
-                    lr_tuple_hashmap[&lmr_string], threshold
-                );
+                /*                 eprintln!(
+                                   "lr_tuple_hashmap.entry(lmr_string):{}\tthreshold: {}",
+                                   lr_tuple_hashmap[&lmr_string], threshold
+                               );
+                */
                 if lr_tuple_hashmap[&lmr_string] >= threshold {
                     ret_set.insert(lmr_string);
                 }
