@@ -13,7 +13,9 @@ use search_primer::counting_bloomfilter_util::{
 };
 use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
+use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ffi::c_short;
 use std::fs;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -166,7 +168,7 @@ fn main() {
                     start_idx,
                     end_idx,
                     HASHSET_SIZE,
-                    threshold,
+                    (threshold / (threads as u16 - 1)) as u16,
                     i,
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
@@ -186,9 +188,10 @@ fn main() {
     high_occurence_lr_tuple.sort();
 
     //高頻度のLR-tupleをハッシュテーブルを用いて数え直し、偽陽性を除去する
-    let hashtable_count_result_oyadama: Arc<Mutex<HashSet<u128>>> =
-        Arc::new(Mutex::new(HashSet::with_capacity(HASHSET_SIZE)));
-    let hashtable_count_result_ref: &Arc<Mutex<HashSet<u128>>> = &hashtable_count_result_oyadama;
+    let hashtable_count_result_oyadama: Arc<Mutex<HashMap<u128, u16>>> =
+        Arc::new(Mutex::new(HashMap::with_capacity(HASHSET_SIZE)));
+    let hashtable_count_result_ref: &Arc<Mutex<HashMap<u128, u16>>> =
+        &hashtable_count_result_oyadama;
     let hash_size = high_occurence_lr_tuple.len();
 
     thread::scope(|scope| {
@@ -206,18 +209,13 @@ fn main() {
                     "thread [{}]: start calling count_lr_tuple_with_hashtable",
                     i
                 );
-                let high_freq_ht: HashSet<u128> = count_lr_tuple_with_hashtable(
-                    &sequences_ref,
-                    start_idx,
-                    end_idx,
-                    hash_size,
-                    threshold,
-                    i,
-                );
-                hashtable_count_result_ref
-                    .lock()
-                    .unwrap()
-                    .extend(&high_freq_ht);
+                let high_freq_ht: HashMap<u128, u16> =
+                    count_lr_tuple_with_hashtable(&sequences_ref, start_idx, end_idx, hash_size, i);
+                let mut hashtable_count_result: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
+                    hashtable_count_result_ref.lock().unwrap();
+                for (key, &value) in &high_freq_ht {
+                    *hashtable_count_result.entry(*key).or_insert(0) += value;
+                }
                 eprintln!(
                     "thread [{}]: finish calling count_lr_tuple_with_hashtable",
                     i
@@ -229,13 +227,12 @@ fn main() {
         }
     });
 
-    let mut sorted_hs_list: Vec<u128> = Vec::from_iter(
-        hashtable_count_result_oyadama
-            .lock()
-            .unwrap()
-            .clone()
-            .into_iter(),
-    );
+    let hashtable: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
+        hashtable_count_result_oyadama.lock().unwrap();
+    let mut sorted_hs_list: Vec<u128> = hashtable
+        .iter()
+        .filter_map(|(&key, &value)| if value >= threshold { Some(key) } else { None })
+        .collect();
     sorted_hs_list.sort();
 
     let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());

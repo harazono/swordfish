@@ -13,6 +13,7 @@ use search_primer::counting_bloomfilter_util::{HASHSET_SIZE, L_LEN, R_LEN};
 use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
 use std::cmp::{max, min};
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
@@ -200,10 +201,13 @@ fn main() {
         Vec::from_iter(h_cbf_h_oyadama.lock().unwrap().clone());
     high_occurence_lr_tuple.sort();
 
-    let hashtable_count_result: HashSet<u128> =
-        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), HASHSET_SIZE, threshold, 1);
+    let hashtable_count_result: HashMap<u128, u16> =
+        count_lr_tuple_with_hashtable(&sequences, 0, sequences.len(), HASHSET_SIZE, 1);
 
-    let mut sorted_hs_list: Vec<u128> = Vec::from_iter(hashtable_count_result);
+    let mut sorted_hs_list: Vec<u128> = hashtable_count_result
+        .iter()
+        .filter_map(|(&key, &value)| if value >= threshold { Some(key) } else { None })
+        .collect();
     sorted_hs_list.sort();
 
     eprintln!("length of sorted_hs_list: {}", sorted_hs_list.len());

@@ -418,6 +418,129 @@ pub fn count_lr_tuple_with_hashtable(
     start_idx: usize,
     end_idx: usize,
     hash_size: usize,
+    thread_id: usize,
+) -> HashMap<u128, u16> {
+    let hash_size_to_allocate: usize = hash_size * 1.5 as usize;
+    eprintln!(
+        "thread [{:02}] Allocating HashMap<u128, u16> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
+    );
+    let mut lr_tuple_hashmap: HashMap<u128, u16> = HashMap::with_capacity(hash_size_to_allocate);
+    eprintln!(
+        "thread [{:02}] finish Allocating HashMap<u128, u16> where hash_size_to_allocate = {}",
+        thread_id, hash_size_to_allocate
+    );
+    let mut l_window_start_idx: usize;
+    let mut l_window_end_idx: usize;
+    let mut r_window_start_idx: usize;
+    let mut r_window_end_idx: usize;
+
+    let start_time: Instant = Instant::now();
+    let mut previous_time: std::time::Duration = start_time.elapsed();
+    let mut loop_cnt: usize = 0;
+
+    'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
+        let mut add_hashmap_cnt: usize = 0;
+        let mut l_window_cnt: usize = 0;
+        loop_cnt += 1;
+        l_window_start_idx = 0;
+        if current_sequence.len() < L_LEN || current_sequence.len() < R_LEN {
+            continue 'each_read;
+        }
+        'each_l_window: loop {
+            l_window_end_idx = l_window_start_idx + L_LEN;
+            if l_window_end_idx >= current_sequence.len() + 1 {
+                let end: std::time::Duration = start_time.elapsed();
+                eprintln!("hs loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, lr_tuple_hashmap.len():{}",
+                    thread_id,
+                    start_idx,
+                    end_idx,
+                    end_idx - start_idx,
+                    loop_cnt,
+                    loop_cnt as f64 / (end_idx - start_idx) as f64 * 100f64,
+                    current_sequence.len(),
+                    end.as_secs() - previous_time.as_secs(),
+                    end.subsec_millis() - previous_time.subsec_millis(),
+                    add_hashmap_cnt,
+                    l_window_cnt,
+                    lr_tuple_hashmap.len()
+                );
+                previous_time = end;
+                continue 'each_read;
+            }
+            l_window_cnt += 1;
+            let (l_has_repeat_bool, l_has_repeat_offset) =
+                current_sequence.has_repeat(l_window_start_idx, l_window_end_idx);
+            if l_has_repeat_bool {
+                l_window_start_idx += l_has_repeat_offset + 1;
+                continue 'each_l_window;
+            }
+            r_window_start_idx = l_window_end_idx;
+            'each_r_window: loop {
+                r_window_end_idx = r_window_start_idx + R_LEN;
+                if r_window_end_idx > current_sequence.len() {
+                    l_window_start_idx += 1;
+                    continue 'each_l_window;
+                }
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
+                    break 'each_r_window;
+                }
+                let (r_has_repeat_bool, r_has_repeat_offset) =
+                    current_sequence.has_repeat(r_window_start_idx, r_window_end_idx);
+                if r_has_repeat_bool {
+                    r_window_start_idx += r_has_repeat_offset + 1;
+                    continue 'each_r_window;
+                }
+                add_hashmap_cnt += 1;
+                let lmr_string: u128 = current_sequence.subsequence_as_u128(vec![
+                    [l_window_start_idx, l_window_end_idx],
+                    [r_window_start_idx, r_window_end_idx],
+                ]);
+                /*                 eprintln!(
+                                   "lr_tuple_hashmap.len(): {}\t(HASHSET_SIZE as f32 * 0.9).round() as usize: {}",
+                                    lr_tuple_hashmap.len(),
+                                   (HASHSET_SIZE as f32 * 0.9).round() as usize
+                                );
+                */
+                if lr_tuple_hashmap.len() > hash_size {
+                    break 'each_read;
+                }
+                *lr_tuple_hashmap.entry(lmr_string).or_insert(0) += 1;
+                /*                 eprintln!(
+                                    "lr_tuple_hashmap.entry(lmr_string):{}\tthreshold: {}",
+                                    lr_tuple_hashmap[&lmr_string], threshold
+                                );
+                */
+                r_window_start_idx += 1;
+            }
+            l_window_start_idx += 1;
+        }
+        let end: std::time::Duration = start_time.elapsed();
+        eprintln!("hs loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\tadd_hashmap_cnt: {}\tl_window_cnt: {}, lr_tuple_hashmap.len():{}",
+            thread_id,
+            start_idx,
+            end_idx,
+            end_idx - start_idx,
+            loop_cnt,
+            loop_cnt as f64 / (end_idx - start_idx) as f64 * 100f64,
+            current_sequence.len(),
+            end.as_secs() - previous_time.as_secs(),
+            end.subsec_millis() - previous_time.subsec_millis(),
+            add_hashmap_cnt,
+            l_window_cnt,
+            lr_tuple_hashmap.len()
+        );
+        previous_time = end;
+    }
+    return lr_tuple_hashmap;
+}
+
+/*
+pub fn count_lr_tuple_with_hashtable(
+    sequences: &Vec<DnaSequence>,
+    start_idx: usize,
+    end_idx: usize,
+    hash_size: usize,
     threshold: u16,
     thread_id: usize,
 ) -> HashSet<u128> {
@@ -547,3 +670,4 @@ pub fn count_lr_tuple_with_hashtable(
     }
     return ret_set;
 }
+ */
