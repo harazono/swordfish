@@ -13,6 +13,7 @@ use search_primer::counting_bloomfilter_util::{
 };
 use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
+use sha2::digest::typenum::Le;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::c_short;
@@ -136,6 +137,8 @@ fn main() {
         }
         for child in children_1 {
             let cbf = child.join().unwrap();
+            assert!(cbf.len() == BLOOMFILTER_TABLE_SIZE);
+            assert!(cbf_oyadama.len() == BLOOMFILTER_TABLE_SIZE);
             zip(cbf_oyadama.iter_mut(), cbf)
                 .for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u16::MAX));
         }
@@ -258,7 +261,7 @@ fn main() {
         .collect();
     sorted_hs_list.sort();
 
-    let mut w = BufWriter::new(fs::File::create(&output_file).unwrap());
+    let mut w: BufWriter<File> = BufWriter::new(fs::File::create(&output_file).unwrap());
     let mut buf_array: [u8; 16] = [0; 16];
     let mut buf_num: u128;
 

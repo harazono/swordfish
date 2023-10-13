@@ -206,8 +206,8 @@ pub fn number_of_high_occurence_lr_tuple(
     let mut r_window_start_idx: usize;
     let mut r_window_end_idx: usize;
 
-    let start = Instant::now();
-    let mut previous_time = start.elapsed();
+    let start: Instant = Instant::now();
+    let mut previous_time: std::time::Duration = start.elapsed();
     let mut loop_cnt: usize = 0;
     'each_read: for current_sequence in sequences[start_idx..end_idx].iter() {
         let mut add_bloom_filter_cnt: usize = 0;
@@ -219,8 +219,8 @@ pub fn number_of_high_occurence_lr_tuple(
         }
         'each_l_window: loop {
             l_window_end_idx = l_window_start_idx + L_LEN;
-            if l_window_end_idx >= current_sequence.len() + 1 {
-                let end = start.elapsed();
+            if l_window_end_idx > current_sequence.len() {
+                let end: std::time::Duration = start.elapsed();
                 eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t high occurence LR-tuple: {}\tl_window_cnt: {}",
                     thread_id,
                     start_idx,
@@ -269,6 +269,7 @@ pub fn number_of_high_occurence_lr_tuple(
                     count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold {
                     if ret_table.len() >= (ret_table.capacity() as f64 * 0.9) as usize {
+                        eprintln!("2nd loop[{:02}] attempts to reallocate HashSet.", thread_id);
                         break 'each_read; // 再アロケーションが発生する場合、ループを終了
                     }
                     ret_table.insert(lmr_string);
