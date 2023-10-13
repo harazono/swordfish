@@ -197,7 +197,10 @@ fn main() {
 
     let high_occurence_lr_tuple: &HashSet<u128> = &*h_cbf_h_oyadama.lock().unwrap();
     // let high_occurence_lr_tuple_ref: &HashSet<u128> = &HashSet::from_iter(high_occurence_lr_tuple);
-
+    eprintln!(
+        "length of high_occurence_lr_tuple: {:?}",
+        high_occurence_lr_tuple.len()
+    );
     thread::scope(|scope| {
         let mut children_3 = Vec::new();
         for i in 1..threads {
