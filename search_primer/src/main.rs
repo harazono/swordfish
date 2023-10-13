@@ -229,8 +229,8 @@ fn main() {
                     *hashtable_count_result.entry(*key).or_insert(0) += value;
                 }
                 eprintln!(
-                    "thread [{}]: finish calling count_lr_tuple_with_hashtable",
-                    i
+                    "thread [{}]: finish calling count_lr_tuple_with_hashtable. high_freq_ht.len: {:?}",
+                    &high_freq_ht.len(), i
                 );
             }))
         }
@@ -238,9 +238,20 @@ fn main() {
             let _ = child.join();
         }
     });
+    eprintln!(
+        "count_lr_tuple_with_hashtable done: hashtable_count_result_ref.len() = {:?}",
+        hashtable_count_result_ref.lock().unwrap().len()
+    );
 
     let hashtable: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
         hashtable_count_result_oyadama.lock().unwrap();
+
+    if let Some((&key, &max_value)) = &hashtable.iter().max_by_key(|(_, &value)| value) {
+        println!("Key with the maximum value: {}, Value: {}", key, max_value);
+    } else {
+        println!("The hashtable is empty.");
+    }
+
     let mut sorted_hs_list: Vec<u128> = hashtable
         .iter()
         .filter_map(|(&key, &value)| if value >= threshold { Some(key) } else { None })

@@ -2,7 +2,7 @@ pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 const CHUNK_MAX: usize = 200;
 
-pub const HASHSET_SIZE: usize = 1 << 30 as usize;
+pub const HASHSET_SIZE: usize = 1 << 29 as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = 1 << 30 as usize;
 use crate::sequence_encoder_util::DnaSequence;
 use sha2::Digest;
@@ -95,15 +95,15 @@ pub fn build_counting_bloom_filter(
                     [r_window_start_idx, r_window_end_idx],
                 ]);
                 let table_indice: [u32; 8] = hash_from_u128(lmr_string);
-                let mut min_val = u16::MAX;
+                let mut min_val: u16 = u16::MAX;
                 for &i in table_indice.iter() {
-                    let idx = i as usize;
+                    let idx: usize = i as usize;
                     if ret_array[idx] < min_val {
                         min_val = ret_array[idx];
                     }
                 }
                 for &i in table_indice.iter() {
-                    let idx = i as usize;
+                    let idx: usize = i as usize;
                     if ret_array[idx] == min_val {
                         if ret_array[idx] == u16::MAX {
                             eprintln!("index {} reaches u16::MAX", idx);
