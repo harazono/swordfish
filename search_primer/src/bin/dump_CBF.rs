@@ -6,11 +6,10 @@ use bio::io::fasta::Reader as faReader;
 use bio::io::fasta::Record as faRecord;
 use getopts::Options;
 use search_primer::counting_bloomfilter_util::BLOOMFILTER_TABLE_SIZE;
+use search_primer::counting_bloomfilter_util::HASHSET_SIZE;
 use search_primer::counting_bloomfilter_util::{
     build_counting_bloom_filter, count_lr_tuple_with_hashtable, number_of_high_occurence_lr_tuple,
 };
-use search_primer::counting_bloomfilter_util::{HASHSET_SIZE, L_LEN, R_LEN};
-use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
 use std::cmp::{max, min};
 use std::collections::HashMap;
@@ -41,12 +40,6 @@ fn main() {
         "number of threads to use for radix sort. default value is 8.",
         "THREAD",
     );
-    opts.optopt(
-        "a",
-        "threshold",
-        "threshold for hyper log counter. default value is 8.",
-        "THRESHOLD",
-    );
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -73,19 +66,10 @@ fn main() {
         8
     };
 
-    let threshold: u16 = if matches.opt_present("a") {
-        matches.opt_str("a").unwrap().parse::<u16>().unwrap()
-    } else {
-        8
-    };
-
     let output_file: String = if matches.opt_present("output") {
         matches.opt_str("output").unwrap()
     } else {
-        format!(
-            "{:?}_threshold{}_threads{}_CBF.out",
-            input_file, threshold, threads
-        )
+        format!("{:?}_threads{}_CBF.out", input_file, threads)
     };
 
     eprintln!(
