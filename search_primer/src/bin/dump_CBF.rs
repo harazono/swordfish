@@ -131,11 +131,12 @@ fn main() {
     });
     eprintln!("finish building counting bloom filter");
 
-    let mut w: BufWriter<File> = BufWriter::new(fs::File::create(&output_file).unwrap());
     let mut cbf_hist: [u16; 65535] = [0u16; 65535];
     for each_bucket in cbf_oyadama {
         cbf_hist[each_bucket as usize] += 1;
     }
+
+    let mut w: BufWriter<File> = BufWriter::new(fs::File::create(&output_file).unwrap());
     for each_cbf_hist in &cbf_hist {
         writeln!(&mut w, "{}", each_cbf_hist).unwrap();
     }
