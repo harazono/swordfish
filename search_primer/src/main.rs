@@ -173,8 +173,8 @@ fn main() {
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                 eprintln!(
-                    "thread [{}]: finish calling number_of_high_occurence_lr_tuple",
-                    i
+                    "thread [{}]: finish calling number_of_high_occurence_lr_tuple. h_cbf_h.len: {:?}",
+                    i, &h_cbf_h.len()
                 );
             }))
         }
