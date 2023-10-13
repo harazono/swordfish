@@ -2,7 +2,7 @@ pub const L_LEN: usize = 32;
 pub const R_LEN: usize = 32;
 const CHUNK_MAX: usize = 200;
 
-pub const HASHSET_SIZE: usize = 1 << 29 as usize;
+pub const HASHSET_SIZE: usize = 1 << 30 as usize;
 pub const BLOOMFILTER_TABLE_SIZE: usize = 1 << 30 as usize;
 use crate::sequence_encoder_util::DnaSequence;
 use sha2::Digest;
