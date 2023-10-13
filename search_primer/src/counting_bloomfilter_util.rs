@@ -221,7 +221,7 @@ pub fn number_of_high_occurence_lr_tuple(
             l_window_end_idx = l_window_start_idx + L_LEN;
             if l_window_end_idx >= current_sequence.len() + 1 {
                 let end = start.elapsed();
-                eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+                eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t high occurence LR-tuple: {}\tl_window_cnt: {}",
                     thread_id,
                     start_idx,
                     end_idx,
@@ -269,7 +269,7 @@ pub fn number_of_high_occurence_lr_tuple(
                     count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold {
                     if ret_table.len() >= (ret_table.capacity() as f64 * 0.9) as usize {
-                        break 'each_read; // 再アロケーションが発生する場合、ループを終了<-全体の15%まで処理してとまっちゃった
+                        break 'each_read; // 再アロケーションが発生する場合、ループを終了
                     }
                     ret_table.insert(lmr_string);
                 }
@@ -279,7 +279,7 @@ pub fn number_of_high_occurence_lr_tuple(
             l_window_start_idx += 1;
         }
         let end: std::time::Duration = start.elapsed();
-        eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",
+        eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t high occurence LR-tuple: {}\tl_window_cnt: {}",
             thread_id,
             start_idx,
             end_idx,
