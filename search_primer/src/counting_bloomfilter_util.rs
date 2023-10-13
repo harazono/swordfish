@@ -94,13 +94,22 @@ pub fn build_counting_bloom_filter(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
-                let table_indice: [u32; 8] = hash_from_u128(lmr_string); //u128を受けてhashを返す関数
-                for i in 0..8 {
-                    let idx: usize = table_indice[i] as usize;
-                    if ret_array[idx] == u16::MAX {
-                        eprintln!("index {} reaches u16::MAX", idx);
-                    } else {
-                        ret_array[idx] += 1;
+                let table_indice: [u32; 8] = hash_from_u128(lmr_string);
+                let mut min_val = u16::MAX;
+                for &i in table_indice.iter() {
+                    let idx = i as usize;
+                    if ret_array[idx] < min_val {
+                        min_val = ret_array[idx];
+                    }
+                }
+                for &i in table_indice.iter() {
+                    let idx = i as usize;
+                    if ret_array[idx] == min_val {
+                        if ret_array[idx] == u16::MAX {
+                            eprintln!("index {} reaches u16::MAX", idx);
+                        } else {
+                            ret_array[idx] += 1;
+                        }
                     }
                 }
                 r_window_start_idx += 1;
@@ -269,7 +278,7 @@ pub fn number_of_high_occurence_lr_tuple(
             }
             l_window_start_idx += 1;
         }
-        let end = start.elapsed();
+        let end: std::time::Duration = start.elapsed();
         eprintln!("2nd loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",
             thread_id,
             start_idx,
