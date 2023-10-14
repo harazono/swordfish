@@ -105,7 +105,9 @@ pub fn build_counting_bloom_filter(
                 for &i in table_indice.iter() {
                     let idx: usize = i as usize;
                     if ret_array[idx] == min_val {
-                        if ret_array[idx] == u16::MAX {
+                        if true
+                        /* ret_array[idx] == u16::MAX */
+                        {
                             eprintln!("index {} reaches u16::MAX", idx);
                         } else {
                             ret_array[idx] += 1;
