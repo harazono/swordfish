@@ -49,6 +49,14 @@ fn main() {
         "threshold of occurence. default value is 1000.",
         "THRESHOLD",
     );
+
+    opts.optopt(
+        "m",
+        "bucket-size",
+        "bucket size of CBF. default value is 1 << 30 as usize.",
+        "BUCKET_SIZE",
+    );
+
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of k-mer");
     opts.optflag("h", "help", "print this help menu");
@@ -126,8 +134,13 @@ fn main() {
                     "start calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx
                 );
-                let cbf: Vec<u16> =
-                    build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
+                let cbf: Vec<u16> = build_counting_bloom_filter(
+                    sequences_ref,
+                    start_idx,
+                    end_idx,
+                    BLOOMFILTER_TABLE_SIZE,
+                    i,
+                );
                 eprintln!(
                     "finish calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx

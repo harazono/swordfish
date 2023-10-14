@@ -17,6 +17,7 @@ pub fn build_counting_bloom_filter(
     sequences: &Vec<DnaSequence>,
     start_idx: usize,
     end_idx: usize,
+    m: usize,
     thread_id: usize,
 ) -> Vec<u16> {
     let mut l_window_start_idx: usize;
@@ -25,12 +26,9 @@ pub fn build_counting_bloom_filter(
     let mut r_window_end_idx: usize;
 
     let mut loop_cnt: usize = 0;
-    eprintln!(
-        "Allocating Vec<u16> where BLOOMFILTER_TABLE_SIZE = {}",
-        BLOOMFILTER_TABLE_SIZE
-    );
-    //let mut ret_array: Vec<u16> = Vec::with_capacity(BLOOMFILTER_TABLE_SIZE);
-    let mut ret_array: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
+    eprintln!("Allocating Vec<u16> where BLOOMFILTER_TABLE_SIZE = {}", m);
+    //let mut ret_array: Vec<u16> = Vec::with_capacity(m);
+    let mut ret_array: Vec<u16> = vec![0u16; m];
     eprintln!("Filling Vec<u16; {}> with 0", BLOOMFILTER_TABLE_SIZE);
     eprintln!("finish allocating");
 
@@ -116,7 +114,7 @@ pub fn build_counting_bloom_filter(
             }
             l_window_start_idx += 1;
         }
-        let end = start_time.elapsed();
+        let end: std::time::Duration = start_time.elapsed();
         eprintln!("1st loop[{:02}]({:05}-{:05},length is {})\t{:05?}({:.4}%)\tlength: {}\tsec: {}.{:03}\t subject to add bloom filter: {}\tl_window_cnt: {}",
             thread_id,
             start_idx,
@@ -137,7 +135,6 @@ pub fn build_counting_bloom_filter(
 
 //BLOOMFILTER_TABLE_SIZEの範囲内で柔軟にhash値を返すようにする。
 
-/*
 fn hash_from_u128(source: u128) -> [u32; 8] {
     let mut ret_val: [u32; 8] = [0; 8];
     let mut hasher = Sha256::new();
@@ -154,8 +151,8 @@ fn hash_from_u128(source: u128) -> [u32; 8] {
     }
     ret_val
 }
-*/
 
+/*
 fn hash_from_u128(source: u128) -> [u32; 8] {
     let mut ret_val: [u32; 8] = [0; 8];
     let mut hasher = Sha256::new();
@@ -177,6 +174,7 @@ fn hash_from_u128(source: u128) -> [u32; 8] {
     }
     return ret_val;
 }
+*/
 
 fn count_occurence_from_counting_bloomfilter_table(
     counting_bloomfilter_table: &Vec<u16>,

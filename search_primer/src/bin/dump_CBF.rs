@@ -65,6 +65,11 @@ fn main() {
     } else {
         8
     };
+    let bucket_size: usize = if matches.opt_present("m") {
+        matches.opt_str("m").unwrap().parse::<usize>().unwrap()
+    } else {
+        BLOOMFILTER_TABLE_SIZE
+    };
 
     let output_file: String = if matches.opt_present("output") {
         matches.opt_str("output").unwrap()
@@ -74,7 +79,7 @@ fn main() {
 
     eprintln!(
         "input  file: {:?}\t HASHSET_SIZE: {}\tBLOOMFILTER_TABLE_SIZE: {}",
-        input_file, HASHSET_SIZE, BLOOMFILTER_TABLE_SIZE
+        input_file, HASHSET_SIZE, bucket_size
     );
     let file: File = File::open(&input_file).expect("Error during opening the file");
     let mut reader: faReader<std::io::BufReader<File>> = faReader::new(file);
@@ -98,7 +103,7 @@ fn main() {
     let chunk_size: usize = max(sequences.len() / (threads - 1), 1);
     let sequences_ref = &sequences;
     let number_of_threads: usize = min(threads, sequences.len() + 1);
-    let mut cbf_oyadama: Vec<u16> = vec![0; BLOOMFILTER_TABLE_SIZE];
+    let mut cbf_oyadama: Vec<u16> = vec![0; bucket_size];
     thread::scope(|scope| {
         let mut children_1 = Vec::new();
         for i in 1..number_of_threads {
@@ -115,7 +120,7 @@ fn main() {
                     i, start_idx, end_idx
                 );
                 let cbf: Vec<u16> =
-                    build_counting_bloom_filter(sequences_ref, start_idx, end_idx, i);
+                    build_counting_bloom_filter(sequences_ref, start_idx, end_idx, bucket_size, i);
                 eprintln!(
                     "finish calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx
