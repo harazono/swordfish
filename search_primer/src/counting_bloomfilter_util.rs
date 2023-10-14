@@ -95,23 +95,21 @@ pub fn build_counting_bloom_filter(
                     [r_window_start_idx, r_window_end_idx],
                 ]);
                 let table_indice: [u32; 8] = hash_from_u128(lmr_string);
-                let mut min_val: u16 = u16::MAX;
+                /*
+                                let mut min_val: u16 = u16::MAX;
+                                for &i in table_indice.iter() {
+                                    let idx: usize = i as usize;
+                                    if ret_array[idx] < min_val {
+                                        min_val = ret_array[idx];
+                                    }
+                                }
+                */
                 for &i in table_indice.iter() {
                     let idx: usize = i as usize;
-                    if ret_array[idx] < min_val {
-                        min_val = ret_array[idx];
-                    }
-                }
-                for &i in table_indice.iter() {
-                    let idx: usize = i as usize;
-                    if ret_array[idx] == min_val {
-                        if true
-                        /* ret_array[idx] == u16::MAX */
-                        {
-                            eprintln!("index {} reaches u16::MAX", idx);
-                        } else {
-                            ret_array[idx] += 1;
-                        }
+                    if ret_array[idx] == u16::MAX {
+                        eprintln!("index {} reaches u16::MAX", idx);
+                    } else {
+                        ret_array[idx] += 1;
                     }
                 }
                 r_window_start_idx += 1;
