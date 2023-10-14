@@ -188,6 +188,7 @@ fn main() {
                     end_idx,
                     HASHSET_SIZE,
                     threshold,
+                    BLOOMFILTER_TABLE_SIZE,
                     i,
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);

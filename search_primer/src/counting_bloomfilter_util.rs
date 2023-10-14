@@ -29,7 +29,7 @@ pub fn build_counting_bloom_filter(
     eprintln!("Allocating Vec<u16> where BLOOMFILTER_TABLE_SIZE = {}", m);
     //let mut ret_array: Vec<u16> = Vec::with_capacity(m);
     let mut ret_array: Vec<u16> = vec![0u16; m];
-    eprintln!("Filling Vec<u16; {}> with 0", BLOOMFILTER_TABLE_SIZE);
+    eprintln!("Filling Vec<u16; {}> with 0", m);
     eprintln!("finish allocating");
 
     let start_time = Instant::now();
@@ -92,7 +92,7 @@ pub fn build_counting_bloom_filter(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
-                let table_indice: [u32; 8] = hash_from_u128(lmr_string);
+                let table_indice: [u32; 8] = hash_from_u128(lmr_string, m);
                 /*
                                 let mut min_val: u16 = u16::MAX;
                                 for &i in table_indice.iter() {
@@ -135,7 +135,7 @@ pub fn build_counting_bloom_filter(
 
 //BLOOMFILTER_TABLE_SIZEの範囲内で柔軟にhash値を返すようにする。
 
-fn hash_from_u128(source: u128) -> [u32; 8] {
+fn hash_from_u128(source: u128, table_size: usize) -> [u32; 8] {
     let mut ret_val: [u32; 8] = [0; 8];
     let mut hasher = Sha256::new();
     // u128を[u8; 16]に変換
@@ -147,7 +147,7 @@ fn hash_from_u128(source: u128) -> [u32; 8] {
             | ((result[i * 4 + 1] as u32) << 16)
             | ((result[i * 4 + 2] as u32) << 8)
             | (result[i * 4 + 3] as u32);
-        ret_val[i] %= BLOOMFILTER_TABLE_SIZE as u32;
+        ret_val[i] %= table_size as u32;
     }
     ret_val
 }
@@ -196,6 +196,7 @@ pub fn number_of_high_occurence_lr_tuple(
     end_idx: usize,
     hash_size: usize,
     threshold: u16,
+    m: usize,
     thread_id: usize,
 ) -> HashSet<u128> {
     let mut ret_table: HashSet<u128> = HashSet::with_capacity(hash_size);
@@ -262,7 +263,7 @@ pub fn number_of_high_occurence_lr_tuple(
                     [l_window_start_idx, l_window_end_idx],
                     [r_window_start_idx, r_window_end_idx],
                 ]);
-                let table_indice: [u32; 8] = hash_from_u128(lmr_string); //u128を受けてhashを返す関数
+                let table_indice: [u32; 8] = hash_from_u128(lmr_string, m); //u128を受けてhashを返す関数
                 let occurence: u16 =
                     count_occurence_from_counting_bloomfilter_table(source_table, table_indice);
                 if occurence >= threshold {
