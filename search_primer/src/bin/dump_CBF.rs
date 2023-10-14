@@ -40,6 +40,13 @@ fn main() {
         "number of threads to use for radix sort. default value is 8.",
         "THREAD",
     );
+    opts.optopt(
+        "m",
+        "bucket-size",
+        "bucket size of CBF. default value is 1 << 30 as usize.",
+        "BUCKET_SIZE",
+    );
+
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {

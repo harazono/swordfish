@@ -50,13 +50,6 @@ fn main() {
         "THRESHOLD",
     );
 
-    opts.optopt(
-        "m",
-        "bucket-size",
-        "bucket size of CBF. default value is 1 << 30 as usize.",
-        "BUCKET_SIZE",
-    );
-
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of k-mer");
     opts.optflag("h", "help", "print this help menu");
