@@ -12,6 +12,7 @@ use std::mem;
 use std::process::{Command, Output, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Instant;
 
 extern crate rand;
 
@@ -68,43 +69,6 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11",
     return ret_str;
 }
 
-/*
-fn primer3_core_input_sequence(sequence: &u128, library_file_name: &Option<String>) -> String{
-    let many_n = "N".to_string().repeat(50);
-    //eprintln!("primer3_core_input_sequence: sequense length...{}", sequences.len());
-
-    let l_u8_array = decode_u128_l(&sequence);
-    let r_u8_array = decode_u128_r(&sequence);
-    let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
-    let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
-    let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
-    let mut primer3_fmt_str = format!("SEQUENCE_ID={:0x}
-SEQUENCE_TEMPLATE={}
-PRIMER_TASK=pick_pcr_primers
-PRIMER_OPT_SIZE=27
-PRIMER_MIN_SIZE=15
-PRIMER_MAX_SIZE=31
-PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
-P3_FILE_FLAG=0
-PRIMER_EXPLAIN_FLAG=1
-PRIMER_OPT_TM=66.0
-PRIMER_MAX_TM=72.0
-PRIMER_MAX_LIBRARY_MISPRIMING=11", sequence, sequence_with_internal_n);
-    // Check if library_file_name is Some or None
-    match library_file_name.as_ref() {
-        Some(file_name) => {
-            // If Some, append the file name to the string
-            primer3_fmt_str.push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=", file_name));
-        }
-        None => {
-            primer3_fmt_str.push_str("\n=");
-        }
-    }
-    return primer3_fmt_str;
-}
-
-*/
-
 fn generate_random_string(length: usize) -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -113,7 +77,11 @@ fn generate_random_string(length: usize) -> String {
         .collect()
 }
 
-fn execute_primer3(formatted_string: String, temp_file_name_prefix: &String) -> String {
+fn execute_primer3(
+    formatted_string: String,
+    temp_file_name_prefix: &String,
+    thread_id: usize,
+) -> String {
     /*
     /tmpなどに中間ファイルを書き込む
     let mut file = OpenOptions::new().write(true).create(true).open("/tmp/primer3_core_input.txt").unwrap();
@@ -121,12 +89,16 @@ fn execute_primer3(formatted_string: String, temp_file_name_prefix: &String) -> 
     Command::newにファイルオブジェクトを渡す（stdinは使わない）
     */
     // /tmpに中間ファイルを書き込む
+
+    let start: Instant = Instant::now();
+    let start_time: std::time::Duration = start.elapsed();
     let temporary_file_name = format!(
         "{}_{}.txt",
         temp_file_name_prefix,
         generate_random_string(10)
     );
     eprintln!("temporary_file_name: {}", temporary_file_name);
+
     {
         let mut file = OpenOptions::new()
             .write(true)
@@ -154,30 +126,16 @@ fn execute_primer3(formatted_string: String, temp_file_name_prefix: &String) -> 
     let _ = std::fs::remove_file(temporary_file_name);
 
     // 結果を返す
+
+    let end_time: std::time::Duration = start.elapsed();
+    eprintln!(
+        "primer3_caller[{:02}] takes {}.{} sec",
+        thread_id,
+        start_time.as_secs() - end_time.as_secs(),
+        start_time.subsec_millis() - end_time.subsec_millis()
+    );
+
     String::from_utf8(output.stdout).unwrap()
-
-    /*
-        let output: Output    = Command::new("primer3-core").arg("/tmp/primer3_core_input.txt").output().unwrap();
-        let output_str:String = String::from_utf8(output.stdout).unwrap();
-        eprintln!("function execute_primer3: formatted_string.len(): {}", formatted_string.len());
-        let process = match Command::new("primer3_core")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn() {
-            Err(why) => panic!("couldn't spawn primer3: {}", why),
-            Ok(process) => process,
-        };
-        eprintln!("function execute_primer3: about to send String to stdin");
-        match process.stdin.as_ref().unwrap().write_all(formatted_string.as_bytes()) {
-            Err(why) => panic!("couldn't write to primer3_core stdin: {}", why),
-            Ok(_) => eprintln!("sent pangram to primer3_core"),
-        }
-
-        let output = process.wait_with_output().expect("Failed to wait on child");
-        let result = String::from_utf8(output.stdout).unwrap();
-        //println!("{}", result);
-        return result;
-    */
 }
 
 fn print_usage(program: &str, opts: &Options) {
@@ -276,11 +234,11 @@ fn main() {
 
     let arc_chunks_of_input: Arc<Vec<Vec<u128>>> = Arc::new(chunks_of_input);
     let final_result: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-    let mut children = Vec::new();
-    let output_file_name = matches
+    let mut children: Vec<thread::JoinHandle<()>> = Vec::new();
+    let output_file_name: String = matches
         .opt_str("o")
         .unwrap_or("default_output.txt".to_string()); // Get output file name
-    let file_mutex = Arc::new(Mutex::new(
+    let file_mutex: Arc<Mutex<File>> = Arc::new(Mutex::new(
         OpenOptions::new()
             .append(true)
             .create(true)
@@ -289,31 +247,47 @@ fn main() {
     ));
 
     for i in 0..thread_number {
-        let chunks_of_input = Arc::clone(&arc_chunks_of_input);
-        let arc_final_result = Arc::clone(&final_result);
-        let thread_file_mutex = Arc::clone(&file_mutex);
-        let library_file_name_clone = library_file_name.clone(); // Clone the library_file_name
-        let temporary_file_name_prefix_clone = temporary_file_name_prefix.clone(); // Clone the temporary_file_name_prefix
+        let chunks_of_input: Arc<Vec<Vec<u128>>> = Arc::clone(&arc_chunks_of_input);
+        let arc_final_result: Arc<Mutex<Vec<String>>> = Arc::clone(&final_result);
+        let thread_file_mutex: Arc<Mutex<File>> = Arc::clone(&file_mutex);
+        let library_file_name_clone: Option<String> = library_file_name.clone(); // Clone the library_file_name
+        let temporary_file_name_prefix_clone: String = temporary_file_name_prefix.clone(); // Clone the temporary_file_name_prefix
         children.push(thread::spawn(move || {
-            let mut primer3_results = String::new();
+            let mut primer3_results: String = String::new();
+            let total_elements: usize = chunks_of_input[i].len();
+            let mut processed_elements: usize = 0;
             // chunks_of_input[i]を500個の要素ごとのチャンクに分割
             for bunch in chunks_of_input[i].chunks(500) {
+                let start: Instant = Instant::now();
                 let sequences: Vec<_> = bunch.iter().collect();
+                processed_elements += sequences.len();
                 primer3_results += &execute_primer3(
                     primer3_core_input_sequences(&sequences, &library_file_name_clone),
                     &temporary_file_name_prefix_clone,
+                    i,
                 );
                 //eprintln!("{}", &primer3_results);
                 if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
-                    let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex
+                    let mut file: std::sync::MutexGuard<'_, File> =
+                        thread_file_mutex.lock().unwrap(); // Use the cloned mutex
                     file.write_all(primer3_results.as_bytes())
                         .expect("Unable to write to file");
                     primer3_results.clear();
                 }
+                let elapsed: std::time::Duration = start.elapsed();
+
+                let percentage_done = (processed_elements as f64 / total_elements as f64) * 100.0;
+                eprintln!(
+                    "Thread[{:02}] - Processing chunk took {}.{} sec, {:.2}% done",
+                    i,
+                    elapsed.as_secs(),
+                    elapsed.subsec_millis(),
+                    percentage_done
+                );
             }
             // After the loop, write remaining primer3_results to the file
             if !primer3_results.is_empty() {
-                let mut file = thread_file_mutex.lock().unwrap();
+                let mut file: std::sync::MutexGuard<'_, File> = thread_file_mutex.lock().unwrap();
                 file.write_all(primer3_results.as_bytes())
                     .expect("Unable to write to file");
                 primer3_results.clear();
