@@ -25,18 +25,19 @@ fn primer3_core_input_sequences(
 ) -> String {
     let mut ret_str: String = String::new();
     let many_n = "N".to_string().repeat(50);
-    eprintln!(
-        "primer3_core_input_sequence: sequense length...{}",
-        sequences.len()
-    );
 
+    /*     eprintln!(
+            "primer3_core_input_sequence: sequense length...{}",
+            sequences.len()
+        );
+    */
     for each_seq in sequences {
-        let l_u8_array = decode_u128_l(each_seq);
-        let r_u8_array = decode_u128_r(each_seq);
+        let l_u8_array: Vec<u8> = decode_u128_l(each_seq);
+        let r_u8_array: Vec<u8> = decode_u128_r(each_seq);
         let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
         let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
-        let sequence_with_internal_n = format!("{}{}{}", l_str, many_n, r_str);
-        let mut primer3_fmt_str = format!(
+        let sequence_with_internal_n: String = format!("{}{}{}", l_str, many_n, r_str);
+        let mut primer3_fmt_str: String = format!(
             "SEQUENCE_ID={:0x}
 SEQUENCE_TEMPLATE={}
 PRIMER_TASK=pick_pcr_primers
@@ -64,8 +65,8 @@ PRIMER_MAX_LIBRARY_MISPRIMING=11",
         }
         ret_str.push_str(&primer3_fmt_str);
     }
-    //eprintln!("mem::size_of_val(&ret_str): {}", mem::size_of_val(&ret_str));//これだとVecのアタマの24byteしか表示されない
-    eprintln!("(&ret_str).len(): {}", (&ret_str).len()); //function execute_primer3: formatted_string.len(): 483000
+    // eprintln!("mem::size_of_val(&ret_str): {}", mem::size_of_val(&ret_str));//これだとVecのアタマの24byteしか表示されない
+    // eprintln!("(&ret_str).len(): {}", (&ret_str).len()); //function execute_primer3: formatted_string.len(): 483000
     return ret_str;
 }
 
@@ -111,7 +112,7 @@ fn execute_primer3(
 
     // ファイルを再度開き、Command::new("primer3_core")の標準入力として利用する
     eprintln!("start opening {}", temporary_file_name);
-    let output = Command::new("primer3_core")
+    let output: Output = Command::new("primer3_core")
         .stdin(Stdio::from(
             OpenOptions::new()
                 .read(true)
@@ -257,7 +258,7 @@ fn main() {
             let total_elements: usize = chunks_of_input[i].len();
             let mut processed_elements: usize = 0;
             // chunks_of_input[i]を500個の要素ごとのチャンクに分割
-            for bunch in chunks_of_input[i].chunks(500) {
+            for bunch in chunks_of_input[i].chunks(100) {
                 let start: Instant = Instant::now();
                 let sequences: Vec<_> = bunch.iter().collect();
                 processed_elements += sequences.len();
