@@ -113,7 +113,7 @@ fn generate_random_string(length: usize) -> String {
         .collect()
 }
 
-fn execute_primer3(formatted_string: String) -> String {
+fn execute_primer3(formatted_string: String, temp_file_name_prefix: &String) -> String {
     /*
     /tmpなどに中間ファイルを書き込む
     let mut file = OpenOptions::new().write(true).create(true).open("/tmp/primer3_core_input.txt").unwrap();
@@ -122,7 +122,8 @@ fn execute_primer3(formatted_string: String) -> String {
     */
     // /tmpに中間ファイルを書き込む
     let temporary_file_name = format!(
-        "/work/primer3_core_input_{}.txt",
+        "{}_{}.txt",
+        temp_file_name_prefix,
         generate_random_string(10)
     );
     eprintln!("temporary_file_name: {}", temporary_file_name);
@@ -209,6 +210,7 @@ fn main() {
         "output file name for primer3 results",
         "OUTPUT",
     ); // New option for output file
+    opts.optopt("m", "tmpfile", "set temporary file name prefix", "TEMP");
 
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -225,6 +227,12 @@ fn main() {
         matches.opt_str("t").unwrap().parse::<usize>().unwrap()
     } else {
         4
+    };
+
+    let temporary_file_name_prefix = if matches.opt_present("m") {
+        matches.opt_str("m").unwrap()
+    } else {
+        "/work/primer3_tmp".to_string()
     };
 
     let library_file_name: Option<String> = matches.opt_str("l");
@@ -285,15 +293,16 @@ fn main() {
         let arc_final_result = Arc::clone(&final_result);
         let thread_file_mutex = Arc::clone(&file_mutex);
         let library_file_name_clone = library_file_name.clone(); // Clone the library_file_name
+        let temporary_file_name_prefix_clone = temporary_file_name_prefix.clone(); // Clone the temporary_file_name_prefix
         children.push(thread::spawn(move || {
             let mut primer3_results = String::new();
             // chunks_of_input[i]を500個の要素ごとのチャンクに分割
             for bunch in chunks_of_input[i].chunks(500) {
                 let sequences: Vec<_> = bunch.iter().collect();
-                primer3_results += &execute_primer3(primer3_core_input_sequences(
-                    &sequences,
-                    &library_file_name_clone,
-                ));
+                primer3_results += &execute_primer3(
+                    primer3_core_input_sequences(&sequences, &library_file_name_clone),
+                    &temporary_file_name_prefix_clone,
+                );
                 //eprintln!("{}", &primer3_results);
                 if mem::size_of_val(&primer3_results) > 2 * 1024 * 1024 * 1024 {
                     let mut file = thread_file_mutex.lock().unwrap(); // Use the cloned mutex

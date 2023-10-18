@@ -135,7 +135,7 @@ pub fn build_counting_bloom_filter(
 
 //BLOOMFILTER_TABLE_SIZEの範囲内で柔軟にhash値を返すようにする。
 
-fn hash_from_u128(source: u128, table_size: usize) -> [u32; 8] {
+pub fn hash_from_u128(source: u128, table_size: usize) -> [u32; 8] {
     let mut ret_val: [u32; 8] = [0; 8];
     let mut hasher = Sha256::new();
     // u128を[u8; 16]に変換
@@ -152,8 +152,7 @@ fn hash_from_u128(source: u128, table_size: usize) -> [u32; 8] {
     ret_val
 }
 
-/*
-fn hash_from_u128(source: u128) -> [u32; 8] {
+pub fn hash_from_u128_old(source: u128) -> [u32; 8] {
     let mut ret_val: [u32; 8] = [0; 8];
     let mut hasher = Sha256::new();
     let mut u8_array: [u8; 16] = [0; 16];
@@ -174,7 +173,6 @@ fn hash_from_u128(source: u128) -> [u32; 8] {
     }
     return ret_val;
 }
-*/
 
 fn count_occurence_from_counting_bloomfilter_table(
     counting_bloomfilter_table: &Vec<u16>,
