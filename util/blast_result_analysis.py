@@ -106,7 +106,12 @@ def main():
     with open(args.blast) as f:
         reader = csv.reader(f, delimiter='\t')
         for each_record in reader:
-            each_record_Obj = BlastResult(*each_record)
+            try:
+                each_record_Obj = BlastResult(*each_record)
+            except TypeError:
+                print(type(each_record), each_record, file=sys.stderr)
+                continue
+            
             taxon_id = -1
             try:
                 taxon_id = int(each_record_Obj.staxid)
