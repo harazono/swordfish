@@ -103,9 +103,7 @@ fn main() {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
                             "thread {:02} hash_src: {:08} in {:08}",
-                            thread_idx,
-                            hash_src,
-                            end - start
+                            thread_idx, hash_src, end
                         );
                     }
                     let hash_values = hash_from_u128(hash_src as u128, BLOOMFILTER_TABLE_SIZE);
