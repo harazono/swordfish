@@ -135,7 +135,7 @@ fn main() {
     let mut w1: BufWriter<File> = BufWriter::new(fs::File::create(&output_file1).unwrap());
     let mut sorted_vec: Vec<(&u32, &usize)> = index_counter.iter().collect();
     sorted_vec.sort_by_key(|k| k.0);
-    for each_cbf_hist in &index_counter {
+    for each_cbf_hist in sorted_vec {
         writeln!(&mut w1, "{},{}", each_cbf_hist.0, each_cbf_hist.1).unwrap();
     }
     let oyadama_file: String = String::from(&output_file) + "_cbf.txt";
