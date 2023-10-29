@@ -102,8 +102,9 @@ fn main() {
                 for hash_src in start..=end {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
-                            "thread {:02} hash_src: {:08} in {:08}",
-                            thread_idx, hash_src, end
+                            "thread {:02} {:.4}%",
+                            thread_idx,
+                            (hash_src - start) as f64 / (end - start) as f64 * 100.0,
                         );
                     }
                     let hash_values = hash_from_u128(hash_src as u128, BLOOMFILTER_TABLE_SIZE);
@@ -122,7 +123,7 @@ fn main() {
                 .for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u16::MAX));
         }
     });
-
+    eprintln!("finish create CBF.Start sorting.");
     let mut index_counter: HashMap<u32, usize> = HashMap::new();
     for i in 0..BLOOMFILTER_TABLE_SIZE {
         let accumurated_val: u32 = cbf_oyadama[i] as u32;
@@ -131,6 +132,7 @@ fn main() {
             index_counter.get(&accumurated_val).unwrap_or(&0) + 1,
         );
     }
+    eprintln!("start write CBF.");
     let output_file1: String = String::from(&output_file) + "_hist.csv";
     let mut w1: BufWriter<File> = BufWriter::new(fs::File::create(&output_file1).unwrap());
     let mut sorted_vec: Vec<(&u32, &usize)> = index_counter.iter().collect();
