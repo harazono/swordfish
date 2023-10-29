@@ -153,7 +153,7 @@ fn main() {
                         &cbf_oyadama_ref,
                         hash_values,
                     );
-                    occurence_of_each_chunk.insert(occurence as u32, 1);
+                    occurence_of_each_chunk.insert(hash_src as u32, occurence as usize);
                 }
                 occurence_of_each_chunk
             }))
