@@ -98,13 +98,13 @@ fn main() {
                 let mut index_table_in_a_thread: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
                 let (start, end) = calc_index(thread_idx, threads, limit);
                 eprintln!(
-                    "thread {:02} start: {:04} end: {:04}",
+                    "loop 1 thread {:02} start: {:04} end: {:04}",
                     thread_idx, start, end
                 );
                 for hash_src in start..=end {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
-                            "thread {:02} {:.4}%",
+                            "loop 1 thread {:02} {:3.2}%",
                             thread_idx,
                             (hash_src - start) as f64 / (end - start) as f64 * 100.0,
                         );
@@ -136,13 +136,13 @@ fn main() {
                 let mut occurence_of_each_chunk: HashMap<u32, usize> = HashMap::new();
                 let (start, end) = calc_index(thread_idx, threads, limit);
                 eprintln!(
-                    "thread {:02} start: {:04} end: {:04}",
+                    "loop 2 thread {:02} start: {:04} end: {:04}",
                     thread_idx, start, end
                 );
                 for hash_src in start..=end {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
-                            "thread {:02} {:.4}%",
+                            "loop 2 thread {:02} {:3.2}%",
                             thread_idx,
                             (hash_src - start) as f64 / (end - start) as f64 * 100.0,
                         );
