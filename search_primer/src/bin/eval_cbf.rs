@@ -38,6 +38,7 @@ fn calc_index(thread_id: usize, threads: usize, limit: usize) -> (usize, usize) 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    eprintln!("Arguments: {:?}", args);
     let program = args[0].clone();
     let mut opts = Options::new();
     opts.optopt("o", "output", "set output file name prefix.", "NAME");
