@@ -174,8 +174,11 @@ fn main() {
     } else {
         let total_values: usize = occurence_oyadama.len();
         let percentage: f64 = (non_one_values_count as f64 / total_values as f64) * 100.0;
-        println!("Number of values not equal to 1: {}", non_one_values_count);
-        println!("Percentage of values not equal to 1: {:.2}%", percentage);
+        println!(
+            "Number of values not equal to 1: {}/{}",
+            non_one_values_count, total_values
+        );
+        println!("Percentage of values not equal to 1: {:.8}%", percentage);
     }
 
     let mut index_counter: HashMap<u32, usize> = HashMap::new();
