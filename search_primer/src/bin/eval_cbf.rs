@@ -1,5 +1,8 @@
-use search_primer::counting_bloomfilter_util::{hash_from_u128, BLOOMFILTER_TABLE_SIZE};
+use search_primer::counting_bloomfilter_util::{
+    count_occurence_from_counting_bloomfilter_table, hash_from_u128, BLOOMFILTER_TABLE_SIZE,
+};
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::BufWriter;
 use std::io::Write;
@@ -88,7 +91,6 @@ fn main() {
     };
 
     let mut cbf_oyadama: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
-
     thread::scope(|scope: &thread::Scope<'_, '_>| {
         let mut children_1: Vec<thread::ScopedJoinHandle<'_, Vec<u16>>> = Vec::new();
         for thread_idx in 0..(threads - 1) {
@@ -123,7 +125,59 @@ fn main() {
                 .for_each(|(x, y)| *x = x.checked_add(y).unwrap_or(u16::MAX));
         }
     });
-    eprintln!("finish create CBF.Start sorting.");
+    eprintln!("finish create CBF.");
+
+    let mut occurence_oyadama: HashMap<u32, usize> = HashMap::new();
+    let cbf_oyadama_ref: &Vec<u16> = &cbf_oyadama;
+    thread::scope(|scope: &thread::Scope<'_, '_>| {
+        let mut children_2: Vec<thread::ScopedJoinHandle<'_, HashMap<u32, usize>>> = Vec::new();
+        for thread_idx in 0..(threads - 1) {
+            children_2.push(scope.spawn(move || {
+                let mut occurence_of_each_chunk: HashMap<u32, usize> = HashMap::new();
+                let (start, end) = calc_index(thread_idx, threads, limit);
+                eprintln!(
+                    "thread {:02} start: {:04} end: {:04}",
+                    thread_idx, start, end
+                );
+                for hash_src in start..=end {
+                    if (hash_src - start) % 100000 == 0 {
+                        eprintln!(
+                            "thread {:02} {:.4}%",
+                            thread_idx,
+                            (hash_src - start) as f64 / (end - start) as f64 * 100.0,
+                        );
+                    }
+                    let hash_values: [u32; 8] =
+                        hash_from_u128(hash_src as u128, BLOOMFILTER_TABLE_SIZE);
+                    let occurence: u16 = count_occurence_from_counting_bloomfilter_table(
+                        &cbf_oyadama_ref,
+                        hash_values,
+                    );
+                    occurence_of_each_chunk.insert(occurence as u32, 1);
+                }
+                occurence_of_each_chunk
+            }))
+        }
+        for child in children_2 {
+            let occurence_of_u128: HashMap<u32, usize> = child.join().unwrap();
+            for (key, value) in occurence_of_u128 {
+                *occurence_oyadama.entry(key).or_insert(0) += value;
+            }
+        }
+    });
+    eprintln!("finish reviewing CBF.");
+
+    let non_one_values_count: usize = occurence_oyadama.values().filter(|&&v| v != 1).count();
+
+    if non_one_values_count == 0 {
+        println!("All values are 1.");
+    } else {
+        let total_values: usize = occurence_oyadama.len();
+        let percentage: f64 = (non_one_values_count as f64 / total_values as f64) * 100.0;
+        println!("Number of values not equal to 1: {}", non_one_values_count);
+        println!("Percentage of values not equal to 1: {:.2}%", percentage);
+    }
+
     let mut index_counter: HashMap<u32, usize> = HashMap::new();
     for i in 0..BLOOMFILTER_TABLE_SIZE {
         let accumurated_val: u32 = cbf_oyadama[i] as u32;
@@ -132,6 +186,7 @@ fn main() {
             index_counter.get(&accumurated_val).unwrap_or(&0) + 1,
         );
     }
+    eprintln!("finish sorting CBF.");
     eprintln!("start write CBF.");
     let output_file1: String = String::from(&output_file) + "_hist.csv";
     let mut w1: BufWriter<File> = BufWriter::new(fs::File::create(&output_file1).unwrap());

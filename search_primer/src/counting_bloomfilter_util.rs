@@ -181,7 +181,7 @@ pub fn hash_from_u128_old(source: u128) -> [u32; 8] {
     return ret_val;
 }
 
-fn count_occurence_from_counting_bloomfilter_table(
+pub fn count_occurence_from_counting_bloomfilter_table(
     counting_bloomfilter_table: &Vec<u16>,
     indice: [u32; 8],
 ) -> u16 {
