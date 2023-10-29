@@ -201,4 +201,5 @@ fn main() {
     for value in &cbf_oyadama {
         writeln!(&mut w2, "{}", value).unwrap();
     }
+    eprintln!("DONE");
 }
