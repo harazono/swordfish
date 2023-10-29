@@ -166,7 +166,7 @@ fn main() {
         }
     });
     eprintln!("finish reviewing CBF.");
-
+    eprintln!("length of occurence_oyadama: {:?}", occurence_oyadama.len());
     let non_one_values_count: usize = occurence_oyadama.values().filter(|&&v| v != 1).count();
 
     if non_one_values_count == 0 {
