@@ -84,7 +84,7 @@ fn main() {
         1000
     };
 
-    let output_file = if matches.opt_present("o") {
+    let output_file: String = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     } else {
         format!(
@@ -93,9 +93,9 @@ fn main() {
         )
     };
     eprintln!("input  file: {:?}", input_file);
-    let file = File::open(&input_file).expect("Error during opening the file");
-    let mut reader = faReader::new(file);
-    let mut record = faRecord::new();
+    let file: File = File::open(&input_file).expect("Error during opening the file");
+    let mut reader: faReader<std::io::BufReader<File>> = faReader::new(file);
+    let mut record: faRecord = faRecord::new();
     let mut sequences: Vec<DnaSequence> = Vec::new();
     eprintln!("loading {:?} done", input_file);
     'each_read: loop {
@@ -104,16 +104,16 @@ fn main() {
             break 'each_read;
         }
         let sequence_as_vec: Vec<u8> = record.seq().to_vec();
-        let current_sequence = DnaSequence::new(&sequence_as_vec);
+        let current_sequence: DnaSequence = DnaSequence::new(&sequence_as_vec);
         sequences.push(current_sequence);
     }
     // CBFをマルチスレッドで作成する
     let chunk_size: usize = sequences.len() / (threads - 1);
-    let sequences_ref = &sequences;
+    let sequences_ref: &Vec<DnaSequence> = &sequences;
     let mut cbf_oyadama: Vec<u16> = vec![0; BLOOMFILTER_TABLE_SIZE];
 
     thread::scope(|scope: &thread::Scope<'_, '_>| {
-        let mut children_1 = Vec::new();
+        let mut children_1: Vec<thread::ScopedJoinHandle<'_, Vec<u16>>> = Vec::new();
         for i in 1..threads {
             children_1.push(scope.spawn(move || {
                 let start_idx: usize = (i - 1) * chunk_size;
@@ -142,7 +142,7 @@ fn main() {
             }))
         }
         for child in children_1 {
-            let cbf = child.join().unwrap();
+            let cbf: Vec<u16> = child.join().unwrap();
             assert!(cbf.len() == BLOOMFILTER_TABLE_SIZE);
             assert!(cbf_oyadama.len() == BLOOMFILTER_TABLE_SIZE);
             zip(cbf_oyadama.iter_mut(), cbf)

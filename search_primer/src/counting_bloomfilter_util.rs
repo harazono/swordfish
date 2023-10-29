@@ -140,8 +140,11 @@ pub fn hash_from_u128(source: u128, table_size: usize) -> [u32; 8] {
     let mut hasher = Sha256::new();
     // u128を[u8; 16]に変換
     let u8_array: [u8; 16] = source.to_le_bytes();
+    // eprintln!("{:?}", u8_array);
     hasher.update(u8_array);
     let result = hasher.finalize();
+    // eprintln!("{:?}", result);
+    // ここから疑惑
     for i in 0..8 {
         ret_val[i] = ((result[i * 4] as u32) << 24)
             | ((result[i * 4 + 1] as u32) << 16)
@@ -161,13 +164,17 @@ pub fn hash_from_u128_old(source: u128) -> [u32; 8] {
         u8_array[i] = (src_copy & 255).try_into().unwrap();
         src_copy >>= 8;
     }
+    // eprintln!("{:?}", u8_array);
     hasher.update(u8_array);
     let result = hasher.finalize();
+    // eprintln!("{:?}", result);
     let sha256_bit_array = result.as_slice(); //&[u8;32]
+
+    /* ここから疑惑*/
     for i in 0..8 {
         for j in 0..4 {
+            ret_val[i] <<= 8; // ここのシフトのタイミングがおかしかった
             ret_val[i] += sha256_bit_array[i * 4 + j] as u32;
-            ret_val[i] <<= 8;
         }
         ret_val[i] %= BLOOMFILTER_TABLE_SIZE as u32;
     }

@@ -110,7 +110,7 @@ def main():
                 each_record_Obj = BlastResult(*each_record)
             except TypeError:
                 print(type(each_record), each_record, file=sys.stderr)
-                continue
+                continue  # ここでcontinueすると、不完全なBLAST hitを無視する結果になるのでは？
             
             taxon_id = -1
             try:
