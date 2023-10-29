@@ -187,7 +187,7 @@ fn main() {
         );
     }
     eprintln!("finish sorting CBF.");
-    eprintln!("start write CBF.");
+    eprintln!("start writing CBF.");
     let output_file1: String = String::from(&output_file) + "_hist.csv";
     let mut w1: BufWriter<File> = BufWriter::new(fs::File::create(&output_file1).unwrap());
     let mut sorted_vec: Vec<(&u32, &usize)> = index_counter.iter().collect();
