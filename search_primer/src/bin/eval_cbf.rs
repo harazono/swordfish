@@ -40,7 +40,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
     let mut opts = Options::new();
-    opts.optopt("o", "output", "set output file name", "NAME");
+    opts.optopt("o", "output", "set output file name prefix.", "NAME");
     opts.optopt(
         "t",
         "thread",
@@ -83,10 +83,9 @@ fn main() {
     let output_file: String = if matches.opt_present("o") {
         matches.opt_str("o").unwrap()
     } else {
-        format!("cbf_test.out",)
+        format!("eval_cbf",)
     };
 
-    let mut index_counter: HashMap<u32, usize> = HashMap::new();
     let mut cbf_oyadama: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
 
     thread::scope(|scope: &thread::Scope<'_, '_>| {
@@ -95,7 +94,19 @@ fn main() {
             children_1.push(scope.spawn(move || {
                 let mut index_table_in_a_thread: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
                 let (start, end) = calc_index(thread_idx, threads, limit);
+                eprintln!(
+                    "thread {:02} start: {:04} end: {:04}",
+                    thread_idx, start, end
+                );
                 for hash_src in start..=end {
+                    if (hash_src - start) % 100000 == 0 {
+                        eprintln!(
+                            "thread {:02} hash_src: {:08} in {:08}",
+                            thread_idx,
+                            hash_src,
+                            end - start
+                        );
+                    }
                     let hash_values = hash_from_u128(hash_src as u128, BLOOMFILTER_TABLE_SIZE);
                     for i in 0..8 {
                         *index_table_in_a_thread
@@ -113,6 +124,7 @@ fn main() {
         }
     });
 
+    let mut index_counter: HashMap<u32, usize> = HashMap::new();
     for i in 0..BLOOMFILTER_TABLE_SIZE {
         let accumurated_val: u32 = cbf_oyadama[i] as u32;
         index_counter.insert(
@@ -120,9 +132,17 @@ fn main() {
             index_counter.get(&accumurated_val).unwrap_or(&0) + 1,
         );
     }
-    let output_file1: String = String::from(output_file);
+    let output_file1: String = String::from(&output_file) + "_hist.csv";
     let mut w1: BufWriter<File> = BufWriter::new(fs::File::create(&output_file1).unwrap());
+    let mut sorted_vec: Vec<(&u32, &usize)> = index_counter.iter().collect();
+    sorted_vec.sort_by_key(|k| k.0);
     for each_cbf_hist in &index_counter {
         writeln!(&mut w1, "{},{}", each_cbf_hist.0, each_cbf_hist.1).unwrap();
+    }
+    let oyadama_file: String = String::from(&output_file) + "_cbf.txt";
+    let mut w2: BufWriter<File> = BufWriter::new(fs::File::create(&oyadama_file).unwrap());
+
+    for value in &cbf_oyadama {
+        writeln!(&mut w2, "{}", value).unwrap();
     }
 }
