@@ -169,17 +169,9 @@ fn main() {
     eprintln!("length of occurence_oyadama: {:?}", occurence_oyadama.len());
     let non_one_values_count: usize = occurence_oyadama.values().filter(|&&v| v != 1).count();
 
-    if non_one_values_count == 0 {
-        println!("All values are 1.");
-    } else {
-        let total_values: usize = occurence_oyadama.len();
-        let percentage: f64 = (non_one_values_count as f64 / total_values as f64) * 100.0;
-        println!(
-            "Number of values not equal to 1: {}/{}",
-            non_one_values_count, total_values
-        );
-        println!("Percentage of values not equal to 1: {:.8}%", percentage);
-    }
+    let total_values: usize = occurence_oyadama.len();
+    let percentage: f64 = (non_one_values_count as f64 / total_values as f64) * 100.0;
+    println!("{}\t{}\t{}", non_one_values_count, total_values, percentage);
 
     let mut index_counter: HashMap<u32, usize> = HashMap::new();
     for i in 0..BLOOMFILTER_TABLE_SIZE {
