@@ -24,8 +24,8 @@ fn print_usage(program: &str, opts: &Options) {
 
 fn calc_index(thread_id: usize, threads: usize, limit: usize) -> (usize, usize) {
     // 各スレッドが担当する基本の範囲を計算
-    let base_chunk_size = limit / threads;
-    let remainder = limit % threads;
+    let base_chunk_size: usize = limit / threads;
+    let remainder: usize = limit % threads;
 
     // thread_id=0が余りの部分を担当する
     if thread_id == 0 {
@@ -33,8 +33,8 @@ fn calc_index(thread_id: usize, threads: usize, limit: usize) -> (usize, usize) 
     }
 
     // それ以外のスレッドは基本の範囲を担当
-    let start = thread_id * base_chunk_size + remainder;
-    let end = start + base_chunk_size;
+    let start: usize = thread_id * base_chunk_size + remainder;
+    let end: usize = start + base_chunk_size;
 
     (start, end)
 }
@@ -96,12 +96,12 @@ fn main() {
         for thread_idx in 0..(threads - 1) {
             children_1.push(scope.spawn(move || {
                 let mut index_table_in_a_thread: Vec<u16> = vec![0u16; BLOOMFILTER_TABLE_SIZE];
-                let (start, end) = calc_index(thread_idx, threads, limit);
+                let (start, end) = calc_index(thread_idx, threads - 1, limit);
                 eprintln!(
                     "loop 1 thread {:02} start: {:04} end: {:04}",
                     thread_idx, start, end
                 );
-                for hash_src in start..=end {
+                for hash_src in start..end {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
                             "loop 1 thread {:02} {:3.2}%",
@@ -134,12 +134,12 @@ fn main() {
         for thread_idx in 0..(threads - 1) {
             children_2.push(scope.spawn(move || {
                 let mut occurence_of_each_chunk: HashMap<u32, usize> = HashMap::new();
-                let (start, end) = calc_index(thread_idx, threads, limit);
+                let (start, end) = calc_index(thread_idx, threads - 1, limit);
                 eprintln!(
                     "loop 2 thread {:02} start: {:04} end: {:04}",
                     thread_idx, start, end
                 );
-                for hash_src in start..=end {
+                for hash_src in start..end {
                     if (hash_src - start) % 100000 == 0 {
                         eprintln!(
                             "loop 2 thread {:02} {:3.2}%",
