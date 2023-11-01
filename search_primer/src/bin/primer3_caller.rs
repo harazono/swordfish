@@ -19,10 +19,24 @@ extern crate rand;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
-fn primer3_core_input_sequences(
-    sequences: &Vec<&u128>,
-    library_file_name: &Option<String>,
-) -> String {
+/*
+
+"SEQUENCE_ID={:0x}
+SEQUENCE_TEMPLATE={}
+PRIMER_TASK=pick_pcr_primers
+PRIMER_OPT_SIZE=30
+PRIMER_MIN_SIZE=16
+PRIMER_MAX_SIZE=32
+PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
+P3_FILE_FLAG=0
+PRIMER_EXPLAIN_FLAG=1
+PRIMER_OPT_TM=66.0
+PRIMER_MAX_TM=72.0
+PRIMER_MAX_LIBRARY_MISPRIMING=11",
+
+ */
+
+fn primer3_core_input_sequences(sequences: &Vec<&u128>, primer3_config: &String) -> String {
     let mut ret_str: String = String::new();
     let many_n = "N".to_string().repeat(50);
 
@@ -37,32 +51,23 @@ fn primer3_core_input_sequences(
         let l_str: &str = std::str::from_utf8(&l_u8_array).unwrap();
         let r_str: &str = std::str::from_utf8(&r_u8_array).unwrap();
         let sequence_with_internal_n: String = format!("{}{}{}", l_str, many_n, r_str);
-        let mut primer3_fmt_str: String = format!(
-            "SEQUENCE_ID={:0x}
-SEQUENCE_TEMPLATE={}
-PRIMER_TASK=pick_pcr_primers
-PRIMER_OPT_SIZE=30
-PRIMER_MIN_SIZE=16
-PRIMER_MAX_SIZE=32
-PRIMER_PRODUCT_SIZE_RANGE=101-200 201-301
-P3_FILE_FLAG=0
-PRIMER_EXPLAIN_FLAG=1
-PRIMER_OPT_TM=66.0
-PRIMER_MAX_TM=72.0
-PRIMER_MAX_LIBRARY_MISPRIMING=11",
-            each_seq, sequence_with_internal_n
+        let primer3_fmt_str: String = format!(
+            "SEQUENCE_ID={:0x}\nSEQUENCE_TEMPLATE={}\n{}=\n",
+            each_seq, sequence_with_internal_n, primer3_config
         );
         // Check if library_file_name is Some or None
-        match library_file_name.as_ref() {
-            Some(file_name) => {
-                // If Some, append the file name to the string
-                primer3_fmt_str
-                    .push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=\n", file_name));
-            }
-            None => {
-                primer3_fmt_str.push_str("\n=\n");
-            }
-        }
+
+        /*         match library_file_name.as_ref() {
+                    Some(file_name) => {
+                       // If Some, append the file name to the string
+                        primer3_fmt_str
+                            .push_str(&format!("\nPRIMER_MISPRIMING_LIBRARY={}\n=\n", file_name));
+                    }
+                    None => {
+                        primer3_fmt_str.push_str("\n=\n");
+                    }
+                }
+        */
         ret_str.push_str(&primer3_fmt_str);
     }
     // eprintln!("mem::size_of_val(&ret_str): {}", mem::size_of_val(&ret_str));//これだとVecのアタマの24byteしか表示されない
@@ -91,8 +96,7 @@ fn execute_primer3(
     */
     // /tmpに中間ファイルを書き込む
 
-    let start: Instant = Instant::now();
-    let start_time: std::time::Duration = start.elapsed();
+    let timer: Instant = Instant::now();
     let temporary_file_name = format!(
         "{}_{}.txt",
         temp_file_name_prefix,
@@ -128,12 +132,12 @@ fn execute_primer3(
 
     // 結果を返す
 
-    let end_time: std::time::Duration = start.elapsed();
+    let end_time: std::time::Duration = timer.elapsed();
     eprintln!(
         "primer3_caller[{:02}] takes {}.{} sec",
         thread_id,
-        start_time.as_secs() - end_time.as_secs(),
-        start_time.subsec_millis() - end_time.subsec_millis()
+        end_time.as_secs(),
+        end_time.subsec_millis()
     );
 
     String::from_utf8(output.stdout).unwrap()
@@ -157,12 +161,15 @@ fn main() {
         "number of thread to use for radix sort. default value is 8.",
         "THREAD",
     );
-    opts.optopt(
+    opts.optopt("c", "config", "config file for primer3_core.", "CONFIG");
+
+    /*     opts.optopt(
         "l",
         "library",
         "library file name which will be used for PRIMER_MISPRIMING_LIBRARY",
         "LIBRARY",
-    );
+    ); */
+
     opts.optopt(
         "o",
         "output",
@@ -187,6 +194,12 @@ fn main() {
     } else {
         4
     };
+    let config_file_name: String = if matches.opt_present("c") {
+        matches.opt_str("c").unwrap()
+    } else {
+        print_usage(&program, &opts);
+        return;
+    };
 
     let temporary_file_name_prefix = if matches.opt_present("m") {
         matches.opt_str("m").unwrap()
@@ -194,7 +207,7 @@ fn main() {
         "/work/primer3_tmp".to_string()
     };
 
-    let library_file_name: Option<String> = matches.opt_str("l");
+    // let library_file_name: Option<String> = matches.opt_str("l");
 
     let input_file = if !matches.free.is_empty() {
         matches.free[0].clone()
@@ -202,9 +215,16 @@ fn main() {
         print_usage(&program, &opts);
         return;
     };
+
+    eprintln!("start  loading {:?}", &config_file_name);
+    let mut f_c: File = File::open(&config_file_name).unwrap();
+    let mut primer3_config = String::new();
+    f_c.read_to_string(&mut primer3_config).unwrap();
+    eprintln!("finish loading {:?}", &config_file_name);
+    eprintln!("File primer3_config:\n{}", primer3_config);
+
     eprintln!("start  loading {:?}", &input_file);
     let f: File = File::open(&input_file).unwrap();
-    eprintln!("finish loading {:?}", &input_file);
     let mut reader = BufReader::new(f);
     let mut buffer: [u8; 16] = [0; 16];
     let mut tmp_seq_as_u128: u128;
@@ -219,6 +239,7 @@ fn main() {
         //println!("{:?}", String::from_utf8(decode_u128_2_dna_seq(&tmp_seq_as_u128, 64)).unwrap());
         candidates.push(tmp_seq_as_u128);
     }
+    eprintln!("finish loading {:?}", &input_file);
 
     //eprintln!("start formatting string");
     //let primer3_fmt_string: Vec<String> = primer3_core_input_sequence(&candidates, &library_file_name);
@@ -251,8 +272,9 @@ fn main() {
         let chunks_of_input: Arc<Vec<Vec<u128>>> = Arc::clone(&arc_chunks_of_input);
         let arc_final_result: Arc<Mutex<Vec<String>>> = Arc::clone(&final_result);
         let thread_file_mutex: Arc<Mutex<File>> = Arc::clone(&file_mutex);
-        let library_file_name_clone: Option<String> = library_file_name.clone(); // Clone the library_file_name
+        // let library_file_name_clone: Option<String> = library_file_name.clone(); // Clone the library_file_name
         let temporary_file_name_prefix_clone: String = temporary_file_name_prefix.clone(); // Clone the temporary_file_name_prefix
+        let primer3_config_clone = primer3_config.clone();
         children.push(thread::spawn(move || {
             let mut primer3_results: String = String::new();
             let total_elements: usize = chunks_of_input[i].len();
@@ -263,7 +285,11 @@ fn main() {
                 let sequences: Vec<_> = bunch.iter().collect();
                 processed_elements += sequences.len();
                 primer3_results += &execute_primer3(
-                    primer3_core_input_sequences(&sequences, &library_file_name_clone),
+                    primer3_core_input_sequences(
+                        &sequences,
+                        // &library_file_name_clone,
+                        &primer3_config_clone,
+                    ),
                     &temporary_file_name_prefix_clone,
                     i,
                 );
