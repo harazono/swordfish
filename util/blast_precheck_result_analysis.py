@@ -3,7 +3,6 @@
 import sys
 import argparse
 import pprint
-import json
 import csv
 from Bio import SeqIO
 
