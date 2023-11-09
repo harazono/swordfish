@@ -87,12 +87,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("|-------------|");
     eprintln!("| {} |", output_file);
 
-    eprintln!("\n| Sum of u128 integers | Total |");
-    eprintln!("|----------------------|-------|");
+    eprintln!("\n| Sum of u128 integers |");
+    eprintln!("|------------------------|");
     eprintln!("| {} |", total_input_count);
 
-    eprintln!("\n| Cardinality of u128 integers | Total |");
-    eprintln!("|--------------------------------|-------|");
+    eprintln!("\n| Cardinality of u128 integers |");
+    eprintln!("|--------------------------------|");
     eprintln!("| {} |", output_count);
 
     // Calculate and print the number of duplicates removed
