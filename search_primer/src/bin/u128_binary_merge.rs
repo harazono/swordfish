@@ -1,5 +1,4 @@
 use binary_heap_plus::BinaryHeap;
-use std::cmp::Ordering;
 use std::env;
 use std::error::Error;
 use std::fs::File;
@@ -30,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Open all input files and create BufReaders
     let mut readers: Vec<_> = input_files
         .iter()
-        .map(|file: &String| BufReader::new(File::open(file).expect("Unable to open input file")))
+        .map(|file| BufReader::new(File::open(file).expect("Unable to open input file")))
         .collect();
 
     // Create a BufWriter for the output file
@@ -43,23 +42,26 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Initialize the heap with the first element from each reader
     for (index, reader) in readers.iter_mut().enumerate() {
-        let mut buffer: [u8; 16] = [0u8; U128_SIZE];
+        let mut buffer = [0u8; U128_SIZE];
         if reader.read_exact(&mut buffer).is_ok() {
             heap.push((u128::from_le_bytes(buffer), index));
         }
     }
 
     // Track the last number written to avoid duplicates
-    let mut last_written: Option<u128> = None;
+    let mut last_written = None;
+    // Track the number of unique u128 integers written to the output file
+    let mut output_count = 0;
 
     // Iterate over the heap and write unique values to the output file
     while let Some((number, index)) = heap.pop() {
         if last_written != Some(number) {
             writer.write_all(&number.to_le_bytes())?;
             last_written = Some(number);
+            output_count += 1; // Increment the count for each unique number written
         }
         // Read the next number from the reader that provided the last number
-        let mut buffer: [u8; 16] = [0u8; U128_SIZE];
+        let mut buffer = [0u8; U128_SIZE];
         if readers[index].read_exact(&mut buffer).is_ok() {
             heap.push((u128::from_le_bytes(buffer), index));
         }
@@ -68,21 +70,41 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Flush the writer to ensure all data is written to the output file
     writer.flush()?;
 
+    // Calculate the total number of u128 integers read from input files
+    let total_input_count: usize = input_files
+        .iter()
+        .map(|file| count_u128_integers(file).unwrap_or(0))
+        .sum();
+
     // Output results to stderr in markdown format
     eprintln!("| Input File | Number of u128 integers |");
-    eprintln!("|------------|------------------------|");
+    eprintln!("|------------|-------------------------|");
     for file in &input_files {
         eprintln!("| {} | {} |", file, count_u128_integers(file)?);
     }
-    eprintln!("| Output File | {} |", output_file);
-    eprintln!(
-        "| Number of u128 integers | {} |",
-        last_written.map_or(0, |_| heap.len())
-    );
+
+    eprintln!("\n| Output File |");
+    eprintln!("|-------------|");
+    eprintln!("| {} |", output_file);
+
+    eprintln!("\n| Sum of u128 integers | Total |");
+    eprintln!("|----------------------|-------|");
+    eprintln!("| {} |", total_input_count);
+
+    eprintln!("\n| Cardinality of u128 integers | Total |");
+    eprintln!("|--------------------------------|-------|");
+    eprintln!("| {} |", output_count);
+
+    // Calculate and print the number of duplicates removed
+    let duplicates_removed = total_input_count - output_count;
+    eprintln!("\n| Duplicates removed |");
+    eprintln!("|--------------------|");
+    eprintln!("| {} |", duplicates_removed);
 
     Ok(())
 }
 
+/// Count the number of u128 integers in a file
 fn count_u128_integers(file_name: &str) -> io::Result<usize> {
     let file: File = File::open(file_name)?;
     let metadata: std::fs::Metadata = file.metadata()?;
