@@ -1,6 +1,6 @@
 extern crate search_primer;
 use getopts::Options;
-use search_primer::sequence_encoder_util::{decode_u128_2_dna_seq, decode_u128_l, decode_u128_r};
+use search_primer::sequence_encoder_util::{decode_u128_l, decode_u128_r};
 use std::collections::HashSet;
 use std::env;
 use std::fs::File;
