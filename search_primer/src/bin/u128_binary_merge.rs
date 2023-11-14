@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .iter()
         .map(|file| BufReader::new(File::open(file).expect("Unable to open input file")))
         .collect();
-
+    eprintln!("file count: {}", readers.len());
     // Create a BufWriter for the output file
     let mut writer: BufWriter<File> = BufWriter::new(File::create(&output_file)?);
 
@@ -42,10 +42,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Initialize the heap with the first element from each reader
     for (index, reader) in readers.iter_mut().enumerate() {
-        let mut buffer = [0u8; U128_SIZE];
+        let mut buffer: [u8; 16] = [0u8; U128_SIZE];
         if reader.read_exact(&mut buffer).is_ok() {
-            let num = u128::from_be_bytes(buffer);
-            eprintln!("{:X}, {}", num, index);
+            let num: u128 = u128::from_be_bytes(buffer);
+            eprintln!("heap.push: {:X}, {}", num, index);
             heap.push((num, index));
         }
     }
