@@ -45,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut buffer: [u8; 16] = [0u8; U128_SIZE];
         if reader.read_exact(&mut buffer).is_ok() {
             let num: u128 = u128::from_be_bytes(buffer);
-            eprintln!("heap.push1: {:X}, {}", num, index);
+            // eprintln!("heap.push1: {:X}, {}", num, index);
             heap.push((num, index));
         }
     }
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Iterate over the heap and write unique values to the output file
     while let Some((number, index)) = heap.pop() {
-        eprintln!("loop  head: {:X}, {}", number, index);
+        // eprintln!("loop  head: {:X}, {}", number, index);
         if last_written != Some(number) {
             writer.write_all(&number.to_be_bytes())?;
             last_written = Some(number);
@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Read the next number from the reader that provided the last number
         let mut buffer = [0u8; U128_SIZE];
         if readers[index].read_exact(&mut buffer).is_ok() {
-            eprintln!("heap.push2: {:X}, {}", u128::from_be_bytes(buffer), index);
+            // eprintln!("heap.push2: {:X}, {}", u128::from_be_bytes(buffer), index);
             heap.push((u128::from_be_bytes(buffer), index));
         }
     }
