@@ -44,7 +44,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     for (index, reader) in readers.iter_mut().enumerate() {
         let mut buffer = [0u8; U128_SIZE];
         if reader.read_exact(&mut buffer).is_ok() {
-            heap.push((u128::from_be_bytes(buffer), index));
+            let num = u128::from_be_bytes(buffer);
+            eprintln!("{:X}, {}", num, index);
+            heap.push((num, index));
         }
     }
 
@@ -55,8 +57,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Iterate over the heap and write unique values to the output file
     while let Some((number, index)) = heap.pop() {
+        eprintln!("{:X}, {}", number, index);
         if last_written != Some(number) {
-            writer.write_all(&number.to_le_bytes())?;
+            writer.write_all(&number.to_be_bytes())?;
             last_written = Some(number);
             output_count += 1; // Increment the count for each unique number written
         }
