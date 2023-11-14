@@ -105,6 +105,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("|-------------------:|");
     eprintln!("| {} |", duplicates_removed);
 
+    eprintln!(
+        "{}\t{}\t{}",
+        total_input_count, output_count, duplicates_removed
+    );
+
     Ok(())
 }
 
