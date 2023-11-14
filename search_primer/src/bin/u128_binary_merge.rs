@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Iterate over the heap and write unique values to the output file
     while let Some((number, index)) = heap.pop() {
-        eprintln!("loop no atama:{:X}, {}", number, index);
+        eprintln!("loop head: {:X}, {}", number, index);
         if last_written != Some(number) {
             writer.write_all(&number.to_be_bytes())?;
             last_written = Some(number);
