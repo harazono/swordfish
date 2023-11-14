@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for (index, reader) in readers.iter_mut().enumerate() {
         let mut buffer = [0u8; U128_SIZE];
         if reader.read_exact(&mut buffer).is_ok() {
-            heap.push((u128::from_le_bytes(buffer), index));
+            heap.push((u128::from_be_bytes(buffer), index));
         }
     }
 
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Read the next number from the reader that provided the last number
         let mut buffer = [0u8; U128_SIZE];
         if readers[index].read_exact(&mut buffer).is_ok() {
-            heap.push((u128::from_le_bytes(buffer), index));
+            heap.push((u128::from_be_bytes(buffer), index));
         }
     }
 
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Output results to stderr in markdown format
     eprintln!("| Input File | Number of u128 integers |");
-    eprintln!("|------------|-------------------------|");
+    eprintln!("|------------|------------------------:|");
     for file in &input_files {
         eprintln!("| {} | {} |", file, count_u128_integers(file)?);
     }
@@ -88,17 +88,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("| {} |", output_file);
 
     eprintln!("\n| Sum of u128 integers |");
-    eprintln!("|------------------------|");
+    eprintln!("|-----------------------:|");
     eprintln!("| {} |", total_input_count);
 
     eprintln!("\n| Cardinality of u128 integers |");
-    eprintln!("|--------------------------------|");
+    eprintln!("|-------------------------------:|");
     eprintln!("| {} |", output_count);
 
     // Calculate and print the number of duplicates removed
     let duplicates_removed = total_input_count - output_count;
     eprintln!("\n| Duplicates removed |");
-    eprintln!("|--------------------|");
+    eprintln!("|-------------------:|");
     eprintln!("| {} |", duplicates_removed);
 
     Ok(())
