@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if input_file.is_empty() || output_file_base.is_empty() {
-        eprintln!("Usage: merge_u128 -i <input_file>... -o <output_file_base> [-n <split_count>]");
+        eprintln!("Usage: merge_u128 -i <input_file> -o <output_file_base> [-n <split_count>]");
         return Ok(());
     }
     eprintln!("{}\n{}", input_file, output_file_base);

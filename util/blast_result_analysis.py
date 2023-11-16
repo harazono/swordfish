@@ -8,8 +8,16 @@ import pprint
 import json
 import csv
 from Bio import SeqIO
+from enum import Enum
+import itertools
+
 
 pp = pprint.PrettyPrinter(indent=2)
+
+
+class Direction(Enum):
+    RIGHT = 3
+    LEFT = 5
 
 
 class BlastResult:
@@ -50,6 +58,23 @@ class BlastResult:
         self.staxids = staxids
         self.ssciname = ssciname
         self.scomname = scomname
+        # 向きを調べる
+        # Lプライマーの時
+        if qseqid.endswith("L"):
+            # qstart < qendのとき
+            if qstart < qend:
+                self.direction = Direction.RIGHT
+            # qstart > qendのとき
+            else:
+                self.direction = Direction.LEFT
+        # Rプライマーの時
+        elif qseqid.endswith("R"):
+            # qstart > qendのとき
+            if qstart > qend:
+                self.direction = Direction.RIGHT
+            # qstart < qendのとき
+            else:
+                self.direction = Direction.LEFT
 
     def __str__(self):
         return "\t".join([f"{k}:{v}" for k, v in self.__dict__.items()])
@@ -145,6 +170,14 @@ def main():
     # 4528はOryza longistaminata
     print(f"start reading {args.blast}", file=sys.stderr)
     blast_results = []
+    failure_reason = {
+        "by ignore list": 0,
+        "metagenome": 0,
+        "different sequence": 0,
+        "same direction": 0,
+        "opposite direction and no intersection": 0,
+    }
+
     with open(args.blast) as f:
         reader = csv.reader(f, delimiter="\t")
         for each_record in reader:
@@ -161,45 +194,94 @@ def main():
                 taxon_id = each_record_Obj.staxid
             if taxon_id in overlook_taxon_ids:
                 continue
-            distance = -1
-            # if each_record_Obj.qseqid.endswith("L") and each_record_Obj.qlen - each_record_Obj.qstart - each_record_Obj.length != 0:
-            if each_record_Obj.qseqid.endswith("L"):
-                distance = each_record_Obj.qlen - each_record_Obj.qend + 1
-            elif each_record_Obj.qseqid.endswith("R"):
-                distance = each_record_Obj.qstart
-            else:
-                print("Never reached", file=sys.stderr)
-                sys.exit(1)
-            # print(distance, args.offset, distance > args.offset, each_record_Obj, file = sys.stderr)
-            if distance > 1:
-                continue  # 救済
+
+            # 逆向きのアラインメントの場合もあるので、これは誤り。
+            # 3'から始まってるかどうかの判定に気を付ける
+
             # metagenomeという文字列がscomnameやscinameに入っていればcontinue
             if (
                 each_record_Obj.scomname is not None
                 and "metagenome" in each_record_Obj.scomname
             ):
+                failure_reason["by ignore list"] += 1
                 continue
             if (
                 each_record_Obj.ssciname is not None
                 and "metagenome" in each_record_Obj.ssciname
             ):
+                failure_reason["metagenome"] += 1
                 continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
 
+    # プライマーペアの読み込み
     primer3_info = None
     with open(args.primer3, "r") as f:
         primer3_info = json.load(f)
 
-    primer_blasthit_dict = {k: set() for k in fasta_ids}
+    # blastの結果をプライマーペアに紐付ける
+    primer_blasthit_dict = {k: [] for k in fasta_ids}
     for each_hit in blast_results:
-        primer_blasthit_dict[each_hit.qseqid].add(
-            (each_hit.sseqid, each_hit.staxid, each_hit.scomname, each_hit.ssciname)
-        )
+        primer_blasthit_dict[each_hit.qseqid].append(each_hit)
 
+    """
+    primerのペアを周回する
+    ペアのヒット先を調べる
+    ヒット先のsseqidが同一か調べる→同一でなければサバイバー扱いにする
+    同一のものがあった場合、さらにLL, LR, RRで挟めるかを調べる→挟めないのならサバイバー扱いにする
+    """
+    blast_trapped_seq_ids = set()
+    for each_primer_id, info in primer3_info.items():
+        for i, c in enumerate(info["Primer3_output"]):
+            seqname_L = each_primer_id + "_" + str(i) + "_L"
+            seqname_R = each_primer_id + "_" + str(i) + "_R"
+            # ヒットをまとめる
+            blast_hits = []  # list of BlastHit objects
+            # Lのヒット先
+            blast_hits.extend(primer_blasthit_dict.get(seqname_L, None))
+            # Rのヒット先
+            blast_hits.extend(primer_blasthit_dict.get(seqname_R, None))
+            # print(blast_hits)
+            for hit_1, hit_2 in itertools.combinations(blast_hits, 2):
+                """
+                print(
+                    f"{hit_1.qseqid}\t{hit_1.direction}\t{hit_2.qseqid}\t{hit_2.direction}\t{hit_1.sacc}\t{hit_2.sacc}\t{hit_1.sstart}\t{hit_1.send}\t{hit_2.sstart}\t{hit_2.send}"
+                )
+                """
+                if hit_1.sacc != hit_2.sacc:
+                    failure_reason["different sequence"] += 1
+                    continue
+                if hit_1.direction == hit_2.direction:
+                    failure_reason["same direction"] += 1
+                    continue
+                if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
+                    failure_reason["opposite direction and no intersection"] += 1
+                    continue
+                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
+                    failure_reason["opposite direction and no intersection"] += 1
+                    continue
+                """ 
+                print(
+                    f"{hit_1.qseqid}\t{hit_1.direction}\t{hit_2.qseqid}\t{hit_2.direction}\t{hit_1.sacc}\t{hit_2.sacc}\t{hit_1.sstart}\t{hit_1.send}\t{hit_2.sstart}\t{hit_2.send}"
+                )
+                dir_1 = "<-" if hit_1.direction == Direction.LEFT else "->"
+                dir_2 = "<-" if hit_2.direction == Direction.LEFT else "->"
+                if hit_1.sstart < hit_2.sstart:
+                    print(f"{hit_1.sstart} {dir_1} {hit_2.sstart} {dir_2}")
+                else:
+                    print(f"{hit_2.sstart} {dir_2} {hit_1.sstart} {dir_1}")
+                """
+                blast_trapped_seq_ids.add(hit_1.qseqid)
+                blast_trapped_seq_ids.add(hit_2.qseqid)
+    # pp.pprint(failure_reason)
+    # print(len(blast_trapped_seq_ids))
+    # print(blast_trapped_seq_ids)
+
+    """
     blast_trapped_seq_ids = set()
     for each_hit in blast_results:
         blast_trapped_seq_ids.add(each_hit.qseqid)
+    """
 
     discard_set = set()
     if args.discard is not None:
@@ -227,11 +309,12 @@ def main():
 
     # print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
     # print(list(survivor)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
+    """
     if len(survivor_pair) > 0:
         print(
             list(survivor_pair)[0], file=sys.stderr
         )  # 62baf2cca8e91329bcaba327c863b6b_4
-
+    """
     # print(survivor, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
     report_file = open(args.o + ".report", mode="w")
     survivor_tsv_file = open(args.o + ".survivor.tsv", mode="w")
@@ -244,6 +327,10 @@ def main():
     )
     print(
         f"total count of blast hits                      : {len(blast_results)}",
+        file=report_file,
+    )
+    print(
+        f"Breakdown of reasons for not treating as hit   : {failure_reason}",
         file=report_file,
     )
     print(
@@ -275,6 +362,7 @@ def main():
         ),
         file=survivor_tsv_file,
     )
+
     for each_survivor in survivor:
         survivor_info_raw = primer3_info[each_survivor.split("_")[0]]
         survivor_index = int(each_survivor.split("_")[1])
@@ -282,7 +370,7 @@ def main():
         survivor_info = survivor_info_raw["Primer3_output"][survivor_index]
         partner = "L" if primer_side == "R" else "R"
         primer_pair = each_survivor[:-1] + partner
-        blast_hits = json.dumps(list(primer_blasthit_dict[primer_pair]))
+        blast_hits = json.dumps([x.staxid for x in primer_blasthit_dict[primer_pair]])
         print(
             "\t".join(
                 [
