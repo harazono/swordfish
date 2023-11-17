@@ -293,9 +293,9 @@ def main():
                 for line in f:
                     discard_set.add(line.strip())
 
-    survivor = fasta_ids - blast_trapped_seq_ids - discard_set
-    survivor_pair = set()
-    for each_primer in survivor:
+    finalist = fasta_ids - blast_trapped_seq_ids - discard_set
+    finalist_pair = set()
+    for each_primer in finalist:
         id, idx, side = each_primer.split("_")  # fe1a7920d1a974577c5329460926befd_3_L
         partner = ""
         if side == "L":
@@ -304,24 +304,23 @@ def main():
             partner = "L"
         # pair_full_name = id + "_" + idx + pair#間違い
         pair_full_name = id + "_" + idx + "_" + partner
-        if pair_full_name in survivor:
-            survivor_pair.add(id + "_" + idx)
+        if pair_full_name in finalist:
+            finalist_pair.add(id + "_" + idx)
         else:
             pass
 
     # print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
-    # print(list(survivor)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
+    # print(list(finalist)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
     """
-    if len(survivor_pair) > 0:
+    if len(finalist_pair) > 0:
         print(
-            list(survivor_pair)[0], file=sys.stderr
+            list(finalist_pair)[0], file=sys.stderr
         )  # 62baf2cca8e91329bcaba327c863b6b_4
     """
-    # print(survivor, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
+    # print(finalist, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
     report_file = open(args.o + ".report", mode="w")
-    survivor_tsv_file = open(args.o + ".survivor.tsv", mode="w")
-    survivor_pair_tsv_file = open(args.o + ".survivor_pair.tsv", mode="w")
-    survivor_namelist_file = open(args.o + ".survivor_name.txt", mode="w")
+    finalist_tsv_file = open(args.o + ".finalist.tsv", mode="w")
+    finalist_namelist_file = open(args.o + ".finalist_name.txt", mode="w")
 
     print(
         f"total count of input sequence                  : {len(fasta_ids)}",
@@ -345,11 +344,11 @@ def main():
         file=report_file,
     )
     print(
-        f"survivor                                       : {len(survivor)}",
+        f"finalist                                       : {len(finalist)}",
         file=report_file,
     )
     print(
-        f"survivor pair                                  : {len(survivor_pair)}",
+        f"finalist pair                                  : {len(finalist_pair)}",
         file=report_file,
     )
 
@@ -367,71 +366,37 @@ def main():
                 "blast hits",
             ]
         ),
-        file=survivor_tsv_file,
+        file=finalist_tsv_file,
     )
 
-    for each_survivor in survivor:
-        survivor_info_raw = primer3_info[each_survivor.split("_")[0]]
-        survivor_index = int(each_survivor.split("_")[1])
-        primer_side = each_survivor.split("_")[2]
-        survivor_info = survivor_info_raw["Primer3_output"][survivor_index]
+    for each_finalist in finalist:
+        finalist_info_raw = primer3_info[each_finalist.split("_")[0]]
+        finalist_index = int(each_finalist.split("_")[1])
+        primer_side = each_finalist.split("_")[2]
+        finalist_info = finalist_info_raw["Primer3_output"][finalist_index]
         partner = "L" if primer_side == "R" else "R"
-        primer_pair = each_survivor[:-1] + partner
+        primer_pair = each_finalist[:-1] + partner
         blast_hits = json.dumps([x.staxid for x in primer_blasthit_dict[primer_pair]])
         print(
             "\t".join(
                 [
                     str(x)
                     for x in [
-                        each_survivor.split("_")[0],
-                        survivor_info["PRIMER_LEFT_SEQUENCE"],
-                        survivor_info["PRIMER_RIGHT_SEQUENCE"],
-                        survivor_info["PRIMER_LEFT_TM"],
-                        survivor_info["PRIMER_RIGHT_TM"],
-                        survivor_info["PRIMER_PAIR_PRODUCT_TM"],
+                        each_finalist.split("_")[0],
+                        finalist_info["PRIMER_LEFT_SEQUENCE"],
+                        finalist_info["PRIMER_RIGHT_SEQUENCE"],
+                        finalist_info["PRIMER_LEFT_TM"],
+                        finalist_info["PRIMER_RIGHT_TM"],
+                        finalist_info["PRIMER_PAIR_PRODUCT_TM"],
                         primer_side,
                         partner,
                         blast_hits,
                     ]
                 ]
             ),
-            file=survivor_tsv_file,
+            file=finalist_tsv_file,
         )
-        print(each_survivor, file=survivor_namelist_file)
-
-    print(
-        "\t".join(
-            [
-                "primer id",
-                "left primer",
-                "right primer",
-                "primer left Tm",
-                "primer right Tm",
-                "primer pair product Tm",
-            ]
-        ),
-        file=survivor_pair_tsv_file,
-    )
-    for each_survivor_pair in survivor_pair:
-        survivor_info_raw = primer3_info[each_survivor_pair.split("_")[0]]
-        survivor_index = int(each_survivor_pair.split("_")[1])
-        survivor_info = survivor_info_raw["Primer3_output"][survivor_index]
-        print(
-            "\t".join(
-                [
-                    str(x)
-                    for x in [
-                        each_survivor_pair,
-                        survivor_info["PRIMER_LEFT_SEQUENCE"],
-                        survivor_info["PRIMER_RIGHT_SEQUENCE"],
-                        survivor_info["PRIMER_LEFT_TM"],
-                        survivor_info["PRIMER_RIGHT_TM"],
-                        survivor_info["PRIMER_PAIR_PRODUCT_TM"],
-                    ]
-                ]
-            ),
-            file=survivor_pair_tsv_file,
-        )
+        print(each_finalist, file=finalist_namelist_file)
 
 
 if __name__ == "__main__":
