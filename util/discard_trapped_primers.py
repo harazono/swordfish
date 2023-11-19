@@ -373,6 +373,7 @@ def main():
                 ),
                 file=finalist_tsv_file,
             )
+    print("Done", file=sys.stderr)
 
 
 if __name__ == "__main__":
