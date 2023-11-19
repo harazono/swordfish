@@ -190,6 +190,7 @@ def main():
     # 4528はOryza longistaminata
     print(f"start reading {args.blast}", file=sys.stderr)
     blast_results = []
+
     salvation_reason = {
         "hit to metagenome": 0,
         "hit to different sequence": 0,
@@ -222,13 +223,13 @@ def main():
                 each_record_Obj.scomname is not None
                 and "metagenome" in each_record_Obj.scomname
             ):
-                salvation_reason["hit to metagenome"] += 1
+                # salvation_reason["hit to metagenome"] += 1
                 continue
             if (
                 each_record_Obj.ssciname is not None
                 and "metagenome" in each_record_Obj.ssciname
             ):
-                salvation_reason["hit to metagenome"] += 1
+                # salvation_reason["hit to metagenome"] += 1
                 continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
@@ -252,7 +253,7 @@ def main():
     concidered_primer_combination_cnt = 0
     blast_trapped_seq_ids = set()
     blast_trapped_primer_ids = set()
-    salvation_log = {k: [] for k in salvation_reason.keys()}
+    # salvation_log = {k: [] for k in salvation_reason.keys()}
     for each_primer_id, info in primer3_info.items():
         for i, c in enumerate(info["Primer3_output"]):
             seqname_L = each_primer_id + "_" + str(i) + "_L"
@@ -268,27 +269,15 @@ def main():
                 concidered_primer_combination_cnt += 1
                 # print(blast_hits_string(hit_1, hit_2), file=sys.stderr)
                 if hit_1.sacc != hit_2.sacc:
-                    salvation_log["hit to different sequence"].append(
-                        blast_hits_string(hit_1, hit_2)
-                    )
                     salvation_reason["hit to different sequence"] += 1
                     continue
                 if hit_1.direction == hit_2.direction:
-                    salvation_log["hit to same sequence but same direction"].append(
-                        blast_hits_string(hit_1, hit_2)
-                    )
                     salvation_reason["hit to same sequence but same direction"] += 1
                     continue
                 if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
-                    salvation_log["opposite direction and no intersection"].append(
-                        blast_hits_string(hit_1, hit_2)
-                    )
                     salvation_reason["opposite direction and no intersection"] += 1
                     continue
                 if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
-                    salvation_log["opposite direction and no intersection"].append(
-                        blast_hits_string(hit_1, hit_2)
-                    )
                     salvation_reason["opposite direction and no intersection"] += 1
                     continue
                 blast_trapped_seq_ids.add((hit_1.qseqid, hit_2.qseqid))
@@ -301,7 +290,6 @@ def main():
     report_file = open(args.o + ".report", mode="w")
     finalist_tsv_file = open(args.o + ".finalist.tsv", mode="w")
     finalist_namelist_file = open(args.o + ".finalist_name.txt", mode="w")
-    salvation_log_file = open(args.o + ".salvation_log.txt", mode="w")
     print(f"{args}", file=report_file)
     print(
         f"fasta_ids in {args.fasta}...{len(fasta_ids)}",
@@ -385,9 +373,6 @@ def main():
                 ),
                 file=finalist_tsv_file,
             )
-    for k, v in salvation_log.items():
-        for each_v in v:
-            print(f"{k}\t{each_v}", file=salvation_log_file)
 
 
 if __name__ == "__main__":
