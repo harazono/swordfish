@@ -16,8 +16,8 @@ pp = pprint.PrettyPrinter(indent=2)
 
 
 class Direction(Enum):
-    RIGHT = 3
-    LEFT = 5
+    RIGHT = "R"
+    LEFT = "L"
 
 
 class BlastResult:
@@ -79,6 +79,27 @@ class BlastResult:
     def __str__(self):
         return "\t".join([f"{k}:{v}" for k, v in self.__dict__.items()])
 
+    def subject_info(self):
+        return ";".join(
+            [
+                f"{k}:{v}"
+                for k, v in self.__dict__.items()
+                if k
+                not in [
+                    "qseq",
+                    "sseq",
+                    "qlen",
+                    "slen",
+                    "qstart",
+                    "qend",
+                    "qseq",
+                    "sseq",
+                    "evalue",
+                    "length",
+                ]
+            ]
+        )
+
 
 def grep_input_record_name(primer_pairs_dict):
     retset = set()
@@ -88,6 +109,15 @@ def grep_input_record_name(primer_pairs_dict):
             retset.add(f">{k}_{idx}_M")
             retset.add(f">{k}_{idx}_R")
     return retset
+
+
+def blast_hits_string(hit_1, hit_2):
+    string = f"{hit_1.qseqid}\t{hit_2.qseqid}\t{hit_1.sacc == hit_2.sacc}\t{hit_1.direction}\t{hit_2.direction}\t{hit_1.sstart}\t{hit_2.sstart}"
+    if hit_1.sstart < hit_2.sstart:
+        string += f"\thit_1:{hit_1.sstart} {hit_1.direction.value}\thit_2:{hit_2.sstart} {hit_2.direction.value}"
+    else:
+        string += f"\thit_2:{hit_2.sstart} {hit_2.direction.value}\thit_1:{hit_1.sstart} {hit_1.direction.value}"
+    return string
 
 
 def main():
@@ -103,16 +133,6 @@ def main():
     )
     parser.add_argument(
         "primer3", metavar="primer3", type=str, help="primers.json file name"
-    )
-    parser.add_argument(
-        "--discard",
-        metavar="namelist",
-        type=str,
-        nargs="+",
-        help="list of sequence names to be discarded. one name per line.",
-    )
-    parser.add_argument(
-        "--offset", metavar="offset", type=int, default=100, help="offset value from 3'"
     )
     parser.add_argument(
         "-o",
@@ -170,11 +190,10 @@ def main():
     # 4528はOryza longistaminata
     print(f"start reading {args.blast}", file=sys.stderr)
     blast_results = []
-    failure_reason = {
-        "by ignore list": 0,
-        "metagenome": 0,
-        "different sequence": 0,
-        "same direction": 0,
+    salvation_reason = {
+        "hit to metagenome": 0,
+        "hit to different sequence": 0,
+        "hit to same sequence but same direction": 0,
         "opposite direction and no intersection": 0,
     }
 
@@ -203,13 +222,13 @@ def main():
                 each_record_Obj.scomname is not None
                 and "metagenome" in each_record_Obj.scomname
             ):
-                failure_reason["by ignore list"] += 1
+                salvation_reason["hit to metagenome"] += 1
                 continue
             if (
                 each_record_Obj.ssciname is not None
                 and "metagenome" in each_record_Obj.ssciname
             ):
-                failure_reason["metagenome"] += 1
+                salvation_reason["hit to metagenome"] += 1
                 continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
@@ -232,6 +251,8 @@ def main():
     """
     concidered_primer_combination_cnt = 0
     blast_trapped_seq_ids = set()
+    blast_trapped_primer_ids = set()
+    salvation_log = {k: [] for k in salvation_reason.keys()}
     for each_primer_id, info in primer3_info.items():
         for i, c in enumerate(info["Primer3_output"]):
             seqname_L = each_primer_id + "_" + str(i) + "_L"
@@ -245,110 +266,77 @@ def main():
             # print(blast_hits)
             for hit_1, hit_2 in itertools.combinations(blast_hits, 2):
                 concidered_primer_combination_cnt += 1
-                """
-                print(
-                    f"{hit_1.qseqid}\t{hit_1.direction}\t{hit_2.qseqid}\t{hit_2.direction}\t{hit_1.sacc}\t{hit_2.sacc}\t{hit_1.sstart}\t{hit_1.send}\t{hit_2.sstart}\t{hit_2.send}"
-                )
-                """
+                # print(blast_hits_string(hit_1, hit_2), file=sys.stderr)
                 if hit_1.sacc != hit_2.sacc:
-                    failure_reason["different sequence"] += 1
+                    salvation_log["hit to different sequence"].append(
+                        blast_hits_string(hit_1, hit_2)
+                    )
+                    salvation_reason["hit to different sequence"] += 1
                     continue
                 if hit_1.direction == hit_2.direction:
-                    failure_reason["same direction"] += 1
+                    salvation_log["hit to same sequence but same direction"].append(
+                        blast_hits_string(hit_1, hit_2)
+                    )
+                    salvation_reason["hit to same sequence but same direction"] += 1
                     continue
                 if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
-                    failure_reason["opposite direction and no intersection"] += 1
+                    salvation_log["opposite direction and no intersection"].append(
+                        blast_hits_string(hit_1, hit_2)
+                    )
+                    salvation_reason["opposite direction and no intersection"] += 1
                     continue
                 if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
-                    failure_reason["opposite direction and no intersection"] += 1
+                    salvation_log["opposite direction and no intersection"].append(
+                        blast_hits_string(hit_1, hit_2)
+                    )
+                    salvation_reason["opposite direction and no intersection"] += 1
                     continue
-                """ 
-                print(
-                    f"{hit_1.qseqid}\t{hit_1.direction}\t{hit_2.qseqid}\t{hit_2.direction}\t{hit_1.sacc}\t{hit_2.sacc}\t{hit_1.sstart}\t{hit_1.send}\t{hit_2.sstart}\t{hit_2.send}"
-                )
-                dir_1 = "<-" if hit_1.direction == Direction.LEFT else "->"
-                dir_2 = "<-" if hit_2.direction == Direction.LEFT else "->"
-                if hit_1.sstart < hit_2.sstart:
-                    print(f"{hit_1.sstart} {dir_1} {hit_2.sstart} {dir_2}")
-                else:
-                    print(f"{hit_2.sstart} {dir_2} {hit_1.sstart} {dir_1}")
-                """
-                blast_trapped_seq_ids.add(hit_1.qseqid)
-                blast_trapped_seq_ids.add(hit_2.qseqid)
-    # pp.pprint(failure_reason)
-    # print(len(blast_trapped_seq_ids))
-    # print(blast_trapped_seq_ids)
+                blast_trapped_seq_ids.add((hit_1.qseqid, hit_2.qseqid))
+                blast_trapped_primer_ids.add(each_primer_id)
 
-    """
-    blast_trapped_seq_ids = set()
-    for each_hit in blast_results:
-        blast_trapped_seq_ids.add(each_hit.qseqid)
-    """
+    finalist = list(
+        filter(lambda i: i[0] not in blast_trapped_primer_ids, primer3_info.items())
+    )
 
-    discard_set = set()
-    if args.discard is not None:
-        discard_filenames = args.discard
-        for discard_filename in discard_filenames:
-            with open(discard_filename) as f:
-                for line in f:
-                    discard_set.add(line.strip())
-
-    finalist = fasta_ids - blast_trapped_seq_ids - discard_set
-    finalist_pair = set()
-    for each_primer in finalist:
-        id, idx, side = each_primer.split("_")  # fe1a7920d1a974577c5329460926befd_3_L
-        partner = ""
-        if side == "L":
-            partner = "R"
-        else:
-            partner = "L"
-        # pair_full_name = id + "_" + idx + pair#間違い
-        pair_full_name = id + "_" + idx + "_" + partner
-        if pair_full_name in finalist:
-            finalist_pair.add(id + "_" + idx)
-        else:
-            pass
-
-    # print(list(primer3_info.keys())[0], file = sys.stderr) #6d83378ab5107afd062baf2cca8e913
-    # print(list(finalist)[0], file = sys.stderr) #e116136dc273515db5cee535731c145_2_R
-    """
-    if len(finalist_pair) > 0:
-        print(
-            list(finalist_pair)[0], file=sys.stderr
-        )  # 62baf2cca8e91329bcaba327c863b6b_4
-    """
-    # print(finalist, file = sys.stderr)#84db709cd45706d4ee535731c145dbe_4_L
     report_file = open(args.o + ".report", mode="w")
     finalist_tsv_file = open(args.o + ".finalist.tsv", mode="w")
     finalist_namelist_file = open(args.o + ".finalist_name.txt", mode="w")
-
+    salvation_log_file = open(args.o + ".salvation_log.txt", mode="w")
+    print(f"{args}", file=report_file)
     print(
-        f"total count of input sequence                  : {len(fasta_ids)}",
+        f"fasta_ids in {args.fasta}...{len(fasta_ids)}",
         file=report_file,
     )
     print(
-        f"total count of blast hits                      : {len(blast_results)}",
-        file=report_file,
-    )
-    tmpstr = "\t".join([f"{k}:{v}" for k, v in failure_reason.items()])
-    print(
-        f"Breakdown of reasons for not treating as hit   : {tmpstr}",
+        f"blast hits in {args.blast}...{len(blast_results)}",
         file=report_file,
     )
     print(
-        f"concidered_primer_combination_cnt            : {concidered_primer_combination_cnt}",
+        f"number of lr-tuple...{len(primer3_info)}",
+        file=report_file,
+    )
+    average_of_primers_from_a_lr_tuple = round(
+        len(fasta_ids) / len(primer3_info) / 2, 2
+    )
+    print(
+        f"average number of primers from a lr-tuple...{average_of_primers_from_a_lr_tuple}",
         file=report_file,
     )
     print(
-        f"cardinarity of input which was trapped by blast: {len(blast_trapped_seq_ids)}",
+        f"number of combination of L and R primers...{concidered_primer_combination_cnt}",
+        file=report_file,
+    )
+    tmpstr = ",".join([f"{k}:{v}" for k, v in salvation_reason.items()])
+    print(
+        f"Breakdown of reasons for not treating as hit...{tmpstr}",
         file=report_file,
     )
     print(
-        f"finalist                                       : {len(finalist)}",
+        f"trapped primers...{len(blast_trapped_primer_ids)}",
         file=report_file,
     )
     print(
-        f"finalist pair                                  : {len(finalist_pair)}",
+        f"number of primer candidates...{len(finalist)}",
         file=report_file,
     )
 
@@ -361,42 +349,45 @@ def main():
                 "primer left Tm",
                 "primer right Tm",
                 "primer pair product Tm",
-                "survived side",
-                "trapped side",
-                "blast hits",
             ]
         ),
         file=finalist_tsv_file,
     )
 
     for each_finalist in finalist:
-        finalist_info_raw = primer3_info[each_finalist.split("_")[0]]
-        finalist_index = int(each_finalist.split("_")[1])
-        primer_side = each_finalist.split("_")[2]
-        finalist_info = finalist_info_raw["Primer3_output"][finalist_index]
-        partner = "L" if primer_side == "R" else "R"
-        primer_pair = each_finalist[:-1] + partner
-        blast_hits = json.dumps([x.staxid for x in primer_blasthit_dict[primer_pair]])
-        print(
-            "\t".join(
-                [
-                    str(x)
-                    for x in [
-                        each_finalist.split("_")[0],
-                        finalist_info["PRIMER_LEFT_SEQUENCE"],
-                        finalist_info["PRIMER_RIGHT_SEQUENCE"],
-                        finalist_info["PRIMER_LEFT_TM"],
-                        finalist_info["PRIMER_RIGHT_TM"],
-                        finalist_info["PRIMER_PAIR_PRODUCT_TM"],
-                        primer_side,
-                        partner,
-                        blast_hits,
+        id = each_finalist[0]
+        print(id, file=finalist_namelist_file)
+        primers = each_finalist[1]["Primer3_output"]
+        for each_primer in primers:
+            finalist_info = each_primer
+            """ 
+            left_blast_hit = sequence_blasthit_dict[
+                finalist_info["PRIMER_LEFT_SEQUENCE"]
+            ]
+            right_blast_hit = sequence_blasthit_dict[
+                finalist_info["PRIMER_RIGHT_SEQUENCE"]
+            ]
+            blasthit_cnt = len(left_blast_hit) + len(right_blast_hit)
+            """
+            print(
+                "\t".join(
+                    [
+                        str(x)
+                        for x in [
+                            id,
+                            finalist_info["PRIMER_LEFT_SEQUENCE"],
+                            finalist_info["PRIMER_RIGHT_SEQUENCE"],
+                            finalist_info["PRIMER_LEFT_TM"],
+                            finalist_info["PRIMER_RIGHT_TM"],
+                            finalist_info["PRIMER_PAIR_PRODUCT_TM"],
+                        ]
                     ]
-                ]
-            ),
-            file=finalist_tsv_file,
-        )
-        print(each_finalist, file=finalist_namelist_file)
+                ),
+                file=finalist_tsv_file,
+            )
+    for k, v in salvation_log.items():
+        for each_v in v:
+            print(f"{k}\t{each_v}", file=salvation_log_file)
 
 
 if __name__ == "__main__":
