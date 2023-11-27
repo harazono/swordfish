@@ -53,9 +53,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             let tmp_val: u128 = u128::from_be_bytes(buffer);
             u128_counter.insert(tmp_val);
-            u128_cnt.push(cnt_in_this_file);
             cnt_in_this_file += 1;
         }
+        u128_cnt.push(cnt_in_this_file);
     }
     let output_count: usize = u128_counter.len();
     let total_input_cnt: usize = u128_cnt.iter().sum::<usize>();
