@@ -30,8 +30,8 @@ fn main() {
     let files = matches.opt_strs("i");
     for file in files {
         let f: File = File::open(&file).unwrap();
-        let mut reader = BufReader::new(f);
-        let mut buffer = [0u8; 16];
+        let mut reader: BufReader<File> = BufReader::new(f);
+        let mut buffer: [u8; 16] = [0u8; 16];
 
         loop {
             let result = reader.by_ref().take(16).read_exact(&mut buffer);
