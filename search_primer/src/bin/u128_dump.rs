@@ -52,10 +52,10 @@ fn main() {
         "u128_binary_merge_out.bin".to_string()
     };
 
-    let mut w = BufWriter::new(File::create(&output_file).unwrap());
+    let mut w: BufWriter<File> = BufWriter::new(File::create(&output_file).unwrap());
 
     for each_primer_candidate in &u128_primer_candidate_vec {
-        let dna_seq = decode_u128_2_dna_seq(&each_primer_candidate, 64);
+        let dna_seq: Vec<u8> = decode_u128_2_dna_seq(&each_primer_candidate, 64);
         w.write(&dna_seq).unwrap(); // Vec<u8>から&[u8]への参照を渡す
         w.write(b"\n").unwrap();
     }

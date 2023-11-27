@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::env;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, BufReader, Read};
+use std::io::{self, BufReader, BufWriter, Read, Write};
 
 const U128_SIZE: usize = 16; // u128 is 16 bytes
 
@@ -48,14 +48,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         loop {
             let result = reader.by_ref().take(16).read_exact(&mut buffer);
             match result {
-                Ok(_val) => {
-                    cnt_in_this_file += 1;
-                }
+                Ok(_val) => {}
                 Err(_err) => break,
             }
             let tmp_val: u128 = u128::from_be_bytes(buffer);
             u128_counter.insert(tmp_val);
             u128_cnt.push(cnt_in_this_file);
+            cnt_in_this_file += 1;
         }
     }
     let output_count: usize = u128_counter.len();
@@ -93,6 +92,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         "{}\t{}\t{}",
         total_input_cnt, output_count, duplicates_removed
     );
+
+    let mut u128_counter_vec: Vec<u128> = u128_counter.into_iter().collect();
+    u128_counter_vec.sort();
+    let mut w: BufWriter<File> = BufWriter::new(File::create(&output_file).unwrap());
+    let mut buf_array: [u8; 16] = [0; 16];
+    let mut buf_num: u128;
+    for each_u128_counter_vec in &u128_counter_vec {
+        buf_num = *each_u128_counter_vec;
+        for i in 0..16 {
+            buf_array[15 - i] = u8::try_from(buf_num & 0xFF).unwrap();
+            buf_num >>= 8;
+        }
+        w.write_all(&buf_array).unwrap();
+    }
 
     Ok(())
 }
