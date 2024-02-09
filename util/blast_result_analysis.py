@@ -171,6 +171,7 @@ def main():
     print(f"start reading {args.blast}", file=sys.stderr)
     blast_results = []
     failure_reason = {
+        "not start from 3'": 0,
         "by ignore list": 0,
         "metagenome": 0,
         "different sequence": 0,
@@ -185,7 +186,7 @@ def main():
                 each_record_Obj = BlastResult(*each_record)
             except TypeError:
                 print(type(each_record), each_record, file=sys.stderr)
-                continue  # ここでcontinueすると、不完全なBLAST hitを無視する結果になるのでは？
+                continue
 
             taxon_id = -1
             try:
@@ -195,8 +196,20 @@ def main():
             if taxon_id in overlook_taxon_ids:
                 continue
 
-            # 逆向きのアラインメントの場合もあるので、これは誤り。
             # 3'から始まってるかどうかの判定に気を付ける
+            # directionに応じて場合分けする
+            if (
+                each_record_Obj.direction == Direction.RIGHT
+                and each_record_Obj.qlen != each_record_Obj.qend
+            ):
+                failure_reason["not start from 3'"] += 1
+                continue
+            if (
+                each_record_Obj.direction == Direction.LEFT
+                and each_record_Obj.qstart != 1
+            ):
+                failure_reason["not start from 3'"] += 1
+                continue
 
             # metagenomeという文字列がscomnameやscinameに入っていればcontinue
             if (
