@@ -13,10 +13,10 @@ use search_primer::counting_bloomfilter_util::{
 };
 use search_primer::sequence_encoder_util::decode_u128_2_dna_seq;
 use search_primer::sequence_encoder_util::DnaSequence;
-use sha2::digest::typenum::Le;
+// use sha2::digest::typenum::Le;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ffi::c_short;
+// use std::ffi::c_short;
 use std::fs;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -26,7 +26,7 @@ use std::thread;
 use std::{env, process};
 
 fn print_usage(program: &str, opts: &Options) {
-    let brief = format!("Usage: {} FILE [options]", program);
+    let brief: String = format!("Usage: {} FILE [options]", program);
     print!("{}", opts.usage(&brief));
     process::exit(0);
 }
@@ -49,9 +49,14 @@ fn main() {
         "threshold of occurence. default value is 1000.",
         "THRESHOLD",
     );
-
+    opts.optopt(
+        "m",
+        "margin_size",
+        "margin between l and r segments. default value is 0.",
+        "MERGIN_SIZE",
+    );
     opts.optflag("b", "binary", "outputs binary file");
-    opts.optflag("r", "only-num", "outputs only total number of k-mer");
+    opts.optflag("r", "only-num", "outputs only total number of lr-tuple.");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -76,6 +81,12 @@ fn main() {
         std::cmp::max(matches.opt_str("t").unwrap().parse::<usize>().unwrap(), 2)
     } else {
         8
+    };
+
+    let mergin_size: usize = if matches.opt_present("m") {
+        matches.opt_str("m").unwrap().parse::<usize>().unwrap()
+    } else {
+        0
     };
 
     let threshold: u16 = if matches.opt_present("a") {
@@ -127,12 +138,14 @@ fn main() {
                     "start calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx
                 );
+                // CBFの構築
                 let cbf: Vec<u16> = build_counting_bloom_filter(
                     sequences_ref,
                     start_idx,
                     end_idx,
                     BLOOMFILTER_TABLE_SIZE,
                     i,
+                    mergin_size,
                 );
                 eprintln!(
                     "finish calling build_counting_bloom_filter[{}], {}-{}",
@@ -180,6 +193,7 @@ fn main() {
                     threshold,
                     BLOOMFILTER_TABLE_SIZE,
                     i,
+                    mergin_size,
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                 eprintln!(

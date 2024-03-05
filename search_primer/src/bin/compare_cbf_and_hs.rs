@@ -145,6 +145,7 @@ fn main() {
                     end_idx,
                     BLOOMFILTER_TABLE_SIZE,
                     i,
+                    0,
                 );
                 eprintln!(
                     "finish calling build_counting_bloom_filter[{}], {}-{}",
@@ -190,6 +191,7 @@ fn main() {
                     threshold,
                     BLOOMFILTER_TABLE_SIZE,
                     i,
+                    0,
                 );
                 h_cbf_h_oyadama_ref.lock().unwrap().extend(&h_cbf_h);
                 eprintln!(

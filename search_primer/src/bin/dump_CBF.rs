@@ -126,8 +126,14 @@ fn main() {
                     "start calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx
                 );
-                let cbf: Vec<u16> =
-                    build_counting_bloom_filter(sequences_ref, start_idx, end_idx, bucket_size, i);
+                let cbf: Vec<u16> = build_counting_bloom_filter(
+                    sequences_ref,
+                    start_idx,
+                    end_idx,
+                    bucket_size,
+                    i,
+                    0,
+                );
                 eprintln!(
                     "finish calling build_counting_bloom_filter[{}], {}-{}",
                     i, start_idx, end_idx
