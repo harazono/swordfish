@@ -2,7 +2,7 @@ use binary_heap_plus::BinaryHeap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter, Read, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 
 const U128_SIZE: usize = 16; // u128 is 16 bytes
 
@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Track the last number written to avoid duplicates
     let mut last_written = None;
     // Track the number of unique u128 integers written to the output file
-    let mut output_count = 0;
+    // let mut output_count = 0;
 
     // Iterate over the heap and write unique values to the output file
     while let Some((number, index)) = heap.pop() {
@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if last_written != Some(number) {
             writer.write_all(&number.to_be_bytes())?;
             last_written = Some(number);
-            output_count += 1; // Increment the count for each unique number written
+            // output_count += 1; // Increment the count for each unique number written
         }
         // Read the next number from the reader that provided the last number
         let mut buffer = [0u8; U128_SIZE];
@@ -73,6 +73,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Flush the writer to ensure all data is written to the output file
     writer.flush()?;
+
+    /*
 
     // Calculate the total number of u128 integers read from input files
     let total_input_count: usize = input_files
@@ -110,12 +112,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         total_input_count, output_count, duplicates_removed
     );
 
+
+    */
+
     Ok(())
 }
 
-/// Count the number of u128 integers in a file
+/*
+// Count the number of u128 integers in a file
 fn count_u128_integers(file_name: &str) -> io::Result<usize> {
     let file: File = File::open(file_name)?;
     let metadata: std::fs::Metadata = file.metadata()?;
     Ok(metadata.len() as usize / U128_SIZE)
 }
+*/

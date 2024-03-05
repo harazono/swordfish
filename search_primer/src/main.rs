@@ -53,7 +53,7 @@ fn main() {
         "m",
         "margin_size",
         "margin between l and r segments. default value is 0.",
-        "MERGIN_SIZE",
+        "MARGIN_SIZE",
     );
     opts.optflag("b", "binary", "outputs binary file");
     opts.optflag("r", "only-num", "outputs only total number of lr-tuple.");

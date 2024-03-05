@@ -1,0 +1,136 @@
+# 共通設定
+input_file = "input.fa" # 作業ディレクトリに置いておこう
+primer3_config = "primer3_config"
+blastn_config = "blastn_config"
+margin_size = 50
+threthold = 1000 #リードのカバレッジと分割数に応じて適宜変える←seqkit statsで調べてから動的に変える？面倒かも？
+ngs_read_part_size = 63 
+lr_tuple_part_size = 20 # LR-tupleも50のパートに分ける
+
+
+rule all:
+    input:
+        expand("primer3_results_{config}_fasta/{input_file}_{sample}.fa", config=primer3_config, input_file=input_file.split["."][0], sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
+        expand("primer3_results_{config}_json/{input_file}_{sample}.json", config=primer3_config, input_file=input_file.split["."][0], sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+
+rule split_reads:
+    # ToDo
+    # メモリ使用量、要求スレッド数のチューニング
+    input:
+        "input_file={input_file}.fa"
+    output:
+        expand("reads/{sample}.fa", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+    resources:
+        mem_mb=1024*16,
+        disk_mb=1024*16
+    threads: 8
+    shell:
+        """
+        mkdir -p reads
+        seqkit split -j 8 -p 30 {input} --out-dir reads
+        """
+
+rule count_lr_tuple:
+    # ToDo
+    # メモリ使用量、要求スレッド数のチューニング
+    # count_lr_tupleをscripts以下に置く
+    # count_lr_tupleの引数をチェックする
+    # mergin sizeとthretholdは、レポートファイルに書き出すことを考えるとSnakemakeの変数で持っておきたい
+    # stderrに引数を全部出力する（もうやってるかも）
+    # target/release/search_primer
+    # -o, --output NAME   set output file name
+    # -t, --thread THREAD number of threads to use for radix sort. default value
+    #                     is 8.
+    # -a, --threshold THRESHOLD
+    #                     threshold of occurence. default value is 1000.
+    # -m, --margin_size MARGIN_SIZE
+    #                     margin between l and r segments. default value is 0.
+    # -b, --binary        outputs binary file
+    # -r, --only-num      outputs only total number of lr-tuple.
+    # -h, --help          print this help menu
+    input:
+        reads="reads/{sample}.fa"
+    output:
+        lr_tuples=f"lr_tuples/{threshold}/{{sample}}.bin"
+    params:
+        threshold=threshold,
+        margin_size=margin_size,
+    resources:
+        mem_mb=1024*32,
+        disk_mb=1024*32
+    threads: 8
+    shell:
+        """
+        mkdir -p lr_tuples/{threshold}
+        scripts/count_lr_tuple {input.reads} -o {output.lr_tuples} -t {threads} -a {params.threshold} -m {params.margin_size} -b
+        """
+
+
+rule lr_tuple_binary_merge_and_split:
+    input:
+        lr_tuples=expand(f"lr_tuples/{threthold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+    output:
+        lr_tuples_unique=expand(f"lr_tuples_unique/{threthold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, lr_tuple_part_size + 1)])
+    params:
+        merged_file=f"temp/merged_lr_tuples_{threthold}.bin"
+    resources:
+        mem_mb=1024*32,
+        disk_mb=1024*32
+    threads: 8
+    shell:
+        """
+        mkdir -p lr_tuples_unique temp
+        # 各入力ファイルに対して -i オプションを付けてマージコマンドを構成
+        merge_cmd=$(echo -n 'scripts/u128_binary_merge'; for f in {input.lr_tuples}; do echo -n " -i $f"; done; echo -n " -o {params.merged_file}")
+        echo "Running: $merge_cmd"
+        bash -c "$merge_cmd"
+
+        # マージされたファイルを指定された数に分割する
+        scripts/u128_binary_split -i {params.merged_file} -n {lr_tuple_part_size} -o lr_tuples_unique/{threthold}
+
+        # 中間マージファイルを削除
+        rm {params.merged_file}
+        """
+
+
+rule primer3_caller:
+    #    $ ./target/release/primer3_caller -h
+    #    Usage: ./target/release/primer3_caller FILE 
+    #
+    #    Options:
+    #    -h, --help          print this help menu
+    #    -t, --thread THREAD number of thread to use for radix sort. default value
+    #                        is 8.
+    #    -c, --config CONFIG config file for primer3_core.
+    #    -o, --output OUTPUT output file name for primer3 results
+    #    -m, --tmpfile TEMP  set temporary file name prefix
+    input:
+        lr_tuples=f"lr_tuples_unique/{threthold}/{{sample}}.bin"
+    output:
+        primer3_out=f"primer3_results_{primer3_config}/{input_file}_{{sample}}.primer3_out"
+    params:
+        primer3_config=primer3_config
+    resources:
+        mem_mb=1024*4,
+    threads: 16
+    shell:
+        """
+        scripts/primer3_caller {input.lr_tuples} -o {output.primer3_out} -c {primer3_config} -t {threads}
+        """
+
+
+
+#rule primer3_results_parser:
+#    input:
+#        primer3_out=f"primer3_results_{primer3_config}/{input_file}_{{sample}}.primer3_out"
+#    output:
+#        fasta=f"primer3_results_{primer3_config}_fasta/{input_file}_{{sample}}.fa",
+#        json=f"primer3_results_{primer3_config}_json/{input_file}_{{sample}}.json",
+#    resources:
+#        mem_mb=1024*32,
+#        disk_mb=1024*32
+#    shell:
+#        """
+#        scripts/primer3_results_parser -i {input.primer3_out} -f {output.fasta} -j {output.json}
+#        """
+

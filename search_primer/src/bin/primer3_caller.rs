@@ -162,14 +162,6 @@ fn main() {
         "THREAD",
     );
     opts.optopt("c", "config", "config file for primer3_core.", "CONFIG");
-
-    /*     opts.optopt(
-        "l",
-        "library",
-        "library file name which will be used for PRIMER_MISPRIMING_LIBRARY",
-        "LIBRARY",
-    ); */
-
     opts.optopt(
         "o",
         "output",
