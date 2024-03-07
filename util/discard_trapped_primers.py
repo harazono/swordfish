@@ -10,7 +10,7 @@ import csv
 from Bio import SeqIO
 from enum import Enum
 import itertools
-
+import gzip
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -198,7 +198,7 @@ def main():
         "opposite direction and no intersection": 0,
     }
 
-    with open(args.blast) as f:
+    with gzip.open(args.blast, "rt") as f:
         reader = csv.reader(f, delimiter="\t")
         for each_record in reader:
             try:

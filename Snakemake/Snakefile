@@ -1,24 +1,19 @@
 # 共通設定
-input_file = "input.fa" # 作業ディレクトリに置いておこう
+input_file = "SRR10238608.fasta"
 input_file_base = input_file.split(".")[0]
 primer3_config = "primer3_config"
 blastn_config = "blastn_config"
-margin_size = 50
-threshold = 1000 #リードのカバレッジと分割数に応じて適宜変える←seqkit statsで調べてから動的に変える？面倒かも？
+margin_size = "0"
+threshold = "1000" #リードのカバレッジと分割数に応じて適宜変える←seqkit statsで調べてから動的に変える？面倒かも？
 ngs_read_part_size = 63 
-lr_tuple_part_size = 20 # LR-tupleも50のパートに分ける
-
-
-"""
-ToDo
-コンフィグ名やマージンサイズといった変数はなるべくファイル名に反映させる。
-レポートファイル書き出しまでやる
-"""
+lr_tuple_part_size = 20
+home = "/home/harazono"
 
 rule all:
     input:
-        expand("primer3_results_{config}_fasta/{input_file}_{sample}.fa", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
-        expand("primer3_results_{config}_json/{input_file}_{sample}.json", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+        expand(f"lr_tuples/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
+        #expand("primer3_results_{config}_fasta/{input_file}_{sample}.fa", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
+        #expand("primer3_results_{config}_json/{input_file}_{sample}.json", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
 
 rule split_reads:
     # ToDo
@@ -26,16 +21,36 @@ rule split_reads:
     input:
         input_file
     output:
-        expand("reads/{sample}.fa", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+        expand(f"reads/{input_file_base}.part_{{sample}}.fasta", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+    params:
+        ngs_read_part_size=ngs_read_part_size,
+        home=home
     resources:
-        mem_mb=1024*16,
-        disk_mb=1024*16
+        mem_mb=1024*32
     threads: 8
     shell:
         """
+        export PATH={home}/miniconda3/bin:$PATH
+        export LD_LIBRARY_PATH={home}/miniconda3/pkgs/libffi-3.3-he6710b0_2/lib/:$LD_LIBRARY_PATH
         mkdir -p reads
-        seqkit split -j 8 -p 30 {input} --out-dir reads
+        seqkit split -j 8 -p {ngs_read_part_size} {input} --out-dir reads
         """
+
+#rule prepare_directories:
+#    input:
+#    output:
+#        directory(f"lr_tuples/{threshold}"),
+#        directory(f"lr_tuples_unique/{threshold}"),
+#        directory("temp"),
+#        directory(f"primer3_results_{primer3_config}"),
+#        directory(f"primer3_results_{primer3_config}_fasta"),
+#        directory(f"primer3_results_{primer3_config}_json"),
+#    params:
+#        threshold=threshold,
+#        primer3_config=primer3_config
+#    shell:
+#        "echo 'Preparing directories...'"
+#        "mkdir -p lr_tuples/{threshold} lr_tuples_unique/{threshold} temp primer3_results_{primer3_config} primer3_results_{primer3_config}_fasta primer3_results_{primer3_config}_json"
 
 rule count_lr_tuple:
     # ToDo
@@ -56,26 +71,26 @@ rule count_lr_tuple:
     # -r, --only-num      outputs only total number of lr-tuple.
     # -h, --help          print this help menu
     input:
-        reads="reads/{sample}.fa"
+        reads=f"reads/{input_file_base}.part_{{sample}}.fasta"
     output:
         lr_tuples=f"lr_tuples/{threshold}/{{sample}}.bin"
     params:
         threshold=threshold,
         margin_size=margin_size,
     resources:
-        mem_mb=1024*32,
-        disk_mb=1024*32
+        mem_mb=1024*24*8,
     threads: 8
     shell:
         """
-        mkdir -p lr_tuples/{threshold}
-        scripts/count_lr_tuple {input.reads} -o {output.lr_tuples} -t {threads} -a {params.threshold} -m {params.margin_size} -b
+        mkdir -p lr_tuples/{params.threshold}
+        echo $? > log.txt
+        scripts/search_primer {input.reads} -o {output.lr_tuples} -t {threads} -a {params.threshold} -m {params.margin_size} -b
         """
 
 
 rule lr_tuple_binary_merge_and_split:
     input:
-        lr_tuples=expand(f"lr_tuples/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+        lr_tuples=expand(f"lr_tuples/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
     output:
         lr_tuples_unique=expand(f"lr_tuples_unique/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, lr_tuple_part_size + 1)])
     params:
@@ -86,6 +101,8 @@ rule lr_tuple_binary_merge_and_split:
     threads: 8
     shell:
         """
+        export PATH=/home/harazono/miniconda3/bin:$PATH
+        export LD_LIBRARY_PATH=~/miniconda3/pkgs/libffi-3.3-he6710b0_2/lib/:$LD_LIBRARY_PATH
         mkdir -p lr_tuples_unique temp
         # 各入力ファイルに対して -i オプションを付けてマージコマンドを構成
         merge_cmd=$(echo -n 'scripts/u128_binary_merge'; for f in {input.lr_tuples}; do echo -n " -i $f"; done; echo -n " -o {params.merged_file}")
@@ -122,6 +139,8 @@ rule primer3_caller:
     threads: 16
     shell:
         """
+        export PATH=/home/harazono/miniconda3/bin:$PATH
+        export LD_LIBRARY_PATH=~/miniconda3/pkgs/libffi-3.3-he6710b0_2/lib/:$LD_LIBRARY_PATH
         scripts/primer3_caller {input.lr_tuples} -o {output.primer3_out} -c {primer3_config} -t {threads}
         """
 
