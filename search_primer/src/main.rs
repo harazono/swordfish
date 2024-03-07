@@ -103,6 +103,8 @@ fn main() {
             input_file, threshold, threads
         )
     };
+    let mut w: BufWriter<File> = BufWriter::new(fs::File::create(&output_file).unwrap());
+
     eprintln!("input  file: {:?}", input_file);
     let file: File = File::open(&input_file).expect("Error during opening the file");
     let mut reader: faReader<std::io::BufReader<File>> = faReader::new(file);
@@ -282,7 +284,6 @@ fn main() {
         .collect();
     sorted_hs_list.sort();
 
-    let mut w: BufWriter<File> = BufWriter::new(fs::File::create(&output_file).unwrap());
     let mut buf_array: [u8; 16] = [0; 16];
     let mut buf_num: u128;
 

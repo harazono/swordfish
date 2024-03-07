@@ -1,23 +1,30 @@
 # 共通設定
 input_file = "input.fa" # 作業ディレクトリに置いておこう
+input_file_base = input_file.split(".")[0]
 primer3_config = "primer3_config"
 blastn_config = "blastn_config"
 margin_size = 50
-threthold = 1000 #リードのカバレッジと分割数に応じて適宜変える←seqkit statsで調べてから動的に変える？面倒かも？
+threshold = 1000 #リードのカバレッジと分割数に応じて適宜変える←seqkit statsで調べてから動的に変える？面倒かも？
 ngs_read_part_size = 63 
 lr_tuple_part_size = 20 # LR-tupleも50のパートに分ける
 
 
+"""
+ToDo
+コンフィグ名やマージンサイズといった変数はなるべくファイル名に反映させる。
+レポートファイル書き出しまでやる
+"""
+
 rule all:
     input:
-        expand("primer3_results_{config}_fasta/{input_file}_{sample}.fa", config=primer3_config, input_file=input_file.split["."][0], sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
-        expand("primer3_results_{config}_json/{input_file}_{sample}.json", config=primer3_config, input_file=input_file.split["."][0], sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+        expand("primer3_results_{config}_fasta/{input_file}_{sample}.fa", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)]),
+        expand("primer3_results_{config}_json/{input_file}_{sample}.json", config=primer3_config, input_file=input_file_base, sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
 
 rule split_reads:
     # ToDo
     # メモリ使用量、要求スレッド数のチューニング
     input:
-        "input_file={input_file}.fa"
+        input_file
     output:
         expand("reads/{sample}.fa", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
     resources:
@@ -35,7 +42,7 @@ rule count_lr_tuple:
     # メモリ使用量、要求スレッド数のチューニング
     # count_lr_tupleをscripts以下に置く
     # count_lr_tupleの引数をチェックする
-    # mergin sizeとthretholdは、レポートファイルに書き出すことを考えるとSnakemakeの変数で持っておきたい
+    # mergin sizeとthresholdは、レポートファイルに書き出すことを考えるとSnakemakeの変数で持っておきたい
     # stderrに引数を全部出力する（もうやってるかも）
     # target/release/search_primer
     # -o, --output NAME   set output file name
@@ -68,11 +75,11 @@ rule count_lr_tuple:
 
 rule lr_tuple_binary_merge_and_split:
     input:
-        lr_tuples=expand(f"lr_tuples/{threthold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
+        lr_tuples=expand(f"lr_tuples/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, ngs_read_part_size + 1)])
     output:
-        lr_tuples_unique=expand(f"lr_tuples_unique/{threthold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, lr_tuple_part_size + 1)])
+        lr_tuples_unique=expand(f"lr_tuples_unique/{threshold}/{{sample}}.bin", sample=[f"{i:03}" for i in range(1, lr_tuple_part_size + 1)])
     params:
-        merged_file=f"temp/merged_lr_tuples_{threthold}.bin"
+        merged_file=f"temp/merged_lr_tuples_{threshold}.bin"
     resources:
         mem_mb=1024*32,
         disk_mb=1024*32
@@ -86,7 +93,7 @@ rule lr_tuple_binary_merge_and_split:
         bash -c "$merge_cmd"
 
         # マージされたファイルを指定された数に分割する
-        scripts/u128_binary_split -i {params.merged_file} -n {lr_tuple_part_size} -o lr_tuples_unique/{threthold}
+        scripts/u128_binary_split -i {params.merged_file} -n {lr_tuple_part_size} -o lr_tuples_unique/{threshold}
 
         # 中間マージファイルを削除
         rm {params.merged_file}
@@ -105,7 +112,7 @@ rule primer3_caller:
     #    -o, --output OUTPUT output file name for primer3 results
     #    -m, --tmpfile TEMP  set temporary file name prefix
     input:
-        lr_tuples=f"lr_tuples_unique/{threthold}/{{sample}}.bin"
+        lr_tuples=f"lr_tuples_unique/{threshold}/{{sample}}.bin"
     output:
         primer3_out=f"primer3_results_{primer3_config}/{input_file}_{{sample}}.primer3_out"
     params:
