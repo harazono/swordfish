@@ -248,6 +248,7 @@ fn main() {
                     end_idx,
                     &high_occurence_lr_tuple,
                     i,
+                    mergin_size,
                 );
                 let mut hashtable_count_result: std::sync::MutexGuard<'_, HashMap<u128, u16>> =
                     hashtable_count_result_ref.lock().unwrap();

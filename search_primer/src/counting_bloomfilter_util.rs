@@ -307,6 +307,7 @@ pub fn number_of_high_occurence_lr_tuple(
     return ret_table;
 }
 
+/* */
 pub fn aggregate_length_between_lr_tuple(
     sequences: &Vec<DnaSequence>,
     thread_id: usize,
@@ -438,6 +439,7 @@ pub fn count_lr_tuple_with_hashtable(
     end_idx: usize,
     high_occurence_lr_tuple: &HashSet<u128>,
     thread_id: usize,
+    margin: usize,
 ) -> HashMap<u128, u16> {
     let hash_size_to_allocate: usize = high_occurence_lr_tuple.len() * 1.2 as usize;
     eprintln!(
@@ -494,7 +496,7 @@ pub fn count_lr_tuple_with_hashtable(
                 l_window_start_idx += l_has_repeat_offset + 1;
                 continue 'each_l_window;
             }
-            r_window_start_idx = l_window_end_idx;
+            r_window_start_idx = l_window_end_idx + margin;
             'each_r_window: loop {
                 r_window_end_idx = r_window_start_idx + R_LEN;
                 if r_window_end_idx > current_sequence.len() {
