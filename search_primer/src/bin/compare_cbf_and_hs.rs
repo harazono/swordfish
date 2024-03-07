@@ -216,6 +216,7 @@ fn main() {
         sequences.len(),
         high_occurence_lr_tuple_ref,
         1,
+        0,
     );
 
     let mut sorted_hs_list: Vec<u128> = hashtable_count_result
