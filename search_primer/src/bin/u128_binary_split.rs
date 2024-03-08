@@ -40,8 +40,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Write to output files
     for (i, data) in outputs.into_iter().enumerate() {
-        let mut output_file =
-            File::create(format!("{}_{}.bin", output_file_base, format!("{:03}", i)))?;
+        let mut output_file = File::create(format!(
+            "{}_{}.bin",
+            output_file_base,
+            format!("{:03}", i + 1)
+        ))?;
         output_file.write_all(&data)?;
     }
 
