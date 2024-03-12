@@ -191,13 +191,6 @@ def main():
     print(f"start reading {args.blast}", file=sys.stderr)
     blast_results = []
 
-    salvation_reason = {
-        "hit to metagenome": 0,
-        "hit to different sequence": 0,
-        "hit to same sequence but same direction": 0,
-        "opposite direction and no intersection": 0,
-    }
-
     with gzip.open(args.blast, "rt") as f:
         reader = csv.reader(f, delimiter="\t")
         for each_record in reader:
@@ -205,8 +198,7 @@ def main():
                 each_record_Obj = BlastResult(*each_record)
             except TypeError:
                 print(type(each_record), each_record, file=sys.stderr)
-                continue  # ここでcontinueすると、不完全なBLAST hitを無視する結果になるのでは？
-
+                continue
             taxon_id = -1
             try:
                 taxon_id = int(each_record_Obj.staxid)
@@ -215,21 +207,16 @@ def main():
             if taxon_id in overlook_taxon_ids:
                 continue
 
-            # 逆向きのアラインメントの場合もあるので、これは誤り。
-            # 3'から始まってるかどうかの判定に気を付ける
-
             # metagenomeという文字列がscomnameやscinameに入っていればcontinue
             if (
                 each_record_Obj.scomname is not None
                 and "metagenome" in each_record_Obj.scomname
             ):
-                # salvation_reason["hit to metagenome"] += 1
                 continue
             if (
                 each_record_Obj.ssciname is not None
                 and "metagenome" in each_record_Obj.ssciname
             ):
-                # salvation_reason["hit to metagenome"] += 1
                 continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
@@ -250,10 +237,14 @@ def main():
     ヒット先のsseqidが同一か調べる→同一でなければサバイバー扱いにする
     同一のものがあった場合、さらにLL, LR, RRで挟めるかを調べる→挟めないのならサバイバー扱いにする
     """
-    concidered_primer_combination_cnt = 0
     blast_trapped_seq_ids = set()
     blast_trapped_primer_ids = set()
-    # salvation_log = {k: [] for k in salvation_reason.keys()}
+    salvation_reason = {
+        "tatal": 0,
+        "hit to different sequence": 0,
+        "hit to same sequence, same direction": 0,
+        "hit to same sequence, opposite direction, no intersection": 0,
+    }
     for each_primer_id, info in primer3_info.items():
         for i, c in enumerate(info["Primer3_output"]):
             seqname_L = each_primer_id + "_" + str(i) + "_L"
@@ -266,19 +257,19 @@ def main():
             blast_hits.extend(primer_blasthit_dict.get(seqname_R, None))
             # print(blast_hits)
             for hit_1, hit_2 in itertools.combinations(blast_hits, 2):
-                concidered_primer_combination_cnt += 1
+                salvation_reason["tatal"] += 1
                 # print(blast_hits_string(hit_1, hit_2), file=sys.stderr)
                 if hit_1.sacc != hit_2.sacc:
                     salvation_reason["hit to different sequence"] += 1
                     continue
                 if hit_1.direction == hit_2.direction:
-                    salvation_reason["hit to same sequence but same direction"] += 1
+                    salvation_reason["hit to same sequence, same direction"] += 1
                     continue
                 if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
                     salvation_reason["opposite direction and no intersection"] += 1
                     continue
                 if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
-                    salvation_reason["opposite direction and no intersection"] += 1
+                    salvation_reason["hit to same sequence, opposite direction, no intersection"] += 1
                     continue
                 blast_trapped_seq_ids.add((hit_1.qseqid, hit_2.qseqid))
                 blast_trapped_primer_ids.add(each_primer_id)
@@ -310,13 +301,9 @@ def main():
         f"average number of primers from a lr-tuple...{average_of_primers_from_a_lr_tuple}",
         file=report_file,
     )
+    tmpstr = "\n".join([f"{k}:{v}" for k, v in salvation_reason.items()])
     print(
-        f"number of combination of L and R primers...{concidered_primer_combination_cnt}",
-        file=report_file,
-    )
-    tmpstr = ",".join([f"{k}:{v}" for k, v in salvation_reason.items()])
-    print(
-        f"Breakdown of reasons for not treating as hit...{tmpstr}",
+        f"Breakdown of reasons for not treating as hit...\n{tmpstr}",
         file=report_file,
     )
     print(

@@ -17,7 +17,7 @@ use std::sync::Arc;
 use std::thread;
 
 fn print_usage(program: &str, opts: &Options) {
-    let brief = format!("Usage: {} FILE [options]", program);
+    let brief = format!("Usage: {}", program);
     print!("{}", opts.usage(&brief));
 }
 fn main() -> Result<(), String> {
@@ -78,7 +78,7 @@ fn main() -> Result<(), String> {
     eprintln!("TSV file name: {:?}", tsv_file);
     eprintln!("Number of threads: {:?}", threads);
     eprintln!(
-        "Maximum off-target region length: {:?}",
+        "Maximum target region length: {:?}",
         max_offtarget_region_length
     );
 
