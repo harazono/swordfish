@@ -266,7 +266,7 @@ def main():
                     salvation_reason["hit to same sequence, same direction"] += 1
                     continue
                 if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
-                    salvation_reason["opposite direction and no intersection"] += 1
+                    salvation_reason["hit to same sequence, opposite direction, no intersection"] += 1
                     continue
                 if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
                     salvation_reason["hit to same sequence, opposite direction, no intersection"] += 1
