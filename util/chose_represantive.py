@@ -24,20 +24,20 @@ def main():
     args = parser.parse_args()
     input_file_names = args.input_file_names
     output_file_name = args.output_file_name
-    id_values = set()
+    primer_pairs = set()
     records_to_be_written = []
     with open(input_file_names[0]) as f:
         l = next(f).strip().split("\t")
-        id_values.add(l[0])
+        primer_pairs.add((l[1], l[2]))
         records_to_be_written.append(l)
     for each_file in input_file_names:
         with open(each_file) as f:
             reader = csv.reader(f, delimiter="\t")
             for row in reader:
-                id_value = row[0]
-                if id_value in id_values:
+                primer_pair = (row[1], row[2])
+                if primer_pair in primer_pairs:
                     continue
-                id_values.add(id_value)
+                primer_pairs.add(primer_pair)
                 records_to_be_written.append(row)
     with open(output_file_name, "w") as f:
         writer = csv.writer(f, delimiter="\t")
