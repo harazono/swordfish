@@ -42,3 +42,7 @@ def main():
     with open(output_file_name, "w") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerows(records_to_be_written)
+
+
+if __name__ == "__main__":
+    main()
