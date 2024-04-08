@@ -1,9 +1,3 @@
-"""
-複数のTSVファイルを受け取る
-第一カラムのIDは重複があるが、その中から１つ選び、それ以外の行を削除する
-argparseとcsvをimportする
-"""
-
 import argparse
 import csv
 
