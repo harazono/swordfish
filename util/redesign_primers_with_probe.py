@@ -29,6 +29,7 @@ def main():
         config_file_name = os.path.join(args.output_dir, f"{group}.config")
         output_path = os.path.join(args.output_dir, f"{group}.primer3.out")
         run_primer3(
+            group,
             concatinated_sequence,
             args.primer3_config_template_path,
             config_file_name,
@@ -59,6 +60,7 @@ def find_frequent_mers(sequences, mer_size):
 
 
 def run_primer3(
+    sequence_id,
     concatenated_sequence,
     primer3_template_path,
     primer3_config_path,
@@ -75,7 +77,7 @@ def run_primer3(
     # primer3のテンプレートファイルを読み込み、新しい設定を追加
     with open(primer3_template_path, "r") as template_file:
         config_content = template_file.read()
-    config_content += f"SEQUENCE_ID=example\nSEQUENCE_TEMPLATE={concatenated_sequence}\n=\n"
+    config_content += f"SEQUENCE_ID={sequence_id}\nSEQUENCE_TEMPLATE={concatenated_sequence}\n=\n"
     config_content.replace("pick_pcr_primers", "pick_pcr_primers_and_hyb_probe")
     # 新しいprimer3の設定ファイルを作成
     with open(primer3_config_path, "w") as config_file:
