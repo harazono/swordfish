@@ -13,6 +13,7 @@ def main():
     )
     args = parser.parse_args()
     sequence_groups = group_sequences(args.fasta_file)
+    print(f"Number of sequence groups: {len(sequence_groups)}")
     for group, sequences in sequence_groups.items():
         print(
             f"Group: {group}, sequences: {len(sequences)}, left: {sequences[0].seq[:30]}, right: {sequences[0].seq[-30:]}"
@@ -46,7 +47,8 @@ def group_sequences(fasta_file):
 
 def find_frequent_mers(sequences, mer_size):
     mer_counts = Counter()
-    for record in sequences:
+    for i, record in enumerate(sequences):
+        print(f"processing {i + 1} in {len(sequences)}")
         sequence = str(record.seq)
         middle_sequence = sequence[30:-30]
         for i in range(len(middle_sequence) - mer_size + 1):
