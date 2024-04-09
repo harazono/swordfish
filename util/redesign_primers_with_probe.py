@@ -26,8 +26,8 @@ def main():
         many_n = "N" * 20
         concatinated_sequence = f"{l}{many_n}{m}{many_n}{r}"
         # print(concatinated_sequence)
-        config_file_name = os.path.join(args.output_dir, group, "config")
-        output_path = os.path.join(args.output_dir, group, "primer3.out")
+        config_file_name = os.path.join(args.output_dir, f"{group}.config")
+        output_path = os.path.join(args.output_dir, f"{group}.primer3.out")
         run_primer3(
             concatinated_sequence,
             args.primer3_config_template_path,
@@ -64,26 +64,30 @@ def run_primer3(
     primer3_config_path,
     primer3_output_path,
 ):
-    if not os.path.exists(primer3_config_path):
-        os.makedirs(primer3_config_path)
-    if not os.path.exists(primer3_output_path):
-        os.makedirs(primer3_output_path)
-    if not os.path.exists(primer3_template_path):
-        os.makedirs(primer3_template_path)
+    # primer3_config_path と primer3_output_path のディレクトリを取得し、存在しなければ作成
+    primer3_config_dir = os.path.dirname(primer3_config_path)
+    primer3_output_dir = os.path.dirname(primer3_output_path)
+    if not os.path.exists(primer3_config_dir):
+        os.makedirs(primer3_config_dir)
+    if not os.path.exists(primer3_output_dir):
+        os.makedirs(primer3_output_dir)
 
+    # primer3のテンプレートファイルを読み込み、新しい設定を追加
     with open(primer3_template_path, "r") as template_file:
         config_content = template_file.read()
-    config_content += (
-        f"SEQUENCE_ID=example\nSEQUENCE_TEMPLATE={concatenated_sequence}\n=\n"
-    )
-    with open(os.path.join("primer3_config", primer3_config_path), "w") as config_file:
+    config_content += f"SEQUENCE_ID=example\nSEQUENCE_TEMPLATE={concatenated_sequence}\n=\n"
+
+    # 新しいprimer3の設定ファイルを作成
+    with open(primer3_config_path, "w") as config_file:
         config_file.write(config_content)
+    print("about to execute primer3_core")
+    # primer3_coreを実行
     subprocess.run(
         [
             "primer3_core",
-            "primer3_config/" + primer3_config_path,
+            primer3_config_path,
             "--output",
-            "primer3_results_with_amplicon/" + primer3_output_path,
+            primer3_output_path,
         ]
     )
 
