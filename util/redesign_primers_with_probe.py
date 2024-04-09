@@ -11,6 +11,7 @@ def main():
     parser.add_argument(
         "primer3_config_template_path", type=str, help="primer3 config template path"
     )
+    parser.add_argument("output_dir", type=str, help="output directory path")
     args = parser.parse_args()
     sequence_groups = group_sequences(args.fasta_file)
     print(f"Number of sequence groups: {len(sequence_groups)}")
@@ -25,8 +26,8 @@ def main():
         many_n = "N" * 20
         concatinated_sequence = f"{l}{many_n}{m}{many_n}{r}"
         # print(concatinated_sequence)
-        config_file_name = group + ".config"
-        output_path = group + ".primer3.out"
+        config_file_name = args.output_dir + group + ".config"
+        output_path = args.output_dir + group + ".primer3.out"
         run_primer3(
             concatinated_sequence,
             args.primer3_config_template_path,
@@ -80,7 +81,7 @@ def run_primer3(
             "primer3_core",
             "primer3_config/" + primer3_config_path,
             "--output",
-            "primer3_results/" + primer3_output_path,
+            "primer3_results_with_amplicon/" + primer3_output_path,
         ]
     )
 
