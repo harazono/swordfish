@@ -26,8 +26,8 @@ def main():
         many_n = "N" * 20
         concatinated_sequence = f"{l}{many_n}{m}{many_n}{r}"
         # print(concatinated_sequence)
-        config_file_name = args.output_dir + group + ".config"
-        output_path = args.output_dir + group + ".primer3.out"
+        config_file_name = os.path.join(args.output_dir, group + ".config")
+        output_path = os.path.join(args.output_dir, group + ".primer3.out")
         run_primer3(
             concatinated_sequence,
             args.primer3_config_template_path,
