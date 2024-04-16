@@ -73,7 +73,7 @@ def write_hits_to_file(hits, output_file):
             f.write(f"{sseqid}\n")
             for hit in hit_list:
                 print(hit)
-                f.write("\t".join([f"{str(k)}:{str(v)}" for k,v in hit]) + "\n")
+                f.write("\t".join([f"{str(k)}:{str(v)}" for k,v in hit.items()]) + "\n")
 
 def main(args):
     primer_hits = parse_blast_output(args.blast_output)
