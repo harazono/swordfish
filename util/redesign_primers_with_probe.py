@@ -78,7 +78,9 @@ def run_primer3(
     with open(primer3_template_path, "r") as template_file:
         config_content = template_file.read()
     config_content += f"SEQUENCE_ID={sequence_id}\nSEQUENCE_TEMPLATE={concatenated_sequence}\n=\n"
+    print(config_content)
     config_content.replace("pick_pcr_primers", "pick_pcr_primers_and_hyb_probe")
+    print(config_content)
     # 新しいprimer3の設定ファイルを作成
     with open(primer3_config_path, "w") as config_file:
         config_file.write(config_content)
