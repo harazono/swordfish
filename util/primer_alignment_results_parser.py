@@ -52,8 +52,8 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
             sequence = str(record.seq).upper()
             if hit_1["sstrand"] == hit_2["sstrand"]:
                 continue
-            if hit_1["send"] < hit_2["sstart"]:
-                amplicon_name = f'{record.id}|{hit_1["qseqid"]}{hit_1["sstart"]}-{hit_1["send"]}:{hit_1["sstrand"]}|{hit_2["qseqid"]}{hit_2["sstart"]}-{hit_2["send"]}:{hit_2["sstrand"]}'
+            if hit_1["sstrand"] == "plus" and hit_1["send"] < hit_2["sstart"]:
+                amplicon_name = f'{record.id}|{hit_1["qseqid"]}:{hit_1["sstart"]}-{hit_1["send"]}:{hit_1["sstrand"]}|{hit_2["qseqid"]}:{hit_2["sstart"]}-{hit_2["send"]}:{hit_2["sstrand"]}'
                 start = min(hit_1["send"], hit_1["sstart"])
                 end   = max(hit_2["send"], hit_2["sstart"])
                 amplicon_sequence = sequence[start:end]
