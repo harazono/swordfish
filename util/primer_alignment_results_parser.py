@@ -50,15 +50,15 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
         for v in itertools.combinations(hits, 2):
             hit_1, hit_2 = v
             sequence = str(record.seq).upper()
-            if hit_1.strand == hit_2.strand:
+            if hit_1.sstrand == hit_2.sstrand:
                 continue
             if hit_1.send < hit_2.sstart:
-                amplicon_name = f"{record.id}|{hit_1.qseqid}{hit_1.strand}|{hit_2.qseqid}{hit_2.strand}"
+                amplicon_name = f"{record.id}|{hit_1.qseqid}{hit_1.sstrand}|{hit_2.qseqid}{hit_2.sstrand}"
                 assert hit_1.sstart < hit_2.send, "assertion failed"
                 amplicon_sequence = sequence[hit_1.sstart:hit_2.send]
                 amplicons.append((amplicon_name, amplicon_sequence))
             if hit_2.send < hit_1.sstart:
-                amplicon_name = f"{record.id}|{hit_1.qseqid}{hit_1.strand}|{hit_2.qseqid}{hit_2.strand}"
+                amplicon_name = f"{record.id}|{hit_1.qseqid}{hit_1.sstrand}|{hit_2.qseqid}{hit_2.sstrand}"
                 assert hit_2.sstart < hit_1.send, "assertion failed"
                 amplicon_sequence = sequence[hit_2.sstart:hit_1.send]
                 amplicons.append((amplicon_name, amplicon_sequence))
@@ -72,7 +72,6 @@ def write_hits_to_file(hits, output_file):
         for sseqid, hit_list in hits.items():
             f.write(f"{sseqid}\n")
             for hit in hit_list:
-                print(hit)
                 f.write("\t".join([f"{str(k)}:{str(v)}" for k,v in hit.items()]) + "\n")
 
 def main(args):
