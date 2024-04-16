@@ -1,6 +1,7 @@
 import argparse
 from Bio import SeqIO
 import sys
+import itertools
 def parse_blast_output(blast_output_file):
     """
     BLASTのoutfmt 6形式の出力から、各プライマーのヒット情報を抽出します。
@@ -10,11 +11,12 @@ def parse_blast_output(blast_output_file):
         for line in file:
             parts = line.strip().split('\t')
             query_id = parts[0]
-            sstart = int(parts[7])
-            send = int(parts[8])
-            if query_id not in hits:
-                hits[query_id] = []
-            hits[query_id].append((min(sstart, send), max(sstart, send)))
+            sseqid   = parts[1]
+            sstart   = int(parts[7])
+            send     = int(parts[8])
+            if sseqid not in hits: 
+                hits[sseqid] = []
+            hits[sseqid].append((query_id, sstart, send))
     return hits
 
 def extract_amplicons(fasta_file, primer_hits, max_length):
@@ -27,16 +29,26 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
     for record in reads:
         print(f"\r{cnt}", end="", file=sys.stderr)
         cnt += 1
-        sequence = str(record.seq).upper()
-        for primer_id, hits in primer_hits.items():
-            for hit1 in hits:
-                for hit2 in hits:
-                    if hit1 == hit2:
-                        continue
-                    start, end = sorted([hit1[0], hit2[1]])
-                    if 0 < end - start <= max_length:
-                        amplicon = sequence[start-1:end]
-                        amplicons.append([record.id, primer_id, str(start), str(end), amplicon])
+        current_record_id = record.id
+        if current_record_id not in primer_hits.keys():
+            continue
+        hits = primer_hits[current_record_id]
+        if len(hits) == 0:
+            continue
+        for v in itertools.combinations(hits, 2):
+            hit_1, hit_2 = v
+            sequence = str(record.seq).upper()
+            # hit_1が右向き（end - start > 0）で、hit_2が左向きの場合
+            if hit_1[2] - hit_1[1] > 0 and hit_2[1] - hit_2[2] > 0:
+                # read.idとhit_1[1]とhit_2[2]の値を配列名とするfastaを生成してampliconsに追加。配列はsequenceの部分配列とする。
+                amplicon_name = f"{record.id}|{hit_1[1]}|{hit_2[2]}"
+                amplicon_sequence = sequence[hit_1[1]:hit_2[2]]
+                amplicons.append((amplicon_name, hit_1[1], hit_2[2], amplicon_sequence))
+            # hit_1が左向き（end - start < 0）で、hit_2が右向きの場合
+            elif hit_1[2] - hit_1[1] < 0 and hit_2[1] - hit_2[2] > 0:
+                amplicon_name = f"{record.id}|{hit_2[1]}|{hit_1[2]}"
+                amplicon_sequence = sequence[hit_2[1]:hit_1[2]]
+                amplicons.append((amplicon_name, hit_2[1], hit_1[2], amplicon_sequence))
     return amplicons
 
 def write_hits_to_file(hits, output_file):
@@ -44,17 +56,18 @@ def write_hits_to_file(hits, output_file):
     抽出されたヒット情報をファイルに書き出します。
     """
     with open(output_file, 'w') as f:
-        for query_id, hit_list in hits.items():
+        for sseqid, hit_list in hits.items():
+            f.write(f"{sseqid}\n")
             for hit in hit_list:
-                start, end = hit
-                f.write(f"Primer/Probe: {query_id}, Start: {start}, End: {end}\n")
+                qid, start, end = hit
+                f.write(f"\t{qid}\t{start}\t{end}\n")
 
 def main(args):
     primer_hits = parse_blast_output(args.blast_output)
     write_hits_to_file(primer_hits, args.output_file + ".hits")
     amplicons = extract_amplicons(args.fasta_file, primer_hits, args.max_length)
     for amplicon_info in amplicons:
-        print(f">{amplicon_info[0]}|{amplicon_info[1]}|{amplicon_info[2]}-{amplicon_info[3]}\n{amplicon_info[4]}", file=args.output_file + ".fa")
+        print(f">{amplicon_info[0]}\n{amplicon_info[4]}", file=args.output_file + ".fa")
 
 
 if __name__ == "__main__":
