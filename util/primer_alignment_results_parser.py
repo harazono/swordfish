@@ -67,7 +67,7 @@ def main(args):
     write_hits_to_file(primer_hits, args.output_file + ".hits")
     amplicons = extract_amplicons(args.fasta_file, primer_hits, args.max_length)
     for amplicon_info in amplicons:
-        print(f">{amplicon_info[0]}\n{amplicon_info[4]}", file=args.output_file + ".fa")
+        print(f">{amplicon_info[0]}\n{amplicon_info[3]}", file=args.output_file + ".fa")
 
 
 if __name__ == "__main__":
