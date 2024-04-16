@@ -68,7 +68,8 @@ def main(args):
     amplicons = extract_amplicons(args.fasta_file, primer_hits, args.max_length)
     with open(args.output_file + ".fa", 'w') as f:
         for amplicon_info in amplicons:
-            f.write(f">{amplicon_info[0]}\n{amplicon_info[3]}")
+            if len(amplicon_info[3]) != 0:
+                f.write(f">{amplicon_info[0]}\n{amplicon_info[3]}")
 
 
 if __name__ == "__main__":
