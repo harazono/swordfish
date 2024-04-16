@@ -1,6 +1,6 @@
 import argparse
 from Bio import SeqIO
-
+import sys
 def parse_blast_output(blast_output_file):
     """
     BLASTのoutfmt 6形式の出力から、各プライマーのヒット情報を抽出します。
@@ -25,7 +25,7 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
     reads = SeqIO.parse(fasta_file, "fasta")
     cnt = 1
     for record in reads:
-        print(f"\r{cnt}", end="")
+        print(f"\r{cnt}", end="", file=sys.stderr)
         cnt += 1
         sequence = str(record.seq).upper()
         for primer_id, hits in primer_hits.items():
