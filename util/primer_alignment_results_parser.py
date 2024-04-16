@@ -60,6 +60,14 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
                 if len(amplicon_sequence) > max_length:
                     continue
                 amplicons.append((amplicon_name, amplicon_sequence))
+            if hit_1["sstrand"] == "minus" and hit_2["send"] < hit_1["sstart"]:
+                amplicon_name = f'{record.id}|{hit_2["qseqid"]}:{hit_2["sstart"]}-{hit_2["send"]}:{hit_2["sstrand"]}|{hit_1["qseqid"]}:{hit_1["sstart"]}-{hit_1["send"]}:{hit_1["sstrand"]}'
+                start = min(hit_2["send"], hit_2["sstart"])
+                end   = max(hit_1["send"], hit_1["sstart"])
+                amplicon_sequence = sequence[start:end]
+                if len(amplicon_sequence) > max_length:
+                    continue
+                amplicons.append((amplicon_name, amplicon_sequence))
     return amplicons
 
 def write_hits_to_file(hits, output_file):
