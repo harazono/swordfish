@@ -23,6 +23,7 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
     """
     reads = SeqIO.parse(fasta_file, "fasta")
     cnt = 1
+    amplicons = []
     for record in reads:
         print(f"\r{cnt}", end="", file=sys.stderr)
         cnt += 1
@@ -35,11 +36,25 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
                     start, end = sorted([hit1[0], hit2[1]])
                     if 0 < end - start <= max_length:
                         amplicon = sequence[start-1:end]
-                        print("\t".join([record.id, primer_id, str(start), str(end), amplicon]))
+                        amplicons.append([record.id, primer_id, str(start), str(end), amplicon])
+    return amplicons
+
+def write_hits_to_file(hits, output_file):
+    """
+    抽出されたヒット情報をファイルに書き出します。
+    """
+    with open(output_file, 'w') as f:
+        for query_id, hit_list in hits.items():
+            for hit in hit_list:
+                start, end = hit
+                f.write(f"Primer/Probe: {query_id}, Start: {start}, End: {end}\n")
 
 def main(args):
     primer_hits = parse_blast_output(args.blast_output)
-    extract_amplicons(args.fasta_file, primer_hits, args.max_length)
+    write_hits_to_file(primer_hits, args.output_file + ".hits")
+    amplicons = extract_amplicons(args.fasta_file, primer_hits, args.max_length)
+    for amplicon_info in amplicons:
+        print(f">{amplicon_info[0]}|{amplicon_info[1]}|{amplicon_info[2]}-{amplicon_info[3]}\n{amplicon_info[4]}", file=args.output_file + ".fa")
 
 
 if __name__ == "__main__":
@@ -47,6 +62,6 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--fasta_file", required=True, help="Path to the input FASTA file.")
     parser.add_argument("-b", "--blast_output", required=True, help="Path to the BLAST output file in outfmt 6 format.")
     parser.add_argument("-m", "--max_length", type=int, default=2000, help="Maximum amplicon length (default is 2000).")
-    
+    parser.add_argument("-o", "--output_file", required=True, help="Path to the output file to write hits.")
     args = parser.parse_args()
     main(args)
