@@ -21,7 +21,6 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
     """
     指定されたプライマーのヒット情報と最大アンプリコン長を基に、FASTAファイルからアンプリコンを抽出します。
     """
-    amplicons = []
     reads = SeqIO.parse(fasta_file, "fasta")
     cnt = 1
     for record in reads:
@@ -36,14 +35,11 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
                     start, end = sorted([hit1[0], hit2[1]])
                     if 0 < end - start <= max_length:
                         amplicon = sequence[start-1:end]
-                        amplicons.append((record.id, primer_id, start, end, amplicon))
-    return amplicons
+                        print("\t".join([record.id, primer_id, str(start), str(end), amplicon]))
 
 def main(args):
     primer_hits = parse_blast_output(args.blast_output)
-    amplicons = extract_amplicons(args.fasta_file, primer_hits, args.max_length)
-    for amplicon_info in amplicons:
-        print(f">{amplicon_info[0]}|{amplicon_info[1]}|{amplicon_info[2]}-{amplicon_info[3]}\n{amplicon_info[4]}")
+    extract_amplicons(args.fasta_file, primer_hits, args.max_length)
 
 
 if __name__ == "__main__":
