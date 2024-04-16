@@ -56,11 +56,15 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
                 amplicon_name = f'{record.id}|{hit_1["qseqid"]}{hit_1["sstrand"]}|{hit_2["qseqid"]}{hit_2["sstrand"]}'
                 assert hit_1["sstart"] < hit_2["send"], "assertion failed"
                 amplicon_sequence = sequence[hit_1["sstart"]:hit_2["send"]]
+                if len(amplicon_sequence) > max_length:
+                    continue
                 amplicons.append((amplicon_name, amplicon_sequence))
             if hit_2["send"] < hit_1["sstart"]:
                 amplicon_name = f'{record.id}|{hit_1["qseqid"]}{hit_1["sstrand"]}|{hit_2["qseqid"]}{hit_2["sstrand"]}'
                 assert hit_2["sstart"] < hit_1["send"], "assertion failed"
                 amplicon_sequence = sequence[hit_2["sstart"]:hit_1["send"]]
+                if len(amplicon_sequence) > max_length:
+                    continue
                 amplicons.append((amplicon_name, amplicon_sequence))
     return amplicons
 
