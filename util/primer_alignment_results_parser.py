@@ -72,6 +72,7 @@ def write_hits_to_file(hits, output_file):
         for sseqid, hit_list in hits.items():
             f.write(f"{sseqid}\n")
             for hit in hit_list:
+                print(hit)
                 f.write("\t".join([f"{str(k)}:{str(v)}" for k,v in hit]) + "\n")
 
 def main(args):
