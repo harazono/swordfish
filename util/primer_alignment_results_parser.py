@@ -10,8 +10,8 @@ def parse_blast_output(blast_output_file):
         for line in file:
             parts = line.strip().split('\t')
             query_id = parts[0]
-            sstart = int(parts[8])
-            send = int(parts[9])
+            sstart = int(parts[7])
+            send = int(parts[8])
             if query_id not in hits:
                 hits[query_id] = []
             hits[query_id].append((min(sstart, send), max(sstart, send)))
