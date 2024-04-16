@@ -23,8 +23,10 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
     """
     amplicons = []
     reads = SeqIO.parse(fasta_file, "fasta")
+    cnt = 1
     for record in reads:
-        print(f"\r{record.id}", end="")
+        print(f"\r{cnt}", end="")
+        cnt += 1
         sequence = str(record.seq).upper()
         for primer_id, hits in primer_hits.items():
             for hit1 in hits:
