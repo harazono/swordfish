@@ -39,13 +39,13 @@ def extract_amplicons(fasta_file, primer_hits, max_length):
             hit_1, hit_2 = v
             sequence = str(record.seq).upper()
             # hit_1が右向き（end - start > 0）で、hit_2が左向きの場合
-            if hit_1[2] - hit_1[1] > 0 and hit_2[1] - hit_2[2] > 0 and hit_2[2] - hit_1[hit_1[1]] > max_length:
+            if hit_1[2] - hit_1[1] > 0 and hit_2[1] - hit_2[2] > 0 and hit_2[2] - hit_1[1] > max_length:
                 # read.idとhit_1[1]とhit_2[2]の値を配列名とするfastaを生成してampliconsに追加。配列はsequenceの部分配列とする。
                 amplicon_name = f"{record.id}|{hit_1[1]}|{hit_2[2]}"
                 amplicon_sequence = sequence[hit_1[1]:hit_2[2]]
                 amplicons.append((amplicon_name, hit_1[1], hit_2[2], amplicon_sequence))
             # hit_1が左向き（end - start < 0）で、hit_2が右向きの場合
-            elif hit_1[2] - hit_1[1] < 0 and hit_2[1] - hit_2[2] > 0 and hit_1[2] - hit_1[hit_1[1]] > max_length:
+            elif hit_1[2] - hit_1[1] < 0 and hit_2[1] - hit_2[2] > 0 and hit_1[2] - hit_2[1] > max_length:
                 amplicon_name = f"{record.id}|{hit_2[1]}|{hit_1[2]}"
                 amplicon_sequence = sequence[hit_2[1]:hit_1[2]]
                 amplicons.append((amplicon_name, hit_2[1], hit_1[2], amplicon_sequence))
