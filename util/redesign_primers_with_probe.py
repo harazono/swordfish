@@ -23,6 +23,7 @@ def main():
         )
         frequent_mers = find_frequent_mers(sequences, 50)
         print(len(frequent_mers))
+        print(frequent_mers.most_common(1))
         l = sequences[0].seq[:30]
         m = frequent_mers.most_common(1)[0][0]
         r = sequences[0].seq[-30:]
