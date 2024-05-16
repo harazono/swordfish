@@ -7,7 +7,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser(
-        description="This tool redesigns PCR primers by extracting and grouping the first and last 30 bases of sequences from a FASTA file. Within each group, it identifies frequently occurring k-mers in the central region of the sequences. Using these 30-base segments and the most common k-mer, it designs primers for PCR amplification."
+        description="This tool redesigns PCR primers by extracting and grouping the first and last 24 bases of sequences from a FASTA file. Within each group, it identifies frequently occurring k-mers in the central region of the sequences. Using these 24-base segments and the most common k-mer, it designs primers for PCR amplification."
     )
     parser.add_argument("fasta_file", type=str, help="FASTA File path")
     parser.add_argument(
@@ -19,16 +19,18 @@ def main():
     print(f"Number of sequence groups: {len(sequence_groups)}")
     for group, sequences in sequence_groups.items():
         print(
-            f"Group: {group}, sequences: {len(sequences)}, left: {sequences[0].seq[:30]}, right: {sequences[0].seq[-30:]}"
+            f"Group: {group}, sequences: {len(sequences)}, left: {sequences[0].seq[:24]}, right: {sequences[0].seq[-24:]}"
         )
-        frequent_mers = find_frequent_mers(sequences, 50)
+        if len(sequences) == 0:
+            continue
+        frequent_mers = find_frequent_mers(sequences, 40)
         if len(frequent_mers) == 0:
             print(sequences)
             print(len(frequent_mers))
             print(frequent_mers.most_common(1))
-        l = sequences[0].seq[:30]
+        l = sequences[0].seq[:24]
         m = frequent_mers.most_common(1)[0][0]
-        r = sequences[0].seq[-30:]
+        r = sequences[0].seq[-24:]
         many_n = "N" * 20
         concatinated_sequence = f"{l}{many_n}{m}{many_n}{r}"
         # print(concatinated_sequence)
@@ -58,7 +60,7 @@ def find_frequent_mers(sequences, mer_size):
     for i, record in enumerate(sequences):
         print(f"processing {i + 1} in {len(sequences)}")
         sequence = str(record.seq)
-        middle_sequence = sequence[30:-30]
+        middle_sequence = sequence[24:-24]
         for i in range(len(middle_sequence) - mer_size + 1):
             mer = middle_sequence[i : i + mer_size]
             mer_counts[mer] += 1
