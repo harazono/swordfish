@@ -22,8 +22,10 @@ def main():
             f"Group: {group}, sequences: {len(sequences)}, left: {sequences[0].seq[:30]}, right: {sequences[0].seq[-30:]}"
         )
         frequent_mers = find_frequent_mers(sequences, 50)
-        print(len(frequent_mers))
-        print(frequent_mers.most_common(1))
+        if len(frequent_mers) == 0:
+            print(sequences)
+            print(len(frequent_mers))
+            print(frequent_mers.most_common(1))
         l = sequences[0].seq[:30]
         m = frequent_mers.most_common(1)[0][0]
         r = sequences[0].seq[-30:]
