@@ -82,7 +82,7 @@ pub fn build_counting_bloom_filter(
                 if r_window_end_idx > current_sequence.len() {
                     break 'each_r_window;
                 }
-                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN + margin {
                     break 'each_r_window;
                 }
                 let (r_has_repeat_bool, r_has_repeat_offset) =
@@ -259,7 +259,7 @@ pub fn number_of_high_occurence_lr_tuple(
                 if r_window_end_idx >= current_sequence.len() + 1 {
                     break 'each_r_window;
                 }
-                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN + margin {
                     break 'each_r_window;
                 }
                 let (r_has_repeat_bool, r_has_repeat_offset) =
@@ -503,7 +503,7 @@ pub fn count_lr_tuple_with_hashtable(
                     l_window_start_idx += 1;
                     continue 'each_l_window;
                 }
-                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN {
+                if r_window_end_idx - l_window_start_idx > CHUNK_MAX - R_LEN + margin {
                     break 'each_r_window;
                 }
                 let (r_has_repeat_bool, r_has_repeat_offset) =
