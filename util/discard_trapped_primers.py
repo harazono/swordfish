@@ -266,10 +266,14 @@ def main():
                     salvation_reason["hit to same sequence, same direction"] += 1
                     continue
                 if hit_1.sstart < hit_2.sstart and hit_1.direction == Direction.LEFT:
-                    salvation_reason["hit to same sequence, opposite direction, no intersection"] += 1
+                    salvation_reason[
+                        "hit to same sequence, opposite direction, no intersection"
+                    ] += 1
                     continue
                 if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
-                    salvation_reason["hit to same sequence, opposite direction, no intersection"] += 1
+                    salvation_reason[
+                        "hit to same sequence, opposite direction, no intersection"
+                    ] += 1
                     continue
                 blast_trapped_seq_ids.add((hit_1.qseqid, hit_2.qseqid))
                 blast_trapped_primer_ids.add(each_primer_id)
@@ -294,9 +298,12 @@ def main():
         f"number of lr-tuple...{len(primer3_info)}",
         file=report_file,
     )
-    average_of_primers_from_a_lr_tuple = round(
-        len(fasta_ids) / len(primer3_info) / 2, 2
-    )
+    if len(primer3_info) != 0:
+        average_of_primers_from_a_lr_tuple = round(
+            len(fasta_ids) / len(primer3_info) / 2, 2
+        )
+    else:
+        average_of_primers_from_a_lr_tuple = 0
     print(
         f"average number of primers from a lr-tuple...{average_of_primers_from_a_lr_tuple}",
         file=report_file,
