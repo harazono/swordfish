@@ -240,7 +240,7 @@ def main():
     blast_trapped_seq_ids = set()
     blast_trapped_primer_ids = set()
     salvation_reason = {
-        "tatal": 0,
+        "total": 0,
         "hit to different sequence": 0,
         "hit to same sequence, same direction": 0,
         "hit to same sequence, opposite direction, no intersection": 0,
@@ -257,7 +257,7 @@ def main():
             blast_hits.extend(primer_blasthit_dict.get(seqname_R, None))
             # print(blast_hits)
             for hit_1, hit_2 in itertools.combinations(blast_hits, 2):
-                salvation_reason["tatal"] += 1
+                salvation_reason["total"] += 1
                 # print(blast_hits_string(hit_1, hit_2), file=sys.stderr)
                 if hit_1.sacc != hit_2.sacc:
                     salvation_reason["hit to different sequence"] += 1
@@ -275,7 +275,7 @@ def main():
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
                     continue
-                blast_trapped_seq_ids.add((hit_1.qseqid, hit_2.qseqid))
+                blast_trapped_seq_ids.add((hit_1, hit_2))
                 blast_trapped_primer_ids.add(each_primer_id)
 
     finalist = list(
@@ -285,6 +285,7 @@ def main():
     report_file = open(args.o + ".report", mode="w")
     finalist_tsv_file = open(args.o + ".finalist.tsv", mode="w")
     finalist_namelist_file = open(args.o + ".finalist_name.txt", mode="w")
+    cross_reactive_file = open(args.o + ".cross_reactive_species.txt", mode="w")
     print(f"{args}", file=report_file)
     print(
         f"fasta_ids in {args.fasta}...{len(fasta_ids)}",
@@ -335,6 +336,8 @@ def main():
         ),
         file=finalist_tsv_file,
     )
+    cross_reactive_species_list = ["\t".join([x.self.staxid, x.staxids, x.ssciname, x.scomname]) for x in blast_trapped_seq_ids]
+    print("\n".join(cross_reactive_species_list), file = cross_reactive_file)
 
     for each_finalist in finalist:
         id = each_finalist[0]
