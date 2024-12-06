@@ -270,7 +270,7 @@ def main():
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
                     continue
-                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
+                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT and abs(hit_1.sstart - hit_2.sstart) < 20000:
                     salvation_reason[
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
@@ -336,7 +336,7 @@ def main():
         ),
         file=finalist_tsv_file,
     )
-    cross_reactive_species_list = ["\t".join([x.self.staxid, x.staxids, x.ssciname, x.scomname]) for x in blast_trapped_seq_ids]
+    cross_reactive_species_list = ["\t".join([x[0].staxid, x[0].staxids, x[0].ssciname, x[0].scomname]) for x in blast_trapped_seq_ids]
     print("\n".join(cross_reactive_species_list), file = cross_reactive_file)
 
     for each_finalist in finalist:
