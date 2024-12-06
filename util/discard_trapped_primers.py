@@ -141,9 +141,10 @@ def main():
         default="final_result",
         help="output file name (default = final_result)",
     )
-    # parser.add_argument("--fasta", action='store_true', help = "output as fasta")
+    parser.add_argument("--distance", type = int, default = 20000, help = "Distance considered to be far enough away")
     args = parser.parse_args()
-    print(args, file=sys.stderr)
+    print("\n".join([f"{key}...{value}" for key, value in vars(args).items()]), file=sys.stderr)
+
     filename = args.fasta
     fasta_ids = set()
     print(f"start reading {filename}", file=sys.stderr)
@@ -218,6 +219,9 @@ def main():
                 and "metagenome" in each_record_Obj.ssciname
             ):
                 continue
+            # each_record_Obj.qstart > 3ならば、3'に2塩基のミスマッチがあると考える
+            if each_record_Obj.qstart > 3:
+                continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
 
@@ -244,6 +248,7 @@ def main():
         "hit to different sequence": 0,
         "hit to same sequence, same direction": 0,
         "hit to same sequence, opposite direction, no intersection": 0,
+        "hit to same sequence, opposite direction, far enough away": 0,
     }
     for each_primer_id, info in primer3_info.items():
         for i, c in enumerate(info["Primer3_output"]):
@@ -270,9 +275,14 @@ def main():
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
                     continue
-                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT and abs(hit_1.sstart - hit_2.sstart) < 20000:
+                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
                     salvation_reason[
                         "hit to same sequence, opposite direction, no intersection"
+                    ] += 1
+                    continue
+                if abs(hit_1.sstart - hit_2.sstart) > args.distance:
+                    salvation_reason[
+                        "hit to same sequence, opposite direction, far enough away"
                     ] += 1
                     continue
                 blast_trapped_seq_ids.add((hit_1, hit_2))
@@ -289,6 +299,10 @@ def main():
     print(f"{args}", file=report_file)
     print(
         f"fasta_ids in {args.fasta}...{len(fasta_ids)}",
+        file=report_file,
+    )
+    print(
+        f"primer pairs {args.fasta}...{len(fasta_ids)/2}",
         file=report_file,
     )
     print(
