@@ -270,7 +270,11 @@ def main():
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
                     continue
-                if hit_1.sstart > hit_2.sstart and hit_1.direction == Direction.RIGHT:
+                if (
+                    hit_1.sstart > hit_2.sstart
+                    and hit_1.direction == Direction.RIGHT
+                    and abs(hit_1.sstart - hit_2.sstart) < 20 * 10**3
+                ):  # 距離の条件を書く
                     salvation_reason[
                         "hit to same sequence, opposite direction, no intersection"
                     ] += 1
