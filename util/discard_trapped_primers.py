@@ -219,8 +219,8 @@ def main():
                 and "metagenome" in each_record_Obj.ssciname
             ):
                 continue
-            # each_record_Obj.qstart > 3ならば、3'に2塩基のミスマッチがあると考える
-            if each_record_Obj.qstart > 3:
+            # each_record_Obj.qlen - each_record_Obj.qend > 3ならば、3'に2塩基のミスマッチがあると考える
+            if each_record_Obj.qlen - each_record_Obj.qend > 3:
                 continue
             blast_results.append(each_record_Obj)
     print(f"found {len(blast_results)} blast results", file=sys.stderr)
@@ -291,7 +291,6 @@ def main():
                     continue
                 blast_trapped_seq_ids.add((hit_1, hit_2))
                 blast_trapped_primer_ids.add(each_primer_id)
-
     finalist = list(
         filter(lambda i: i[0] not in blast_trapped_primer_ids, primer3_info.items())
     )
@@ -306,7 +305,7 @@ def main():
         file=report_file,
     )
     print(
-        f"primer pairs {args.fasta}...{len(fasta_ids)/2}",
+        f"primer pairs {args.fasta}...{int(len(fasta_ids)/2)}",
         file=report_file,
     )
     print(
@@ -354,7 +353,8 @@ def main():
         ),
         file=finalist_tsv_file,
     )
-    cross_reactive_species_list = ["\t".join([x[0].staxid, x[0].staxids, x[0].ssciname, x[0].scomname]) for x in blast_trapped_seq_ids]
+    # cross_reactive_species_list = ["\t".join([x[0].sstart, x[0].send, x[1].sstart, x[1].send, x[0].staxid, x[0].staxids, x[0].ssciname, x[0].scomname]) for x in blast_trapped_seq_ids]
+    cross_reactive_species_list = ["\t".join(map(str, [x[0].sacc, x[0].sstart, x[0].send, x[1].sstart, x[1].send, x[0].staxid, x[0].staxids, x[0].ssciname, x[0].scomname])) for x in blast_trapped_seq_ids]
     print("\n".join(cross_reactive_species_list), file = cross_reactive_file)
 
     for each_finalist in finalist:
