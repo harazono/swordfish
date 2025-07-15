@@ -115,7 +115,7 @@ impl DnaSequence {
                     buf |= 3;
                 }
                 _ => {
-                    panic!("Unexpected character: {}", each_base);
+                    panic!("Unexpected character: {}({})", each_base, *each_base as char);
                 }
             }
             //buf <<= 2;//境界を跨ぐ場合、シフトしてはいけない。

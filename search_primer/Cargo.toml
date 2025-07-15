@@ -6,16 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "*"
+flate2 = "*"
+unicode-width = "0.1.9"
 bio = "2.0.3"
 rdxsort = "*"
 bit_reverse = "*"
-flate2 = "1.0"
-anyhow = "1.0"
-# flate2 = "0.2"
 voracious_radix_sort = { version = "1.1.0", features = [
     "voracious_multithread",
 ] }
-#rust-crypto         = "*"
 sha2 = "0.10.2"
 rand = "0.8.5"
 fxhash = "0.2.1"
@@ -23,6 +22,7 @@ getopts = "0.2.21"
 function_name = "0.3.0"
 csv = "1.1.6"
 binary-heap-plus = "0.5.0"
+tempfile = "3"
 
 [profile.dev]
 opt-level = 0
